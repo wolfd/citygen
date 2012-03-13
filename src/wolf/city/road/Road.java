@@ -4,6 +4,7 @@ import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 
@@ -61,5 +62,9 @@ public class Road {
 		Polygon poly = gf.createPolygon(lr, null);
 
 		return poly;
+	}
+	
+	public LineSegment getLineSegment(){
+		return new LineSegment(a.pos, b.pos);
 	}
 }
