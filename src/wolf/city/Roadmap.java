@@ -214,11 +214,11 @@ public class Roadmap extends Thread{
 			}
 			if(cv != null){
 				cv.draw();
-				//				long time = System.currentTimeMillis();
-				//				
-				//				while(System.currentTimeMillis()<time+100){
-				//					
-				//				}
+				long time = System.currentTimeMillis();
+
+				while(System.currentTimeMillis()<time+100){
+
+				}
 			}
 		}
 		city.pop.reset();
