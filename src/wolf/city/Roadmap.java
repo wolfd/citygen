@@ -16,6 +16,7 @@ import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateFilter;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineSegment;
 
 import wolf.city.road.GridSpace;
 import wolf.city.road.Intersection;
@@ -28,6 +29,7 @@ import wolf.city.road.rules.Direction;
 import wolf.city.road.rules.Grid;
 import wolf.city.road.rules.OffRamp;
 import wolf.gui.CityView;
+import wolf.util.Log;
 import wolf.util.RandomHelper;
 import wolf.util.Turtle;
 
@@ -37,6 +39,7 @@ public class Roadmap extends Thread{
 	private Configuration config;
 	LineIntersector li;
 	private RoadGrid grid;
+	private Log log;
 
 	private float minimumPopulationHighwayIntersection; //load all parameters from generation properties file
 	private int populationSampleRadiusHighwayIntersection;
@@ -56,9 +59,11 @@ public class Roadmap extends Thread{
 	private int popTests;
 	private int waterTests;
 	private double maximumRatioIntersectionArea;
+	private double minimumIntersectionAngle;
 
 
 	public Roadmap(City city){
+		log = new Log();
 		this.city = city;
 		//Load configuration file
 		try {
@@ -95,6 +100,7 @@ public class Roadmap extends Thread{
 		popTests = config.getInt("popTests", 8);
 		waterTests = config.getInt("waterTests", 8);
 		maximumRatioIntersectionArea = config.getDouble("maximumRatioIntersectionArea", .1);
+		minimumIntersectionAngle = config.getDouble("minimumIntersectionAngle", 25d);
 
 		try {
 			((AbstractFileConfiguration) config).save();
@@ -122,7 +128,7 @@ public class Roadmap extends Thread{
 		RoadQueue rqH = new RoadQueue(); //highways
 		RoadQueue rqM = new RoadQueue(); //main roads
 		RoadQueue rq = new RoadQueue(); //streets
-		
+
 
 		//seed map with a couple highways
 		seedRoadMap(rqH);
@@ -208,11 +214,11 @@ public class Roadmap extends Thread{
 			}
 			if(cv != null){
 				cv.draw();
-				long time = System.currentTimeMillis();
-				
-				while(System.currentTimeMillis()<time+100){
-					
-				}
+				//				long time = System.currentTimeMillis();
+				//				
+				//				while(System.currentTimeMillis()<time+100){
+				//					
+				//				}
 			}
 		}
 		city.pop.reset();
@@ -299,7 +305,8 @@ public class Roadmap extends Thread{
 		r = lengthCheck(r);
 		r = maxConnections(r);
 		r = inBounds(r);
-		
+
+		r = intersectionAngleCheck(r);
 		//expensive tests
 		r = waterCheck(r);
 		r = trimToIntersection(r);
@@ -311,13 +318,46 @@ public class Roadmap extends Thread{
 
 
 
+	private Road intersectionAngleCheck(Road r) {
+		if(r==null){
+			return null;
+		}
+		LineSegment l0 = r.getLineSegment();
+		Geometry g0 = r.getGeometry(2);
+		double angle = l0.angle();
+
+		ArrayList<GridSpace> spaces = grid.getSpaces(r);
+		ArrayList<Road> tested = new ArrayList<Road>();
+		for(GridSpace g: spaces){
+			LinkedList<Road> roads = grid.get(g);
+			for(Road i: roads){
+				if(!tested.contains(i)){
+					LineSegment l1 = i.getLineSegment();
+					Geometry g1 = i.getGeometry(2);
+					Geometry intersection = g0.intersection(g1);
+					if(intersection != null){
+						double difference = Math.toDegrees(Math.abs(l1.angle()-angle))%90;
+						log.log("Angle:"+difference);
+						if(difference < minimumIntersectionAngle){
+							log.log("Road removed due to intersectionAngleCheck  :  "+r.toString());
+							return null;
+						}
+					}
+				}
+			}
+		}
+
+		return r;
+	}
+
+
 	private Road proximityCheck(Road r) {
 		if(r==null){
 			return null;
 		}
 		int expand = 2;
 		Geometry a = r.getGeometry(expand);
-		
+
 		ArrayList<GridSpace> spaces = grid.getSpaces(r);
 		ArrayList<Road> tested = new ArrayList<Road>();
 		for(GridSpace g: spaces){
@@ -332,8 +372,8 @@ public class Roadmap extends Thread{
 					if(c.getArea()>maximumRatioIntersectionArea*b.getArea()){
 						return null;
 					}
-					
-								
+
+
 				}
 			}
 		}
