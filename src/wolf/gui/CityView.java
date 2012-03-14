@@ -1,5 +1,7 @@
 package wolf.gui;
 
+import java.util.Random;
+
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
@@ -37,6 +39,7 @@ public class CityView extends Thread{
 
 	public void draw(){
 		if(!Display.isCloseRequested()){
+			Random random = new Random(1);
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			//render everything
 			if(densityDisplay){
@@ -104,10 +107,12 @@ public class CityView extends Thread{
 					break;
 				}
 				case STREET:{ //green
+					byte[] bytes = new byte[3];
+					random.nextBytes(bytes);
 					width=road.getType().getWidth();
-					red = 0;
-					green = 150;
-					blue = 50;
+					red = 0+bytes[0];
+					green = 150+bytes[1];
+					blue = 50+bytes[2];
 					break;
 				}
 				case MAIN:{ //green

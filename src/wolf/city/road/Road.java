@@ -65,6 +65,7 @@ public class Road {
 	}
 	
 	public LineSegment getLineSegment(){
-		return new LineSegment(a.pos, b.pos);
+		LineSegment ls = new LineSegment(a.pos, b.pos);
+		return ls;
 	}
 }
