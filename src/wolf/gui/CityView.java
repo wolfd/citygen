@@ -21,11 +21,19 @@ public class CityView extends Thread{
 		this.c = c;
 		vSize = Math.max(c.sizeX, c.sizeY);
 		try{
+			
 			Display.setDisplayMode(new DisplayMode(windowSize, windowSize ));
 			Display.create();
 		} catch (LWJGLException e) {
 			e.printStackTrace();
-			System.exit(0);
+			System.setProperty("org.lwjgl.opengl.Display.allowSoftwareOpenGL", "true");
+			try {
+				Display.setDisplayMode(new DisplayMode(windowSize, windowSize ));
+				Display.create();
+			} catch (LWJGLException e1) {
+				e1.printStackTrace();
+				System.exit(0);
+			}
 		}
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
@@ -161,5 +169,13 @@ public class CityView extends Thread{
 	public void close(){
 		Display.destroy();
 		System.exit(0);
+	}
+	
+	private Coordinate toV(Coordinate p){ //to virtual
+		return p;
+	}
+	
+	private Coordinate toR(Coordinate p){ //to real
+		return p;
 	}
 }
