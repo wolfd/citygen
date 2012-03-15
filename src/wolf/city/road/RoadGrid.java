@@ -8,6 +8,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 public class RoadGrid {
 	private ArrayList<ArrayList<LinkedList<Road>>> grid;
 	private int gridSize = 256;
+	private double bufferSize = 5;
 	private int gridX;
 	private int gridY;
 	private int sizeX;
@@ -62,8 +63,8 @@ public class RoadGrid {
 	public ArrayList<GridSpace> getSpaces(Road r){
 		Coordinate a = r.a.pos;
 		Coordinate b = r.b.pos;
-		Coordinate min = new Coordinate(Math.min(a.x, b.x), Math.min(a.y, b.y));
-		Coordinate max = new Coordinate(Math.max(a.x, b.x), Math.max(a.y, b.y));
+		Coordinate min = new Coordinate(Math.min(a.x, b.x)-bufferSize, Math.min(a.y, b.y)-bufferSize);
+		Coordinate max = new Coordinate(Math.max(a.x, b.x)+bufferSize, Math.max(a.y, b.y)+bufferSize);
 		
 		GridSpace g0 = gridSpace(min);
 		GridSpace g1 = gridSpace(max);

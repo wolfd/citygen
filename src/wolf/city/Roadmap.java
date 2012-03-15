@@ -322,9 +322,9 @@ public class Roadmap extends Thread{
 		if(r==null){
 			return null;
 		}
-		LineSegment l0 = r.getLineSegment();
+		//LineSegment l0 = r.getLineSegment();
 		Geometry g0 = r.getGeometry(2);
-		double angle = l0.angle();
+		double angle = Angle.angle(r.a.pos, r.b.pos);
 
 		ArrayList<GridSpace> spaces = grid.getSpaces(r);
 		ArrayList<Road> tested = new ArrayList<Road>();
@@ -332,11 +332,10 @@ public class Roadmap extends Thread{
 			LinkedList<Road> roads = grid.get(g);
 			for(Road i: roads){
 				if(!tested.contains(i)){
-					LineSegment l1 = i.getLineSegment();
+					//LineSegment l1 = i.getLineSegment();
 					Geometry g1 = i.getGeometry(2);
-					Geometry intersection = g0.intersection(g1);
-					if(intersection != null){
-						double difference = Math.toDegrees(Math.abs(l1.angle()-angle))%90;
+					if(g0.crosses(g1) || g0.distance(g1)<4){
+						double difference = Math.toDegrees(Math.abs(Angle.angle(i.a.pos, i.b.pos)-angle))%90;
 						log.log("Angle:"+difference);
 						if(difference < minimumIntersectionAngle){
 							log.log("Road removed due to intersectionAngleCheck  :  "+r.toString());
