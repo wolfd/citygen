@@ -60,10 +60,11 @@ public class Roadmap extends Thread{
 	private int waterTests;
 	private double maximumRatioIntersectionArea;
 	private double minimumIntersectionAngle;
+	private double minimumRoadLength;
 
 
 	public Roadmap(City city){
-		log = new Log();
+		log = city.log;
 		this.city = city;
 		//Load configuration file
 		try {
@@ -101,6 +102,7 @@ public class Roadmap extends Thread{
 		waterTests = config.getInt("waterTests", 8);
 		maximumRatioIntersectionArea = config.getDouble("maximumRatioIntersectionArea", .1);
 		minimumIntersectionAngle = config.getDouble("minimumIntersectionAngle", 25d);
+		minimumRoadLength = config.getDouble("minimumRoadLength", 6d);
 
 		try {
 			((AbstractFileConfiguration) config).save();
@@ -137,7 +139,7 @@ public class Roadmap extends Thread{
 		Basic basicRule = new Basic();
 		Grid gridRule = new Grid();
 		OffRamp rampRule = new OffRamp();
-		System.out.println("Highways generating");
+		log.log("Highways generating");
 		while(rqH.isNotEmpty()){
 			//generate highways, save street seeds to rq
 			Road road = rqH.remove();
@@ -172,7 +174,7 @@ public class Roadmap extends Thread{
 
 		//setup for main roads
 		basicRule.turnRateForward = 40;
-		System.out.println("Main roads generating");
+		log.log("Main roads generating");
 		while(rqM.isNotEmpty()){
 			Road road = rqM.remove();
 			Road r = basicRule.globalGoals(city, road, Direction.FORWARD);
@@ -195,10 +197,15 @@ public class Roadmap extends Thread{
 		city.pop.reset();
 		//generate streets entirely
 
-		System.out.println("Streets generating");
+		log.log("Streets generating");
 		rq.stackStyle = true;
 		while(rq.isNotEmpty()){
 			//generate streets
+			if(city.random.nextDouble()>.9){
+				rq.stackStyle = false;
+			}else{
+				rq.stackStyle = true;
+			}
 			Road road = rq.remove();
 			if(road != null){
 				//use grid pattern to fill in areas between highways (Manhattan-esque pattern, but not perfect)
@@ -214,16 +221,16 @@ public class Roadmap extends Thread{
 			}
 			if(cv != null){
 				cv.draw();
-				long time = System.currentTimeMillis();
-
-				while(System.currentTimeMillis()<time+100){
-
+				if(false){
+					long time = System.currentTimeMillis();
+					while(System.currentTimeMillis()<time+100){
+					}
 				}
 			}
 		}
 		city.pop.reset();
 		//prune unnecessary roads (?)
-		System.out.println("Roads: "+roads.size());
+		log.log("Roads: "+roads.size());
 	}
 
 	private Road connect(Road road) {
@@ -257,7 +264,7 @@ public class Roadmap extends Thread{
 			float length = 128;
 			switch(direction){
 			case 0:{ //North
-				System.out.println("Highway from the north");
+				log.log("Highway from the north");
 				float x = (float) ((this.city.random.nextFloat()-.5)*city.sizeX); //can place in center half of city
 				Coordinate startPoint = new Coordinate(x, city.sizeY/2);
 				Turtle t = new Turtle(startPoint, ((city.random.nextDouble()*180)%seedHighwayAngleSize)+270);
@@ -266,7 +273,7 @@ public class Roadmap extends Thread{
 				break;
 			}
 			case 1:{ //South
-				System.out.println("Highway from the south");
+				log.log("Highway from the south");
 				float x = (float) ((this.city.random.nextFloat()-.5)*city.sizeX); //can place in center half of city
 				Coordinate startPoint = new Coordinate(x, -city.sizeY/2);
 				Turtle t = new Turtle(startPoint, ((city.random.nextDouble()*180)%seedHighwayAngleSize)+90);
@@ -275,7 +282,7 @@ public class Roadmap extends Thread{
 				break;
 			}
 			case 2:{ //East
-				System.out.println("Highway from the east");
+				log.log("Highway from the east");
 				float y = (float) ((this.city.random.nextFloat()-.5)*city.sizeY);
 				Coordinate startPoint = new Coordinate(-city.sizeX/2, y);
 				Turtle t = new Turtle(startPoint, ((city.random.nextDouble()*180)%seedHighwayAngleSize)+0);
@@ -284,7 +291,7 @@ public class Roadmap extends Thread{
 				break;
 			}
 			case 3:{ //West
-				System.out.println("Highway from the west");
+				log.log("Highway from the west");
 				float y = (float) ((this.city.random.nextFloat()-.5)*city.sizeY);
 				Coordinate startPoint = new Coordinate(city.sizeX/2, y);
 				Turtle t = new Turtle(startPoint, ((city.random.nextDouble()*180)%seedHighwayAngleSize)+180);
@@ -309,22 +316,22 @@ public class Roadmap extends Thread{
 		r = intersectionAngleCheck(r);
 		//expensive tests
 		r = waterCheck(r);
+		r = proximityCheck(r);
 		r = trimToIntersection(r);
 		r = lengthCheck(r); //fixes from trim
 		r = popCheck(r);
-		r = proximityCheck(r);
+		
 		return r;
 	}
-
 
 
 	private Road intersectionAngleCheck(Road r) {
 		if(r==null){
 			return null;
 		}
-		LineSegment l0 = r.getLineSegment();
+		//LineSegment l0 = r.getLineSegment();
 		Geometry g0 = r.getGeometry(2);
-		double angle = l0.angle();
+		double angle = Angle.angle(r.a.pos, r.b.pos);
 
 		ArrayList<GridSpace> spaces = grid.getSpaces(r);
 		ArrayList<Road> tested = new ArrayList<Road>();
@@ -332,11 +339,10 @@ public class Roadmap extends Thread{
 			LinkedList<Road> roads = grid.get(g);
 			for(Road i: roads){
 				if(!tested.contains(i)){
-					LineSegment l1 = i.getLineSegment();
+					//LineSegment l1 = i.getLineSegment();
 					Geometry g1 = i.getGeometry(2);
-					Geometry intersection = g0.intersection(g1);
-					if(intersection != null){
-						double difference = Math.toDegrees(Math.abs(l1.angle()-angle))%90;
+					if(g0.crosses(g1) || g0.distance(g1)<4){
+						double difference = Math.toDegrees(Math.abs(Angle.angle(i.a.pos, i.b.pos)-angle))%90;
 						log.log("Angle:"+difference);
 						if(difference < minimumIntersectionAngle){
 							log.log("Road removed due to intersectionAngleCheck  :  "+r.toString());
@@ -349,7 +355,6 @@ public class Roadmap extends Thread{
 
 		return r;
 	}
-
 
 	private Road proximityCheck(Road r) {
 		if(r==null){
@@ -372,8 +377,6 @@ public class Roadmap extends Thread{
 					if(c.getArea()>maximumRatioIntersectionArea*b.getArea()){
 						return null;
 					}
-
-
 				}
 			}
 		}
@@ -386,7 +389,7 @@ public class Roadmap extends Thread{
 			return null;
 		}
 		double distance = r.a.pos.distance(r.b.pos);
-		if(distance>6d){ //6 blocks is minimum road length
+		if(distance>minimumRoadLength){ //6 blocks is minimum road length
 			return r;
 		}
 

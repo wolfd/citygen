@@ -8,12 +8,13 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 import wolf.city.City;
 import wolf.city.road.Road;
 
 public class CityView extends Thread{
-	private int windowSize = 600;
+	private int windowSize = 800;
 	private double vSize;
 	private boolean densityDisplay = false;
 	private City c;
@@ -21,11 +22,19 @@ public class CityView extends Thread{
 		this.c = c;
 		vSize = Math.max(c.sizeX, c.sizeY);
 		try{
+			
 			Display.setDisplayMode(new DisplayMode(windowSize, windowSize ));
 			Display.create();
 		} catch (LWJGLException e) {
 			e.printStackTrace();
-			System.exit(0);
+			System.setProperty("org.lwjgl.opengl.Display.allowSoftwareOpenGL", "true");
+			try {
+				Display.setDisplayMode(new DisplayMode(windowSize, windowSize ));
+				Display.create();
+			} catch (LWJGLException e1) {
+				e1.printStackTrace();
+				System.exit(0);
+			}
 		}
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
@@ -34,7 +43,7 @@ public class CityView extends Thread{
 	}
 
 	public void run(){
-
+		
 	}
 
 	public void draw(){
@@ -69,96 +78,84 @@ public class CityView extends Thread{
 			int blue = 0;
 			int alpha = 0;
 			int green = 0;
-			float width;
 
 			//GL11.glEnable(GL11.GL_BLEND);
 			//GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
 
-			
+
 			{
-			GL11.glPointSize(20);
-			GL11.glBegin(GL11.GL_POINTS);
-			GL11.glColor3f(1, 1, 1);
-			Road road = c.rm.roads.get(c.rm.roads.size()-1);
-			Coordinate p1 = road.a.pos;
-			Coordinate p2 = road.b.pos;
-			GL11.glVertex2d(p1.x+c.sizeX/2,vSize-(p1.y+c.sizeY/2));
-			GL11.glVertex2d(p2.x+c.sizeX/2,vSize-(p2.y+c.sizeY/2));
-			GL11.glEnd();
+				GL11.glPointSize(20);
+				GL11.glBegin(GL11.GL_POINTS);
+				GL11.glColor3f(1, 1, 1);
+				Road road = c.rm.roads.get(c.rm.roads.size()-1);
+				Coordinate p1 = road.a.pos;
+				Coordinate p2 = road.b.pos;
+				GL11.glVertex2d(p1.x+c.sizeX/2,vSize-(p1.y+c.sizeY/2));
+				GL11.glVertex2d(p2.x+c.sizeX/2,vSize-(p2.y+c.sizeY/2));
+				GL11.glEnd();
 			}
-			GL11.glBegin(GL11.GL_LINES);
 			for(int i=0; i<c.rm.roads.size(); i++){
 				Road road = c.rm.roads.get(i);
-
+				Geometry g = road.getGeometry();
 
 				switch(road.getType()){
 				case BRIDGE:{ //grey
-					width=road.getType().getWidth();
 					red = 50;
 					green = 50;
 					blue = 50;
 					break;
 				}
-				case HIGHWAY:{ //blue
-					width=road.getType().getWidth();
+				case HIGHWAY:{ //blue-green
 					red = 0;
 					green = 50;
-					blue = 150;
+					blue = 50;
 					break;
 				}
 				case STREET:{ //green
 					byte[] bytes = new byte[3];
 					random.nextBytes(bytes);
-					width=road.getType().getWidth();
 					red = 0+bytes[0];
 					green = 150+bytes[1];
 					blue = 50+bytes[2];
 					break;
 				}
 				case MAIN:{ //green
-					width=road.getType().getWidth();
 					red = 0;
 					green = 100;
 					blue = 100;
 					break;
 				}
 				case DEFAULT:{ //red
-					width=road.getType().getWidth();
 					red = 255;
 					green = 0;
 					blue = 0;
 					break;
 				}
 				default:{ //red
-					width=4;
 					red = 255;
 					green = 0;
 					blue = 0;
 					break;
 				}
 				}
-				GL11.glEnd();
-				GL11.glLineWidth(width/(Math.max(c.sizeX,c.sizeY)/this.windowSize));
-				GL11.glBegin(GL11.GL_LINES);
+				GL11.glBegin(GL11.GL_QUADS);
 				GL11.glColor4ub((byte)red, (byte)green, (byte)blue, (byte)alpha);
-
-				Coordinate p1 = road.a.pos;
-				Coordinate p2 = road.b.pos;
-				GL11.glVertex2d(p1.x+c.sizeX/2,vSize-(p1.y+c.sizeY/2));
-				GL11.glVertex2d(p2.x+c.sizeX/2,vSize-(p2.y+c.sizeY/2));
+				for(int j=0;j<4;j++){
+					Coordinate p = g.getCoordinates()[j];
+					GL11.glVertex2d(p.x+c.sizeX/2,vSize-(p.y+c.sizeY/2));
+				}
 			}
 			GL11.glEnd();
-			
+
 			Display.update();
 			Display.setTitle("Roads: "+c.rm.roads.size());
 		}else{
-			Display.destroy();
-			System.exit(0);
-
+			close();
 		}
 	}
 
 	public void close(){
+		c.windowClosed();
 		Display.destroy();
 		System.exit(0);
 	}

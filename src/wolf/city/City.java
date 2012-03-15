@@ -7,7 +7,9 @@ import wolf.city.map.Terrain;
 import wolf.city.map.Water;
 import wolf.city.map.Wealth;
 import wolf.gui.CityView;
+import wolf.util.Log;
 import wolf.util.MapRender;
+import wolf.util.Popup;
 
 public class City {
 	//dimensions
@@ -18,16 +20,18 @@ public class City {
 	public Water water;
 	public Wealth wealth;
 	public Population pop;
-	
+
 	public Roadmap rm;
-	
+
 	//parameters - style, time period, roadmap generation values
 	public Random random;
-	
+
 	//statistics
 	public Statistics statistics;
-	
+	public Log log;
+
 	public City(int sizeX, int sizeY, long seed){
+		log = new Log();
 		this.sizeX = sizeX;
 		this.sizeY = sizeY;
 		random = new Random(seed);
@@ -38,18 +42,26 @@ public class City {
 		water = new Water(this);
 		wealth = new Wealth(this);
 		pop = new Population(this);
-		
-		//subtract water areas from population?
-		
+
 		//make roadmap
 		rm = new Roadmap(this);
 	}
-	
+
 	public void generateRoadmap(){
 		CityView cv = new CityView(this);
-		rm.generate(cv); 
-		MapRender.render(this,"render");
+		rm.generate(cv);
 		cv.close();
+		if(Popup.confirm("Render?", "CityGen")){
+			MapRender.render(this,"render");
+		}
+		log.save("/log.log");
+	}
+
+	public void windowClosed(){
+		if(Popup.confirm("Render?", "CityGen")){
+			MapRender.render(this,"render");
+		}
+		log.save("/log.log");
 	}
 }
 

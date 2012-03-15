@@ -24,6 +24,7 @@ public class Road {
 
 	public void setType(RoadType type){
 		this.type = type;
+		this.width = type.getWidth();
 	}
 
 	public RoadType getType(){
@@ -63,6 +64,7 @@ public class Road {
 
 		return poly;
 	}
+	
 	public LineSegment getLineSegment(){
 		LineSegment ls = new LineSegment(a.pos, b.pos);
 		return ls;

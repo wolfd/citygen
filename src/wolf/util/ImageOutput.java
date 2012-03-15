@@ -70,7 +70,7 @@ public class ImageOutput {
 		try {
 			boolean exists = !f.createNewFile();
 			if(exists){
-				System.out.println(filename+" exists. Overwriting");
+				System.out.println(f.getAbsolutePath()+" exists. Overwriting");
 			}
 			ImageIO.write(bi, "png", f);
 		} catch (IOException ex) {
