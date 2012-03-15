@@ -126,7 +126,7 @@ public class Roadmap extends Thread{
 	}
 
 	public void generate(CityView cv){
-		System.out.println("Starting roadmap generation");
+		log.log("Starting roadmap generation");
 		RoadQueue rqH = new RoadQueue(); //highways
 		RoadQueue rqM = new RoadQueue(); //main roads
 		RoadQueue rq = new RoadQueue(); //streets
@@ -320,7 +320,7 @@ public class Roadmap extends Thread{
 		r = trimToIntersection(r);
 		r = lengthCheck(r); //fixes from trim
 		r = popCheck(r);
-		
+
 		return r;
 	}
 
@@ -341,7 +341,7 @@ public class Roadmap extends Thread{
 				if(!tested.contains(i)){
 					//LineSegment l1 = i.getLineSegment();
 					Geometry g1 = i.getGeometry(2);
-					if(g0.crosses(g1) || g0.distance(g1)<4){
+					if(g0.intersects(g1) || g0.distance(g1)<4){
 						double difference = Math.toDegrees(Math.abs(Angle.angle(i.a.pos, i.b.pos)-angle))%90;
 						log.log("Angle:"+difference);
 						if(difference < minimumIntersectionAngle){
@@ -362,7 +362,7 @@ public class Roadmap extends Thread{
 		}
 		int expand = 2;
 		Geometry a = r.getGeometry(expand);
-
+		//check related spaces in grid
 		ArrayList<GridSpace> spaces = grid.getSpaces(r);
 		ArrayList<Road> tested = new ArrayList<Road>();
 		for(GridSpace g: spaces){
@@ -370,12 +370,16 @@ public class Roadmap extends Thread{
 			for(Road i: roads){
 				if(!tested.contains(i)){
 					Geometry b = i.getGeometry(expand);
-					Geometry c = a.intersection(b);
-					if(c.getArea()>maximumRatioIntersectionArea*a.getArea()){
-						return null;
-					}
-					if(c.getArea()>maximumRatioIntersectionArea*b.getArea()){
-						return null;
+					if(a.intersects(b)){
+						Geometry c = a.intersection(b);
+						if(c.getArea()>maximumRatioIntersectionArea*a.getArea()){
+							log.log("Road removed due to proximityCheck  :  "+r.toString());
+							return null;
+						}
+						if(c.getArea()>maximumRatioIntersectionArea*b.getArea()){
+							log.log("Road removed due to proximityCheck  :  "+r.toString());
+							return null;
+						}
 					}
 				}
 			}
@@ -398,7 +402,6 @@ public class Roadmap extends Thread{
 
 
 	private Road inBounds(Road r) {
-		// TODO Auto-generated method stub
 		if(r==null){
 			return null;
 		}
@@ -467,7 +470,6 @@ public class Roadmap extends Thread{
 	}
 
 	private Road waterCheck(Road r){
-		//TODO check along road's path for water!!
 		if(r==null){
 			return null;
 		}

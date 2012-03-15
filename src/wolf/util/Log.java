@@ -8,6 +8,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 
 public class Log {
+	boolean verbose = false;
+	
 	enum LogType{
 		WARNING, INFO, CRITICAL, DEBUG;
 	}
@@ -32,7 +34,11 @@ public class Log {
 	}
 
 	private void dispLog(LogType e, String msg){
-		System.out.println("["+e.toString()+"] "+msg);
+		if(verbose){
+			System.out.println("["+e.toString()+"] "+msg);
+		}else if(e == LogType.CRITICAL || e == LogType.WARNING){
+			System.out.println("["+e.toString()+"] "+msg);
+		}
 	}
 
 	public boolean save(String filename){
@@ -48,6 +54,7 @@ public class Log {
 				try {
 					FileOutputStream out = new FileOutputStream(f);
 					PrintStream ps = new PrintStream(out);
+					
 					for(int i=0; i<data.size(); i++){
 						ps.println("["+type.get(i)+"] "+data.get(i));
 					}
