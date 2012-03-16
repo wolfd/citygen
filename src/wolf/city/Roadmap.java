@@ -14,9 +14,7 @@ import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.algorithm.LineIntersector;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.CoordinateFilter;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineSegment;
 
 import wolf.city.road.GridSpace;
 import wolf.city.road.Intersection;
@@ -221,16 +219,22 @@ public class Roadmap extends Thread{
 			}
 			if(cv != null){
 				cv.draw();
-				if(false){
-					long time = System.currentTimeMillis();
-					while(System.currentTimeMillis()<time+100){
-					}
-				}
+				waitInMs(100);
 			}
 		}
 		city.pop.reset();
 		//prune unnecessary roads (?)
 		log.log("Roads: "+roads.size());
+	}
+
+
+	@SuppressWarnings("unused")
+	private void waitInMs(int ms) {
+		if(false){
+			long time = System.currentTimeMillis();
+			while(System.currentTimeMillis()<time+ms){
+			}
+		}
 	}
 
 	private Road connect(Road road) {
@@ -329,7 +333,6 @@ public class Roadmap extends Thread{
 		if(r==null){
 			return null;
 		}
-		//LineSegment l0 = r.getLineSegment();
 		Geometry g0 = r.getGeometry(2);
 		double angle = Angle.angle(r.a.pos, r.b.pos);
 
@@ -339,7 +342,6 @@ public class Roadmap extends Thread{
 			LinkedList<Road> roads = grid.get(g);
 			for(Road i: roads){
 				if(!tested.contains(i)){
-					//LineSegment l1 = i.getLineSegment();
 					Geometry g1 = i.getGeometry(2);
 					if(g0.intersects(g1) || g0.distance(g1)<4){
 						double difference = Math.toDegrees(Math.abs(Angle.angle(i.a.pos, i.b.pos)-angle))%90;

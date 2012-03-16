@@ -159,12 +159,4 @@ public class CityView extends Thread{
 		Display.destroy();
 		System.exit(0);
 	}
-	
-	private Coordinate toV(Coordinate p){ //to virtual
-		return p;
-	}
-	
-	private Coordinate toR(Coordinate p){ //to real
-		return p;
-	}
 }

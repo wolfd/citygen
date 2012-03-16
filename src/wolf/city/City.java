@@ -43,7 +43,6 @@ public class City {
 		wealth = new Wealth(this);
 		pop = new Population(this);
 
-		//make roadmap
 		rm = new Roadmap(this);
 	}
 
@@ -61,7 +60,7 @@ public class City {
 		if(Popup.confirm("Render?", "CityGen")){
 			MapRender.render(this,"render");
 		}
-		log.save("/log.log");
+		log.save("/log-"+System.currentTimeMillis()+".log");
 	}
 }
 
