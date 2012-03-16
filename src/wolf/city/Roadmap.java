@@ -28,6 +28,7 @@ import wolf.city.road.rules.Grid;
 import wolf.city.road.rules.OffRamp;
 import wolf.gui.CityView;
 import wolf.util.Log;
+import wolf.util.Log.LogType;
 import wolf.util.RandomHelper;
 import wolf.util.Turtle;
 
@@ -199,16 +200,16 @@ public class Roadmap extends Thread{
 		rq.stackStyle = true;
 		while(rq.isNotEmpty()){
 			//generate streets
-			if(city.random.nextDouble()>.9){
-				rq.stackStyle = false;
-			}else{
-				rq.stackStyle = true;
-			}
-			Road road = rq.remove();
+//			if(city.random.nextDouble()>.9){
+//				rq.stackStyle = false;
+//			}else{
+//				rq.stackStyle = true;
+//			}
+			Road road = localConstraints(rq.remove());
 			if(road != null){
 				//use grid pattern to fill in areas between highways (Manhattan-esque pattern, but not perfect)
 				if(city.pop.get((int)road.b.pos.x, (int)road.b.pos.y)>minimumPopulation){
-					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.BACKWARD)));
+					//rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.BACKWARD)));
 					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.FORWARD)));
 					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.LEFT)));
 					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.RIGHT)));
@@ -313,7 +314,7 @@ public class Roadmap extends Thread{
 
 	private Road localConstraints(Road r){
 		//cheap tests
-		r = lengthCheck(r);
+		//r = lengthCheck(r);
 		r = maxConnections(r);
 		r = inBounds(r);
 
@@ -324,7 +325,9 @@ public class Roadmap extends Thread{
 		r = trimToIntersection(r);
 		r = lengthCheck(r); //fixes from trim
 		r = popCheck(r);
-
+		if(r==null){
+			log.log("Road removed");
+		}
 		return r;
 	}
 
@@ -352,6 +355,7 @@ public class Roadmap extends Thread{
 						}
 					}
 				}
+				tested.add(i);
 			}
 		}
 
@@ -384,6 +388,7 @@ public class Roadmap extends Thread{
 						}
 					}
 				}
+				tested.add(i);
 			}
 		}
 		return r;

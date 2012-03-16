@@ -8,9 +8,9 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 
 public class Log {
-	boolean verbose = false;
+	boolean verbose = true;
 	
-	enum LogType{
+	public enum LogType{
 		WARNING, INFO, CRITICAL, DEBUG;
 	}
 
