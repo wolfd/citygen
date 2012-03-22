@@ -22,6 +22,10 @@ public class Road {
 		width = type.getWidth();
 	}
 
+	public Road(Road r) {
+		this(new Intersection(r.a.pos), new Intersection(r.b.pos),r.type);
+	}
+
 	public void setType(RoadType type){
 		this.type = type;
 		this.width = type.getWidth();

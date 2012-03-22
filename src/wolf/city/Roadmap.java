@@ -37,7 +37,7 @@ public class Roadmap extends Thread{
 	private City city;
 	private Configuration config;
 	LineIntersector li;
-	private RoadGrid grid;
+	public RoadGrid grid;
 	private Log log;
 
 	private float minimumPopulationHighwayIntersection; //load all parameters from generation properties file
@@ -187,7 +187,7 @@ public class Roadmap extends Thread{
 			}
 			rqM.add(localConstraints(r));
 			//city.pop.removeDensityLine(road);
-			roads.add(road);
+			roads.add(connect(road));
 			grid.add(road); //for collision detection
 			if(cv != null){
 				cv.draw();
@@ -215,7 +215,7 @@ public class Roadmap extends Thread{
 					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.RIGHT)));
 				}
 				//city.pop.removeDensityLine(road);
-				roads.add(road);
+				roads.add(connect(road));
 				grid.add(road); //for collision detection
 			}
 			if(cv != null){
@@ -312,7 +312,7 @@ public class Roadmap extends Thread{
 
 	}
 
-	private Road localConstraints(Road r){
+	public Road localConstraints(Road r){
 		//cheap tests
 		//r = lengthCheck(r);
 		r = maxConnections(r);
@@ -325,9 +325,6 @@ public class Roadmap extends Thread{
 		r = trimToIntersection(r);
 		r = lengthCheck(r); //fixes from trim
 		r = popCheck(r);
-		if(r==null){
-			log.log("Road removed");
-		}
 		return r;
 	}
 
