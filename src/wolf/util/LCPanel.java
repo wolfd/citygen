@@ -71,7 +71,7 @@ public class LCPanel extends JPanel implements MouseListener{
 		
 		for(int i=0;i<roads.size(); i++){//render roads
 			Geometry g = roads.get(i).getGeometry();
-
+			
 			gr.setColor(Color.DARK_GRAY);
 			int[] x = new int[4];
 			int[] y = new int[4];
@@ -81,6 +81,7 @@ public class LCPanel extends JPanel implements MouseListener{
 				y[j] = (int) p.y;
 				
 			}
+			gr.drawOval((int)roads.get(i).a.pos.x-5, (int)roads.get(i).a.pos.y-5, 10, 10);
 			gr.drawPolygon(x, y, 4);
 
 		}
@@ -96,6 +97,7 @@ public class LCPanel extends JPanel implements MouseListener{
 				y[j] = (int) p.y;
 				
 			}
+			gr.drawOval((int)testRoad.a.pos.x-5, (int)testRoad.a.pos.y-5, 10, 10);
 			gr.drawPolygon(x, y, 4);
 		}
 		if(testedRoad != null){//render testedRoad
