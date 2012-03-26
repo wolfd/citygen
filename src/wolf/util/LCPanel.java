@@ -54,8 +54,8 @@ public class LCPanel extends JPanel implements MouseListener{
 	
 	public void paintComponent(Graphics gr){
 		gr.clearRect(0, 0, windowWidth, windowHeight);
-		mouseLoc.x = MouseInfo.getPointerInfo().getLocation().x;
-		mouseLoc.y = MouseInfo.getPointerInfo().getLocation().y;
+		mouseLoc.x = MouseInfo.getPointerInfo().getLocation().x-getLocationOnScreen().x;
+		mouseLoc.y = MouseInfo.getPointerInfo().getLocation().y-getLocationOnScreen().y;
 
 		if(mouseDown){
 			if(movingIntersection == null){
@@ -158,15 +158,10 @@ public class LCPanel extends JPanel implements MouseListener{
 	@Override
 	public void mousePressed(MouseEvent e) {
 		mouseDown = true;
-		mouseLoc.x = e.getPoint().x;
-		mouseLoc.y = e.getPoint().y;
-		
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		mouseDown = false;
-		mouseLoc.x = e.getPoint().x;
-		mouseLoc.y = e.getPoint().y;
 	}
 }

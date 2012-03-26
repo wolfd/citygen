@@ -315,16 +315,28 @@ public class Roadmap extends Thread{
 	public Road localConstraints(Road r){
 		//cheap tests
 		//r = lengthCheck(r);
-		r = maxConnections(r);
-		r = inBounds(r);
+		//r = maxConnections(r);
+		//r = inBounds(r);
 
-		r = intersectionAngleCheck(r);
+		r = roadCollisionTest(r);
+		//r = intersectionAngleCheck(r);
 		//expensive tests
-		r = waterCheck(r);
-		r = proximityCheck(r);
-		r = trimToIntersection(r);
-		r = lengthCheck(r); //fixes from trim
-		r = popCheck(r);
+		//r = waterCheck(r);
+		//r = proximityCheck(r);
+		//r = trimToIntersection(r);
+		//r = lengthCheck(r); //fixes from trim
+		//r = popCheck(r);
+		return r;
+	}
+
+
+	private Road roadCollisionTest(Road r) {
+		if(r==null){
+			return null;
+		}
+		
+		r.getCollisionGeometry();
+		
 		return r;
 	}
 

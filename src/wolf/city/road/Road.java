@@ -1,5 +1,7 @@
 package wolf.city.road;
 
+import wolf.util.Turtle;
+
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -72,5 +74,46 @@ public class Road {
 	public LineSegment getLineSegment(){
 		LineSegment ls = new LineSegment(a.pos, b.pos);
 		return ls;
+	}
+	
+	public Geometry getCollisionGeometry(){
+		int collisionGeometryWidth = width*3;
+		double collisionGeometryAngle = 30;
+		double minimumRoadLength = 4;
+		double length = Math.sin(Math.toRadians(collisionGeometryAngle))/collisionGeometryWidth;
+		
+		Coordinate[] coords = new Coordinate[7];
+		
+		GeometryFactory gf = new GeometryFactory();
+		
+		double ang = Math.toDegrees(Angle.angle(a.pos, b.pos));
+		
+		Turtle ta = new Turtle(a.pos, ang);
+		ta.move(minimumRoadLength*.9);
+		coords[0] = new Coordinate(ta.pos); //start point
+		coords[6] = coords[0]; //first element is also last
+		ta.turn(collisionGeometryAngle);
+		ta.move(length);
+		coords[1] = new Coordinate(ta.pos);
+		ta.angle = ang - 90;
+		ta.move(collisionGeometryWidth);
+		coords[5] = new Coordinate(ta.pos);
+		
+		Turtle tb = new Turtle(b.pos, ang+180);
+		tb.move(minimumRoadLength*.9);
+		coords[3] = new Coordinate(tb.pos); //end point
+		tb.turn(collisionGeometryAngle);
+		tb.move(length);
+		coords[4] = new Coordinate(tb.pos);
+		tb.angle = ang - 90;
+		tb.move(collisionGeometryWidth);
+		coords[2] = new Coordinate(tb.pos);
+		
+		Polygon p = gf.createPolygon(gf.createLinearRing(coords), null);
+		
+		
+		
+		return p;
+		
 	}
 }
