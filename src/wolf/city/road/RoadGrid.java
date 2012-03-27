@@ -49,6 +49,17 @@ public class RoadGrid {
 		
 	}
 	
+	public void move(Road r){
+		
+		for(int ix=0; ix<gridX; ix++){
+			for(int iy=0; iy<gridY; iy++){
+				get(new GridSpace(ix, iy)).remove(r);
+			}
+		}
+		
+		add(r);
+	}
+	
 	public GridSpace gridSpace(Coordinate c){
 		double x = c.x + sizeX/2; //convert to (hopefully) positive coordinate
 		x = Math.max(Math.min(x, sizeX),0);

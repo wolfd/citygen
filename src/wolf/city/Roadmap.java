@@ -335,8 +335,28 @@ public class Roadmap extends Thread{
 			return null;
 		}
 		
-		r.getCollisionGeometry();
+		Geometry test = r.getCollisionGeometry();
 		
+		double angle = Angle.angle(r.a.pos, r.b.pos);
+
+		ArrayList<GridSpace> spaces = grid.getSpaces(r);
+		ArrayList<Road> tested = new ArrayList<Road>();
+		for(GridSpace g: spaces){
+			LinkedList<Road> roads = grid.get(g);
+			for(Road i: roads){
+				if(!tested.contains(i)){
+					
+					
+					
+					return null;
+		
+				}
+				tested.add(i);
+				
+				return null;
+			}
+		}
+
 		return r;
 	}
 

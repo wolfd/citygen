@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.MouseInfo;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import javax.swing.JPanel;
@@ -123,6 +124,12 @@ public class LCPanel extends JPanel implements MouseListener{
 		if(movingIntersection != null){
 			movingIntersection.pos.x = mouseLoc.x;
 			movingIntersection.pos.y = mouseLoc.y;
+			for(Road i: c.rm.roads){
+				if(i.a == movingIntersection || i.b == movingIntersection){
+					c.rm.grid.move(i);
+				}
+			}
+			
 		}
 	}
 
