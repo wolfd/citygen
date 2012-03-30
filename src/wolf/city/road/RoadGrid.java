@@ -53,13 +53,20 @@ public class RoadGrid {
 		
 		for(int ix=0; ix<gridX; ix++){
 			for(int iy=0; iy<gridY; iy++){
-				get(new GridSpace(ix, iy)).remove(r);
+				remove(new GridSpace(ix, iy), r);
 			}
 		}
 		
 		add(r);
 	}
 	
+	private void remove(GridSpace g, Road r) {
+		int x = Math.max(Math.min(g.x,gridX), 0);
+		int y = Math.max(Math.min(g.y,gridY), 0);
+		grid.get(x).get(y).remove(r);
+		
+	}
+
 	public GridSpace gridSpace(Coordinate c){
 		double x = c.x + sizeX/2; //convert to (hopefully) positive coordinate
 		x = Math.max(Math.min(x, sizeX),0);

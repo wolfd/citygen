@@ -126,6 +126,7 @@ public class LCPanel extends JPanel implements MouseListener{
 			movingIntersection.pos.y = mouseLoc.y;
 			for(Road i: c.rm.roads){
 				if(i.a == movingIntersection || i.b == movingIntersection){
+					System.out.println("moving");
 					c.rm.grid.move(i);
 				}
 			}

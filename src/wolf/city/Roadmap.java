@@ -322,9 +322,9 @@ public class Roadmap extends Thread{
 		//expensive tests
 		r = waterCheck(r);
 		//r = proximityCheck(r);
-		//r = trimToIntersection(r);
-		//r = lengthCheck(r); //fixes from trim
-		//r = popCheck(r);
+		r = trimToIntersection(r);
+		r = lengthCheck(r); //fixes from trim
+		r = popCheck(r);
 		return r;
 	}
 
@@ -336,30 +336,32 @@ public class Roadmap extends Thread{
 		if(r==null){
 			return null;
 		}
+		
 		Geometry g0 = r.getGeometry(2);
 		double angle = Angle.angle(r.a.pos, r.b.pos);
 
-		ArrayList<GridSpace> spaces = grid.getSpaces(r);
-		ArrayList<Road> tested = new ArrayList<Road>();
-		for(GridSpace g: spaces){
-			LinkedList<Road> roads = grid.get(g);
+		//ArrayList<GridSpace> spaces = grid.getSpaces(r);
+		//ArrayList<Road> tested = new ArrayList<Road>();
+		//for(GridSpace g: spaces){
+			//LinkedList<Road> roads = grid.get(g);
+			//for(Road i: roads){
 			for(Road i: roads){
-				if(!tested.contains(i)){
+				//if(!tested.contains(i)){
 					Geometry g1 = i.getGeometry(2);
 					if(g0.intersects(g1) || g0.distance(g1)<4){
 						double thisAngle = Angle.angle(i.a.pos, i.b.pos);
-						double difference = Math.toDegrees(thisAngle - angle + (Math.PI))%(Math.PI*2);
-						//log.log("Angle:"+difference);
-						if(difference < minimumIntersectionAngle){
-							//log.log("Road removed due to intersectionAngleCheck  :  "+r.toString());
-							
+						double difference = Math.min(360-(Math.toDegrees(Math.abs(angle-thisAngle))%180)%360, (Math.toDegrees(Math.abs(angle-thisAngle))%180)%360);
+						log.log("Angle: "+difference);
+						if(difference<minimumIntersectionAngle){
 							return null;
+						}else{
+							log.log("passed");
 						}
 					}
-				}
-				tested.add(i);
+				//}
+				//tested.add(i);
 			}
-		}
+		//}
 
 		return r;
 	}
