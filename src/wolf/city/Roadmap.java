@@ -339,29 +339,43 @@ public class Roadmap extends Thread{
 		
 		Geometry g0 = r.getGeometry(2);
 		double angle = Angle.angle(r.a.pos, r.b.pos);
+		//double dist = (Math.pow(r.a.pos.x,2)+Math.pow(r.a.pos.y,2));
+		//double normX = r.a.pos.x/dist;
+		//double normY = r.a.pos.y/dist;
+		//double angle = Math.atan2(r.a.pos.x, r.a.pos.y);
 
-		//ArrayList<GridSpace> spaces = grid.getSpaces(r);
-		//ArrayList<Road> tested = new ArrayList<Road>();
-		//for(GridSpace g: spaces){
-			//LinkedList<Road> roads = grid.get(g);
-			//for(Road i: roads){
+		if(angle<0){
+			angle = Math.PI + angle; //half circle
+		}
+		
+		ArrayList<GridSpace> spaces = grid.getSpaces(r);
+		ArrayList<Road> tested = new ArrayList<Road>();
+		for(GridSpace g: spaces){
+			LinkedList<Road> roads = grid.get(g);
 			for(Road i: roads){
-				//if(!tested.contains(i)){
+				if(!tested.contains(i)){
 					Geometry g1 = i.getGeometry(2);
 					if(g0.intersects(g1) || g0.distance(g1)<4){
 						double thisAngle = Angle.angle(i.a.pos, i.b.pos);
-						double difference = Math.min(360-(Math.toDegrees(Math.abs(angle-thisAngle))%180)%360, (Math.toDegrees(Math.abs(angle-thisAngle))%180)%360);
-						log.log("Angle: "+difference);
-						if(difference<minimumIntersectionAngle){
+						if(thisAngle<0){
+							thisAngle = Math.PI + thisAngle; //half circle
+						}
+						double bigAngle = Math.max(thisAngle, angle);
+						double smallAngle = Math.min(thisAngle, angle);
+
+						double difference = Math.toDegrees(bigAngle - smallAngle);
+						
+						//log.log("Angle: "+difference);
+						if(difference<minimumIntersectionAngle || difference>(360-minimumIntersectionAngle)){
 							return null;
 						}else{
-							log.log("passed");
+							//log.log("passed");
 						}
 					}
-				//}
-				//tested.add(i);
+				}
+				tested.add(i);
 			}
-		//}
+		}
 
 		return r;
 	}

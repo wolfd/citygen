@@ -30,14 +30,14 @@ public class RoadGrid {
 	}
 	
 	public LinkedList<Road> get(int x, int y){
-		x = Math.max(Math.min(x,gridX), 0);
-		y = Math.max(Math.min(y,gridY), 0);
+		x = Math.max(Math.min(x,gridX-1), 0);
+		y = Math.max(Math.min(y,gridY-1), 0);
 		return grid.get(x).get(y);
 	}
 	
 	public LinkedList<Road> get(GridSpace g){
-		int x = Math.max(Math.min(g.x,gridX), 0);
-		int y = Math.max(Math.min(g.y,gridY), 0);
+		int x = Math.max(Math.min(g.x,gridX-1), 0);
+		int y = Math.max(Math.min(g.y,gridY-1), 0);
 		return grid.get(x).get(y);
 	}
 	
@@ -61,20 +61,20 @@ public class RoadGrid {
 	}
 	
 	private void remove(GridSpace g, Road r) {
-		int x = Math.max(Math.min(g.x,gridX), 0);
-		int y = Math.max(Math.min(g.y,gridY), 0);
+		int x = Math.max(Math.min(g.x,gridX-1), 0);
+		int y = Math.max(Math.min(g.y,gridY-1), 0);
 		grid.get(x).get(y).remove(r);
 		
 	}
 
 	public GridSpace gridSpace(Coordinate c){
 		double x = c.x + sizeX/2; //convert to (hopefully) positive coordinate
-		x = Math.max(Math.min(x, sizeX),0);
+		x = Math.max(Math.min(x, sizeX-1),0);
 		x /= gridSize;
 		double y = c.y + sizeY/2; //convert to (hopefully) positive coordinate
-		y = Math.max(Math.min(y, sizeY),0);
+		y = Math.max(Math.min(y, sizeY-1),0);
 		y /= gridSize;
-		return new GridSpace((int)x,(int)y);
+		return new GridSpace((int)(x+.5),(int)(y+.5));
 	}
 	
 	
