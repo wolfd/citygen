@@ -101,7 +101,7 @@ public class Roadmap extends Thread{
 		waterTests = config.getInt("waterTests", 8);
 		maximumRatioIntersectionArea = config.getDouble("maximumRatioIntersectionArea", .1);
 		minimumIntersectionAngle = config.getDouble("minimumIntersectionAngle", 25d);
-		minimumRoadLength = config.getDouble("minimumRoadLength", 6d);
+		minimumRoadLength = config.getDouble("minimumRoadLength", 17d);
 
 		try {
 			((AbstractFileConfiguration) config).save();
@@ -200,16 +200,16 @@ public class Roadmap extends Thread{
 		rq.stackStyle = true;
 		while(rq.isNotEmpty()){
 			//generate streets
-//			if(city.random.nextDouble()>.9){
-//				rq.stackStyle = false;
-//			}else{
-//				rq.stackStyle = true;
-//			}
+			//			if(city.random.nextDouble()>.9){
+			//				rq.stackStyle = false;
+			//			}else{
+			//				rq.stackStyle = true;
+			//			}
 			Road road = localConstraints(rq.remove());
 			if(road != null){
 				//use grid pattern to fill in areas between highways (Manhattan-esque pattern, but not perfect)
 				if(city.pop.get((int)road.b.pos.x, (int)road.b.pos.y)>minimumPopulation){
-					//rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.BACKWARD)));
+					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.BACKWARD)));
 					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.FORWARD)));
 					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.LEFT)));
 					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.RIGHT)));
@@ -336,7 +336,7 @@ public class Roadmap extends Thread{
 		if(r==null){
 			return null;
 		}
-		
+
 		Geometry g0 = r.getGeometry(2);
 		double angle = Angle.angle(r.a.pos, r.b.pos);
 		//double dist = (Math.pow(r.a.pos.x,2)+Math.pow(r.a.pos.y,2));
@@ -347,35 +347,35 @@ public class Roadmap extends Thread{
 		if(angle<0){
 			angle = Math.PI + angle; //half circle
 		}
-		
-		ArrayList<GridSpace> spaces = grid.getSpaces(r);
-		ArrayList<Road> tested = new ArrayList<Road>();
-		for(GridSpace g: spaces){
-			LinkedList<Road> roads = grid.get(g);
-			for(Road i: roads){
-				if(!tested.contains(i)){
-					Geometry g1 = i.getGeometry(2);
-					if(g0.intersects(g1) || g0.distance(g1)<4){
-						double thisAngle = Angle.angle(i.a.pos, i.b.pos);
-						if(thisAngle<0){
-							thisAngle = Math.PI + thisAngle; //half circle
-						}
-						double bigAngle = Math.max(thisAngle, angle);
-						double smallAngle = Math.min(thisAngle, angle);
 
-						double difference = Math.toDegrees(bigAngle - smallAngle);
-						
-						//log.log("Angle: "+difference);
-						if(difference<minimumIntersectionAngle || difference>(360-minimumIntersectionAngle)){
-							return null;
-						}else{
-							//log.log("passed");
-						}
-					}
+		//		ArrayList<GridSpace> spaces = grid.getSpaces(r);
+		//		ArrayList<Road> tested = new ArrayList<Road>();
+		//		for(GridSpace g: spaces){
+		//			LinkedList<Road> roads = grid.get(g);
+		for(Road i: roads){
+			//				if(!tested.contains(i)){
+			Geometry g1 = i.getGeometry(2);
+			if(g0.intersects(g1) || g0.distance(g1)<4){
+				double thisAngle = Angle.angle(i.a.pos, i.b.pos);
+				if(thisAngle<0){
+					thisAngle = Math.PI + thisAngle; //half circle
 				}
-				tested.add(i);
+				double bigAngle = Math.max(thisAngle, angle);
+				double smallAngle = Math.min(thisAngle, angle);
+
+				double difference = Math.toDegrees(bigAngle - smallAngle);
+
+				//log.log("Angle: "+difference);
+				if(difference<minimumIntersectionAngle || difference>(360-minimumIntersectionAngle)){
+					return null;
+				}else{
+					//log.log("passed");
+				}
 			}
 		}
+		//				tested.add(i);
+		//			}
+		//		}
 
 		return r;
 	}
