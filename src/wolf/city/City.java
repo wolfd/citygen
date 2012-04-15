@@ -44,6 +44,7 @@ public class City {
 		pop = new Population(this);
 
 		rm = new Roadmap(this);
+		log.log("Seed: "+seed);
 	}
 
 	public void generateRoadmap(){

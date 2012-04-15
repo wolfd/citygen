@@ -3,9 +3,11 @@ package wolf.gui;
 import java.util.Random;
 
 import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.Project;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -13,11 +15,12 @@ import com.vividsolutions.jts.geom.Geometry;
 import wolf.city.City;
 import wolf.city.road.Road;
 
-public class CityView extends Thread{
+public class CityView{
 	private int windowSize = 800;
 	private double vSize;
 	private boolean densityDisplay = false;
 	private City c;
+	
 	public CityView(City c){
 		this.c = c;
 		vSize = Math.max(c.sizeX, c.sizeY);
@@ -38,12 +41,14 @@ public class CityView extends Thread{
 		}
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
-		GL11.glOrtho(0, vSize, vSize, 0, 1, -1);
-		GL11.glMatrixMode(GL11.GL_MODELVIEW);
-	}
-
-	public void run(){
+		GL11.glOrtho(0, vSize, vSize, 0, 1000, -1000);
+		//GL11.glFrustum(0, vSize, vSize, 0, 1, -1);
+		//Project.gluPerspective(70f, 1, .01f, 2000);
+		GL11.glViewport(0, 0, windowSize, windowSize);
 		
+		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		//GL11.glTranslatef(0, 0, -5);
+		//GL11.glRotatef(30, 1, 0, 0);
 	}
 
 	public void draw(){
@@ -112,11 +117,9 @@ public class CityView extends Thread{
 					break;
 				}
 				case STREET:{ //green
-					byte[] bytes = new byte[3];
-					random.nextBytes(bytes);
-					red = 0+bytes[0];
-					green = 150+bytes[1];
-					blue = 50+bytes[2];
+					red = 0;
+					green = 150;
+					blue = 50;
 					break;
 				}
 				case MAIN:{ //green

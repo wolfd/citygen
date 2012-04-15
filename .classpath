@@ -22,5 +22,6 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="CityGen/lwjgl/windows"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lwjgl_util.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

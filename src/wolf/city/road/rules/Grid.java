@@ -12,8 +12,12 @@ import wolf.util.Turtle;
 public class Grid implements RoadRule {
 	private float verticalMoveDistance = 64; //i dislike having to do this here, i need to make the config work better
 	private float horizontalMoveDistance = 32;
-	public double direction = 45;
+	public double direction = 0;
+	private City c;
 
+	public Grid(City city){
+		c = city;
+	}
 	@Override
 	public Road globalGoals(City city, Road road, Direction d) {
 		double previousAngle = Math.toDegrees(Angle.angle(road.a.pos, road.b.pos));
@@ -64,6 +68,14 @@ public class Grid implements RoadRule {
 		}else{
 			return verticalMoveDistance;
 		}	
+	}
+	
+	public void mutate(){
+		if(c.random.nextBoolean()){
+			direction += 45;
+		}else{
+			direction -= 45;
+		}
 	}
 
 }

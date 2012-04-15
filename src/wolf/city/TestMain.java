@@ -8,7 +8,7 @@ public class TestMain {
 	public static void main(String[] args) {
 		// 9 is really buggy currently
 		//1234890
-		City city = new City(2048,2048,System.currentTimeMillis());
+		City city = new City(1024*4,1024*4,System.currentTimeMillis());
 		city.generateRoadmap();
 
 	}

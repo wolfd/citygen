@@ -116,4 +116,12 @@ public class Road {
 		return p;
 		
 	}
+	
+	public Geometry getIntersectionGeometry(){
+		GeometryFactory gf = new GeometryFactory();
+		Geometry buffer1 = gf.createPoint(a.pos).buffer(width*1.1d, 8);
+		Geometry buffer2 = gf.createPoint(b.pos).buffer(width*1.1d, 8);
+		return buffer1.union(buffer2);
+		
+	}
 }

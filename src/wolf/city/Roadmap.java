@@ -28,12 +28,11 @@ import wolf.city.road.rules.Grid;
 import wolf.city.road.rules.OffRamp;
 import wolf.gui.CityView;
 import wolf.util.Log;
-import wolf.util.Log.LogType;
 import wolf.util.RandomHelper;
 import wolf.util.Turtle;
 
-public class Roadmap extends Thread{
-	public volatile List<Road> roads = new LinkedList<Road>();
+public class Roadmap{
+	public volatile List<Road> roads;
 	private City city;
 	private Configuration config;
 	LineIntersector li;
@@ -60,11 +59,14 @@ public class Roadmap extends Thread{
 	private double maximumRatioIntersectionArea;
 	private double minimumIntersectionAngle;
 	private double minimumRoadLength;
+	private double maximumRoadSnapDistance;
+	private double minimumRoadSnapDistance;
 
 
 	public Roadmap(City city){
 		log = city.log;
 		this.city = city;
+		roads = new LinkedList<Road>();
 		//Load configuration file
 		try {
 			File configFile = new File("config/roadmapConfig.properties");
@@ -102,21 +104,17 @@ public class Roadmap extends Thread{
 		maximumRatioIntersectionArea = config.getDouble("maximumRatioIntersectionArea", .1);
 		minimumIntersectionAngle = config.getDouble("minimumIntersectionAngle", 25d);
 		minimumRoadLength = config.getDouble("minimumRoadLength", 17d);
+		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 25d);
+		minimumRoadSnapDistance = config.getDouble("minimumRoadSnapDistance", 3d);
 
 		try {
 			((AbstractFileConfiguration) config).save();
 		} catch (ConfigurationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		li = new RobustLineIntersector();
 		grid = new RoadGrid(city.sizeX, city.sizeY);
-	}
-
-
-	public void run(){ //multithreading?
-		generate();
 	}
 
 	//code to generate roads
@@ -136,7 +134,7 @@ public class Roadmap extends Thread{
 
 		//generate highways entirely
 		Basic basicRule = new Basic();
-		Grid gridRule = new Grid();
+		Grid gridRule = new Grid(city);
 		OffRamp rampRule = new OffRamp();
 		log.log("Highways generating");
 		while(rqH.isNotEmpty()){
@@ -199,12 +197,15 @@ public class Roadmap extends Thread{
 		log.log("Streets generating");
 		rq.stackStyle = true;
 		while(rq.isNotEmpty()){
+//			if(city.random.nextDouble()>.9){
+//				gridRule.mutate();
+//			}
 			//generate streets
-			//			if(city.random.nextDouble()>.9){
-			//				rq.stackStyle = false;
-			//			}else{
-			//				rq.stackStyle = true;
-			//			}
+			if(city.random.nextDouble()>.9){
+				rq.stackStyle = false;
+			}else{
+				rq.stackStyle = true;
+			}
 			Road road = localConstraints(rq.remove());
 			if(road != null){
 				//use grid pattern to fill in areas between highways (Manhattan-esque pattern, but not perfect)
@@ -321,7 +322,12 @@ public class Roadmap extends Thread{
 		r = intersectionAngleCheck(r);
 		//expensive tests
 		r = waterCheck(r);
-		//r = proximityCheck(r);
+		r = snapToIntersection(r);
+		if(proximityCheck(r)){
+			
+		}else{
+			return null;
+		}
 		r = trimToIntersection(r);
 		r = lengthCheck(r); //fixes from trim
 		r = popCheck(r);
@@ -332,12 +338,55 @@ public class Roadmap extends Thread{
 
 
 
+	private Road snapToIntersection(Road r) {
+		if(r==null){
+			return null;
+		}
+		
+		Coordinate point =  r.b.pos;
+		
+		for(Road i:roads){
+			//doesn't find closest, just finds one and goes with it.
+			double distA = r.b.pos.distance(i.a.pos);
+			double distB = r.b.pos.distance(i.b.pos);
+			if(distA<maximumRoadSnapDistance && distB <maximumRoadSnapDistance){
+				if(distA<distB){
+					r.b = i.a;
+					return r;
+				}else{
+					r.b = i.b;
+					return r;
+				}
+			}else{
+				if(distA<maximumRoadSnapDistance){
+					r.b = i.a;
+					return r;
+				}
+				if(distB<maximumRoadSnapDistance){
+					r.b = i.b;
+					return r;
+				}
+			}
+			
+			//snap to road
+			Coordinate closest = i.getLineSegment().closestPoint(point);
+			double dist = point.distance(closest);
+			if(dist < maximumRoadSnapDistance ){//&& dist > minimumRoadSnapDistance){
+				r.b.pos = closest;
+				return r;
+			}
+		}
+		
+		return r;
+	}
+
+
 	private Road intersectionAngleCheck(Road r) {
 		if(r==null){
 			return null;
 		}
 
-		Geometry g0 = r.getGeometry(2);
+		Geometry g0 = r.getGeometry(2).difference(r.getIntersectionGeometry());
 		double angle = Angle.angle(r.a.pos, r.b.pos);
 		//double dist = (Math.pow(r.a.pos.x,2)+Math.pow(r.a.pos.y,2));
 		//double normX = r.a.pos.x/dist;
@@ -348,43 +397,40 @@ public class Roadmap extends Thread{
 			angle = Math.PI + angle; //half circle
 		}
 
-		//		ArrayList<GridSpace> spaces = grid.getSpaces(r);
-		//		ArrayList<Road> tested = new ArrayList<Road>();
-		//		for(GridSpace g: spaces){
-		//			LinkedList<Road> roads = grid.get(g);
-		for(Road i: roads){
-			//				if(!tested.contains(i)){
-			Geometry g1 = i.getGeometry(2);
-			if(g0.intersects(g1) || g0.distance(g1)<4){
-				double thisAngle = Angle.angle(i.a.pos, i.b.pos);
-				if(thisAngle<0){
-					thisAngle = Math.PI + thisAngle; //half circle
-				}
-				double bigAngle = Math.max(thisAngle, angle);
-				double smallAngle = Math.min(thisAngle, angle);
+		ArrayList<GridSpace> spaces = grid.getSpaces(r);
+		ArrayList<Road> tested = new ArrayList<Road>();
+		for(GridSpace g: spaces){
+			LinkedList<Road> roads = grid.get(g);
+			for(Road i: roads){
+				if(!tested.contains(i)){
+					Geometry g1 = i.getGeometry(2).difference(i.getIntersectionGeometry());
+					if(g0.intersects(g1) || g0.distance(g1)<4){
+						double thisAngle = Angle.angle(i.a.pos, i.b.pos);
+						if(thisAngle<0){
+							thisAngle = Math.PI + thisAngle; //half circle
+						}
+						double bigAngle = Math.max(thisAngle, angle);
+						double smallAngle = Math.min(thisAngle, angle);
 
-				double difference = Math.toDegrees(bigAngle - smallAngle);
+						double difference = Math.toDegrees(bigAngle - smallAngle);
 
-				//log.log("Angle: "+difference);
-				if(difference<minimumIntersectionAngle || difference>(360-minimumIntersectionAngle)){
-					return null;
-				}else{
-					//log.log("passed");
+						if(difference<minimumIntersectionAngle || difference>(360-minimumIntersectionAngle)){
+							return null;
+						}
+					}
 				}
+				tested.add(i);
 			}
 		}
-		//				tested.add(i);
-		//			}
-		//		}
 
 		return r;
 	}
 
-	private Road proximityCheck(Road r) {
+	private boolean proximityCheck(Road r) {
 		if(r==null){
-			return null;
+			return false;
 		}
-		int expand = 2;
+		int expand = 5;
 		Geometry a = r.getGeometry(expand);
 		//check related spaces in grid
 		ArrayList<GridSpace> spaces = grid.getSpaces(r);
@@ -397,19 +443,17 @@ public class Roadmap extends Thread{
 					if(a.intersects(b)){
 						Geometry c = a.intersection(b);
 						if(c.getArea()>maximumRatioIntersectionArea*a.getArea()){
-							log.log("Road removed due to proximityCheck  :  "+r.toString());
-							return null;
+							return false;
 						}
 						if(c.getArea()>maximumRatioIntersectionArea*b.getArea()){
-							log.log("Road removed due to proximityCheck  :  "+r.toString());
-							return null;
+							return false;
 						}
 					}
 				}
 				tested.add(i);
 			}
 		}
-		return r;
+		return true;
 	}
 
 
@@ -445,14 +489,16 @@ public class Roadmap extends Thread{
 		if(r==null){
 			return null;
 		}
-		for(int i=0; i<roads.size(); i++){
-			Road road = roads.get(i);
-			li.computeIntersection(r.a.pos, r.b.pos, road.a.pos, road.b.pos);
-			if(li.hasIntersection()){
-				Coordinate intersection = li.getIntersection(0);
+		if(r.getType() == RoadType.MAIN || r.getType() == RoadType.HIGHWAY){
+			for(int i=0; i<roads.size(); i++){
+				Road road = roads.get(i);
+				li.computeIntersection(r.a.pos, r.b.pos, road.a.pos, road.b.pos);
+				if(li.hasIntersection()){
+					Coordinate intersection = li.getIntersection(0);
 
-				r.b.pos = intersection;
-				return r;
+					r.b.pos = intersection;
+					return r;
+				}
 			}
 		}
 		return r;

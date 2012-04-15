@@ -7,8 +7,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 public class RoadGrid {
 	private ArrayList<ArrayList<LinkedList<Road>>> grid;
-	private int gridSize = 256;
-	private double bufferSize = 5;
+	private int gridSize = 32;
+	private double bufferSize = 10;
 	private int gridX;
 	private int gridY;
 	private int sizeX;
@@ -90,7 +90,7 @@ public class RoadGrid {
 		ArrayList<GridSpace> spaces = new ArrayList<GridSpace>();
 		
 		for(int ix=g0.x; ix<=g1.x; ix++){
-			for(int iy=g0.y; iy<g1.y; iy++){
+			for(int iy=g0.y; iy<=g1.y; iy++){
 				spaces.add(new GridSpace(ix, iy));
 			}
 		}
