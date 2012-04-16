@@ -61,6 +61,7 @@ public class Roadmap{
 	private double minimumRoadLength;
 	private double maximumRoadSnapDistance;
 	private double minimumRoadSnapDistance;
+	private float minimumPopulationHighway;
 
 
 	public Roadmap(City city){
@@ -95,6 +96,7 @@ public class Roadmap{
 		intersectionMaxConnections = config.getInt("intersectionMaxConnections", 5);
 		seedHighwayAngleSize = config.getDouble("seedHighwayAngleSize", 35);
 		minimumPopulation = config.getFloat("minimumPopulation", .2f);
+		minimumPopulationHighway = config.getFloat("minimumPopulation", .3f);
 		seedAtCenter = config.getBoolean("seedAtCenter", false);
 		highwayCount = config.getInt("highwayCount", 4);
 		minimumPopulationMainRoad = config.getFloat("minimumPopulationMainRoad", .35f);
@@ -158,7 +160,11 @@ public class Roadmap{
 				rq.add(localConstraints(rampRule.globalGoals(city, road, Direction.LEFT)));
 				rq.add(localConstraints(rampRule.globalGoals(city, road, Direction.RIGHT)));
 			}
-			rqH.add(localConstraints(basicRule.globalGoals(city, road, Direction.FORWARD)));
+			if(road.getType() == RoadType.HIGHWAY){
+				rqH.add(localConstraints(basicRule.globalGoals(city, road, Direction.FORWARD)));
+			}else{
+				rqM.add(road);
+			}
 			//city.pop.removeDensityLine(road);
 			roads.add(connect(road));
 			grid.add(road); //for collision detection
@@ -197,11 +203,11 @@ public class Roadmap{
 		log.log("Streets generating");
 		rq.stackStyle = true;
 		while(rq.isNotEmpty()){
-//			if(city.random.nextDouble()>.9){
-//				gridRule.mutate();
-//			}
+			//			if(city.random.nextDouble()>.9){ //makes it look like a modern/whatever neighborhood
+			//				gridRule.mutate();
+			//			}
 			//generate streets
-			if(city.random.nextDouble()>.9){
+			if(city.random.nextDouble()>.99){
 				rq.stackStyle = false;
 			}else{
 				rq.stackStyle = true;
@@ -324,7 +330,7 @@ public class Roadmap{
 		r = waterCheck(r);
 		r = snapToIntersection(r);
 		if(proximityCheck(r)){
-			
+
 		}else{
 			return null;
 		}
@@ -342,41 +348,45 @@ public class Roadmap{
 		if(r==null){
 			return null;
 		}
-		
+
 		Coordinate point =  r.b.pos;
-		
+
 		for(Road i:roads){
-			//doesn't find closest, just finds one and goes with it.
-			double distA = r.b.pos.distance(i.a.pos);
-			double distB = r.b.pos.distance(i.b.pos);
-			if(distA<maximumRoadSnapDistance && distB <maximumRoadSnapDistance){
-				if(distA<distB){
-					r.b = i.a;
-					return r;
-				}else{
-					r.b = i.b;
-					return r;
-				}
+			if(i.getType() == RoadType.HIGHWAY && r.getType() == RoadType.STREET){
+
 			}else{
-				if(distA<maximumRoadSnapDistance){
-					r.b = i.a;
+				//doesn't find closest, just finds one and goes with it.
+				double distA = r.b.pos.distance(i.a.pos);
+				double distB = r.b.pos.distance(i.b.pos);
+				if(distA<maximumRoadSnapDistance && distB <maximumRoadSnapDistance){
+					if(distA<distB){
+						r.b = i.a;
+						return r;
+					}else{
+						r.b = i.b;
+						return r;
+					}
+				}else{
+					if(distA<maximumRoadSnapDistance){
+						r.b = i.a;
+						return r;
+					}
+					if(distB<maximumRoadSnapDistance){
+						r.b = i.b;
+						return r;
+					}
+				}
+
+				//snap to road
+				Coordinate closest = i.getLineSegment().closestPoint(point);
+				double dist = point.distance(closest);
+				if(dist < maximumRoadSnapDistance ){//&& dist > minimumRoadSnapDistance){
+					r.b.pos = closest;
 					return r;
 				}
-				if(distB<maximumRoadSnapDistance){
-					r.b = i.b;
-					return r;
-				}
-			}
-			
-			//snap to road
-			Coordinate closest = i.getLineSegment().closestPoint(point);
-			double dist = point.distance(closest);
-			if(dist < maximumRoadSnapDistance ){//&& dist > minimumRoadSnapDistance){
-				r.b.pos = closest;
-				return r;
 			}
 		}
-		
+
 		return r;
 	}
 
@@ -430,7 +440,7 @@ public class Roadmap{
 		if(r==null){
 			return false;
 		}
-		int expand = 5;
+		int expand = 4;
 		Geometry a = r.getGeometry(expand);
 		//check related spaces in grid
 		ArrayList<GridSpace> spaces = grid.getSpaces(r);
@@ -438,7 +448,7 @@ public class Roadmap{
 		for(GridSpace g: spaces){
 			LinkedList<Road> roads = grid.get(g);
 			for(Road i: roads){
-				if(!tested.contains(i)){
+				if(!tested.contains(i) && !((i.getType() == RoadType.HIGHWAY || i.getType() == RoadType.MAIN) && r.getType() == RoadType.STREET) /*streets ignore main and highway types*/){
 					Geometry b = i.getGeometry(expand);
 					if(a.intersects(b)){
 						Geometry c = a.intersection(b);
@@ -514,6 +524,11 @@ public class Roadmap{
 
 			double x = (xD/(popTests+(popTests/10)))*(i+(popTests/10));
 			double y = (yD/(popTests+(popTests/10)))*(i+(popTests/10));
+			if(r.getType() == RoadType.HIGHWAY){
+				if(city.pop.get((int)x, (int)y)<=minimumPopulationHighway){
+					r.setType(RoadType.MAIN); //no longer a highway, but a main road still;
+				}
+			}
 			if(city.pop.get((int)x, (int)y)<=minimumPopulation){
 				if(r.getType() != RoadType.HIGHWAY){
 					return null;
