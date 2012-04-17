@@ -96,7 +96,7 @@ public class Roadmap{
 		intersectionMaxConnections = config.getInt("intersectionMaxConnections", 5);
 		seedHighwayAngleSize = config.getDouble("seedHighwayAngleSize", 35);
 		minimumPopulation = config.getFloat("minimumPopulation", .2f);
-		minimumPopulationHighway = config.getFloat("minimumPopulation", .3f);
+		minimumPopulationHighway = config.getFloat("minimumPopulationHighway", .3f);
 		seedAtCenter = config.getBoolean("seedAtCenter", false);
 		highwayCount = config.getInt("highwayCount", 4);
 		minimumPopulationMainRoad = config.getFloat("minimumPopulationMainRoad", .35f);
@@ -106,7 +106,7 @@ public class Roadmap{
 		maximumRatioIntersectionArea = config.getDouble("maximumRatioIntersectionArea", .1);
 		minimumIntersectionAngle = config.getDouble("minimumIntersectionAngle", 25d);
 		minimumRoadLength = config.getDouble("minimumRoadLength", 17d);
-		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 25d);
+		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 30d);
 		minimumRoadSnapDistance = config.getDouble("minimumRoadSnapDistance", 3d);
 
 		try {

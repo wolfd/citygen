@@ -22,6 +22,7 @@ public class City {
 	public Population pop;
 
 	public Roadmap rm;
+	public Blockmap bm;
 
 	//parameters - style, time period, roadmap generation values
 	public Random random;
@@ -44,12 +45,15 @@ public class City {
 		pop = new Population(this);
 
 		rm = new Roadmap(this);
+		bm = new Blockmap(this);
 		log.log("Seed: "+seed);
 	}
 
 	public void generateRoadmap(){
 		CityView cv = new CityView(this);
 		rm.generate(cv);
+		bm.getBlocks(rm);
+		bm.save("/data/blocks.txt");
 		cv.close();
 		if(Popup.confirm("Render?", "CityGen")){
 			MapRender.render(this,"render");

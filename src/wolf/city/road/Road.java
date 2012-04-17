@@ -9,6 +9,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.operation.buffer.BufferOp;
 
 public class Road {
 
@@ -16,6 +17,7 @@ public class Road {
 	public Intersection b;
 	private RoadType type;
 	public int width;
+	private static GeometryFactory gf = new GeometryFactory();
 
 	public Road(Intersection a, Intersection b, RoadType type){
 		this.a = a;
@@ -62,8 +64,6 @@ public class Road {
 
 		Coordinate p3 = new Coordinate(b0.x-x,b0.y-y);
 		Coordinate p4 = new Coordinate(a0.x-x,a0.y-y);
-
-		GeometryFactory gf = new GeometryFactory();
 		
 		LinearRing lr = gf .createLinearRing(new Coordinate[]{p1,p2,p3,p4,p1});
 		Polygon poly = gf.createPolygon(lr, null);
@@ -83,8 +83,6 @@ public class Road {
 		double length = Math.sin(Math.toRadians(collisionGeometryAngle))/collisionGeometryWidth;
 		
 		Coordinate[] coords = new Coordinate[7];
-		
-		GeometryFactory gf = new GeometryFactory();
 		
 		double ang = Math.toDegrees(Angle.angle(a.pos, b.pos));
 		
@@ -118,10 +116,14 @@ public class Road {
 	}
 	
 	public Geometry getIntersectionGeometry(){
-		GeometryFactory gf = new GeometryFactory();
 		Geometry buffer1 = gf.createPoint(a.pos).buffer(width*1.1d, 8);
 		Geometry buffer2 = gf.createPoint(b.pos).buffer(width*1.1d, 8);
 		return buffer1.union(buffer2);
 		
+	}
+	
+	public Geometry getFinalGeometry(){
+		Geometry g = gf.createLineString(new Coordinate[]{a.pos, b.pos});
+		return g.buffer(width, width/2, BufferOp.CAP_ROUND);
 	}
 }
