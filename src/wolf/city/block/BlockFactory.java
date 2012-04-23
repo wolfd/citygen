@@ -30,6 +30,7 @@ public class BlockFactory {
 		//subtract the union from the square to find the blocks
 		Geometry difference = cityTemplateSquare.difference(union);
 		LinkedList<CityBlock> blocks = new LinkedList<CityBlock>();
+		@SuppressWarnings("unchecked")
 		List<Polygon> blockPolys = PolygonExtracter.getPolygons(difference);
 		for(Polygon p:blockPolys){
 			blocks.add(new CityBlock(p));

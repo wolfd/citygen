@@ -1,8 +1,6 @@
 package wolf.city.road.rules;
 
 import com.vividsolutions.jts.algorithm.Angle;
-import com.vividsolutions.jts.geom.Coordinate;
-
 import wolf.city.City;
 import wolf.city.road.Intersection;
 import wolf.city.road.Road;

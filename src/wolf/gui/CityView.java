@@ -1,14 +1,9 @@
 package wolf.gui;
 
-import java.util.Random;
-
 import org.lwjgl.LWJGLException;
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.Project;
-
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -53,7 +48,7 @@ public class CityView{
 
 	public void draw(){
 		if(!Display.isCloseRequested()){
-			Random random = new Random(1);
+			//Random random = new Random(1);
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			//render everything
 			if(densityDisplay){

@@ -60,6 +60,7 @@ public class Roadmap{
 	private double minimumIntersectionAngle;
 	private double minimumRoadLength;
 	private double maximumRoadSnapDistance;
+	@SuppressWarnings("unused")
 	private double minimumRoadSnapDistance;
 	private float minimumPopulationHighway;
 

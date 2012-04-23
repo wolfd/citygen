@@ -2,7 +2,6 @@ package wolf.city.block;
 
 import java.util.LinkedList;
 
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Polygon;
 
 public class CityBlock {

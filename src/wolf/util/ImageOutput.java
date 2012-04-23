@@ -43,9 +43,9 @@ public class ImageOutput {
 	public void line(int x1, int y1, int x2, int y2,int lineWidth, int red, int green, int blue){
 		color = new Color(red,green,blue);
 		
-		GradientPaint gp = new GradientPaint(x1, y1, color, x2, y2, color.brighter().brighter());
+		//GradientPaint gp = new GradientPaint(x1, y1, color, x2, y2, color.brighter().brighter());
 		g.setColor(color);
-		g.setPaint(gp);
+		//g.setPaint(gp);
 		g.setStroke(new BasicStroke(lineWidth));
 		g.drawLine(x1, y1, x2, y2);
 		

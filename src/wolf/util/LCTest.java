@@ -1,23 +1,7 @@
 package wolf.util;
 
 import java.awt.Cursor;
-import java.util.LinkedList;
-
 import javax.swing.JFrame;
-
-import org.lwjgl.LWJGLException;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.PixelFormat;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-
-import wolf.city.road.Intersection;
-import wolf.city.road.Road;
-import wolf.city.road.RoadType;
 
 public class LCTest {
 	
