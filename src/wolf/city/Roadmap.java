@@ -441,7 +441,7 @@ public class Roadmap{
 		if(r==null){
 			return false;
 		}
-		int expand = 4;
+		int expand = 16;
 		Geometry a = r.getGeometry(expand);
 		//check related spaces in grid
 		ArrayList<GridSpace> spaces = grid.getSpaces(r);

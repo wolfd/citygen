@@ -8,8 +8,8 @@ import wolf.city.road.RoadType;
 import wolf.util.Turtle;
 
 public class Grid implements RoadRule {
-	private float verticalMoveDistance = 64; //i dislike having to do this here, i need to make the config work better
-	private float horizontalMoveDistance = 32;
+	private float verticalMoveDistance = 150; //i dislike having to do this here, i need to make the config work better
+	private float horizontalMoveDistance = 80;
 	public double direction = 0;
 	private City c;
 
