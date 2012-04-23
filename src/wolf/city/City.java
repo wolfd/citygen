@@ -39,9 +39,9 @@ public class City {
 		for(int i=0; i<10; i++){ //warm up the random number generator
 			random.nextDouble();
 		}
-		terrain = new Terrain(this);
+		//terrain = new Terrain(this);
 		water = new Water(this);
-		wealth = new Wealth(this);
+		//wealth = new Wealth(this);
 		pop = new Population(this);
 
 		rm = new Roadmap(this);

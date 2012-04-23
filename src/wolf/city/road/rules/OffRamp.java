@@ -11,7 +11,11 @@ import wolf.util.Turtle;
 
 public class OffRamp implements RoadRule {
 	int numberTests = 10;
+	public City c;
 
+	public OffRamp(City c){
+		this.c = c;
+	}
 	@Override
 	public Road globalGoals(City city, Road road, Direction d) { //0 - left, 1 - forward, 2 - right, 3 - backward
 		Road returnRoad = null;
@@ -50,10 +54,20 @@ public class OffRamp implements RoadRule {
 
 			t.angle = angle;
 			t.move((float)roadLength);
-
-			returnRoad = new Road(road.b, new Intersection(new Coordinate(t.pos)), nextRoadType);
+			
+			returnRoad = new Road(road.b, new Intersection(new Coordinate(t.pos)), nextRoadType, new Basic(c));
 		}
 		return returnRoad;
+	}
+
+	@Override
+	public RoadRule mutate() {
+		return this;
+	}
+
+	@Override
+	public City getCity() {
+		return c;
 	}
 
 }

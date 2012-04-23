@@ -1,5 +1,8 @@
 package wolf.city.road;
 
+import wolf.city.road.rules.Basic;
+import wolf.city.road.rules.Grid;
+import wolf.city.road.rules.RoadRule;
 import wolf.util.Turtle;
 
 import com.vividsolutions.jts.algorithm.Angle;
@@ -16,23 +19,37 @@ public class Road {
 	public Intersection a;
 	public Intersection b;
 	private RoadType type;
+	public boolean finished;
+	public RoadRule rule;
 	public int width;
 	private static GeometryFactory gf = new GeometryFactory();
 
-	public Road(Intersection a, Intersection b, RoadType type){
+	public Road(Intersection a, Intersection b, RoadType type, RoadRule rr){
 		this.a = a;
 		this.b = b;
 		this.type = type;
 		width = type.getWidth();
+		rule = rr;
 	}
 
 	public Road(Road r) {
-		this(new Intersection(r.a.pos), new Intersection(r.b.pos),r.type);
+		this(new Intersection(r.a.pos), new Intersection(r.b.pos),r.type, r.rule);
 	}
 
 	public void setType(RoadType type){
 		this.type = type;
 		this.width = type.getWidth();
+		switch(type){
+		case STREET:
+			rule = new Grid(rule.getCity());
+			break;
+		case MAIN:
+			rule = new Basic(rule.getCity());
+//				public float turnRateForward = 40;
+//			};
+		case HIGHWAY:
+			rule = new Basic(rule.getCity());
+		}
 	}
 
 	public RoadType getType(){

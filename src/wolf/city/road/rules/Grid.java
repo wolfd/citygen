@@ -9,17 +9,23 @@ import wolf.util.Turtle;
 
 public class Grid implements RoadRule {
 	private float verticalMoveDistance = 150; //i dislike having to do this here, i need to make the config work better
-	private float horizontalMoveDistance = 80;
+	private float horizontalMoveDistance = 75;
 	public double direction = 0;
 	private City c;
 
 	public Grid(City city){
 		c = city;
 	}
+	public Grid(Grid g){
+		horizontalMoveDistance = g.horizontalMoveDistance;
+		verticalMoveDistance = g.verticalMoveDistance;
+		direction = g.direction;
+		c = g.c;
+	}
 	@Override
 	public Road globalGoals(City city, Road road, Direction d) {
 		double previousAngle = Math.toDegrees(Angle.angle(road.a.pos, road.b.pos));
-		Road r = new Road(road.b, new Intersection(road.b.pos), RoadType.STREET);
+		Road r = new Road(road.b, new Intersection(road.b.pos), RoadType.STREET, this);
 		Turtle t;
 		if(road.getType() == RoadType.HIGHWAY){// || road.type == RoadType.MAIN){
 			t = new Turtle(r.a.pos, previousAngle);
@@ -68,12 +74,18 @@ public class Grid implements RoadRule {
 		}	
 	}
 	
-	public void mutate(){
+	public RoadRule mutate(){
+		Grid g = new Grid(this);
 		if(c.random.nextBoolean()){
-			direction += 45;
+			g.direction += 30;
 		}else{
-			direction -= 45;
+			g.direction -= 30;
 		}
+		return g;
+	}
+	@Override
+	public City getCity() {
+		return c;
 	}
 
 }

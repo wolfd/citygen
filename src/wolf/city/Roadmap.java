@@ -136,10 +136,9 @@ public class Roadmap{
 		seedRoadMap(rqH);
 
 		//generate highways entirely
-		Basic basicRule = new Basic();
-		Grid gridRule = new Grid(city);
-		OffRamp rampRule = new OffRamp();
+
 		log.log("Highways generating");
+
 		while(rqH.isNotEmpty()){
 			//generate highways, save street seeds to rq
 			Road road = rqH.remove();
@@ -147,9 +146,9 @@ public class Roadmap{
 				//seed a main road (these go from highway to highway)
 				Road r;
 				if(city.random.nextBoolean()){
-					r = basicRule.globalGoals(city, road, Direction.LEFT);
+					r = road.rule.globalGoals(city, road, Direction.LEFT);
 				}else{
-					r = basicRule.globalGoals(city, road, Direction.RIGHT);
+					r = road.rule.globalGoals(city, road, Direction.RIGHT);
 				}
 				r.setType(RoadType.MAIN);
 				rqM.add(localConstraints(r));
@@ -157,12 +156,15 @@ public class Roadmap{
 			}else if(city.pop.getCircleAvg((int)road.b.pos.x, (int)road.b.pos.y, populationSampleRadiusHighwayIntersection) >= minimumPopulationHighwayIntersection){
 				//determine if this location should have an intersection (or should all locations have an intersection and then prune later?)
 
+				OffRamp rampRule = new OffRamp(city);
 				//yes, have an intersection! Free, with your purchase!
-				rq.add(localConstraints(rampRule.globalGoals(city, road, Direction.LEFT)));
+				rq.add(localConstraints(rampRule .globalGoals(city, road, Direction.LEFT)));
 				rq.add(localConstraints(rampRule.globalGoals(city, road, Direction.RIGHT)));
 			}
 			if(road.getType() == RoadType.HIGHWAY){
-				rqH.add(localConstraints(basicRule.globalGoals(city, road, Direction.FORWARD)));
+				Basic basicRule = new Basic(city);
+				Road newRoad = basicRule.globalGoals(city, road, Direction.FORWARD);
+				rqH.add(localConstraints(newRoad));
 			}else{
 				rqM.add(road);
 			}
@@ -177,18 +179,18 @@ public class Roadmap{
 
 
 		//setup for main roads
-		basicRule.turnRateForward = 40;
+		//basicRule.turnRateForward = 40;
 		log.log("Main roads generating");
 		while(rqM.isNotEmpty()){
 			Road road = rqM.remove();
-			Road r = basicRule.globalGoals(city, road, Direction.FORWARD);
+			Road r = road.rule.globalGoals(city, road, Direction.FORWARD);
 			r.setType(RoadType.MAIN);
 			if(city.pop.getCircleAvg((int)road.b.pos.x, (int)road.b.pos.y, populationSampleRadiusHighwayIntersection) >= minimumPopulationHighwayIntersection){
 				//determine if this location should have an intersection (or should all locations have an intersection and then prune later?)
-
+				r.setType(RoadType.STREET);
 				//yes, have an intersection! Free, with your purchase!
-				rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.LEFT)));
-				rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.RIGHT)));
+				rq.add(localConstraints(r.rule.globalGoals(city, road, Direction.LEFT)));
+				rq.add(localConstraints(r.rule.globalGoals(city, road, Direction.RIGHT)));
 			}
 			rqM.add(localConstraints(r));
 			//city.pop.removeDensityLine(road);
@@ -204,9 +206,7 @@ public class Roadmap{
 		log.log("Streets generating");
 		rq.stackStyle = true;
 		while(rq.isNotEmpty()){
-			//			if(city.random.nextDouble()>.9){ //makes it look like a modern/whatever neighborhood
-			//				gridRule.mutate();
-			//			}
+			
 			//generate streets
 			if(city.random.nextDouble()>.99){
 				rq.stackStyle = false;
@@ -215,12 +215,15 @@ public class Roadmap{
 			}
 			Road road = localConstraints(rq.remove());
 			if(road != null){
+				if(city.random.nextDouble()>.9){ //makes it look like a modern/whatever neighborhood
+					road.rule = road.rule.mutate();
+				}
 				//use grid pattern to fill in areas between highways (Manhattan-esque pattern, but not perfect)
 				if(city.pop.get((int)road.b.pos.x, (int)road.b.pos.y)>minimumPopulation){
-					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.BACKWARD)));
-					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.FORWARD)));
-					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.LEFT)));
-					rq.add(localConstraints(gridRule.globalGoals(city, road, Direction.RIGHT)));
+					rq.add(localConstraints(road.rule.globalGoals(city, road, Direction.BACKWARD)));
+					rq.add(localConstraints(road.rule.globalGoals(city, road, Direction.FORWARD)));
+					rq.add(localConstraints(road.rule.globalGoals(city, road, Direction.LEFT)));
+					rq.add(localConstraints(road.rule.globalGoals(city, road, Direction.RIGHT)));
 				}
 				//city.pop.removeDensityLine(road);
 				roads.add(connect(road));
@@ -254,6 +257,7 @@ public class Roadmap{
 
 
 	private void seedRoadMap(RoadQueue roadQueue) {
+		Basic basicRule = new Basic(city);
 		//seed at center (not such a great thing)
 		if(seedAtCenter){
 			float x, y;
@@ -269,7 +273,7 @@ public class Roadmap{
 			Turtle t = new Turtle(startPoint, angle);
 			//t.turn(45);
 			t.move(32);
-			roadQueue.add(new Road(new Intersection(startPoint), new Intersection(t.pos), RoadType.HIGHWAY));
+			roadQueue.add(new Road(new Intersection(startPoint), new Intersection(t.pos), RoadType.HIGHWAY, basicRule));
 		}
 		for(int i=0; i<highwayCount; i++){
 			//highway from random side
@@ -282,7 +286,7 @@ public class Roadmap{
 				Coordinate startPoint = new Coordinate(x, city.sizeY/2);
 				Turtle t = new Turtle(startPoint, ((city.random.nextDouble()*180)%seedHighwayAngleSize)+270);
 				t.move(length);
-				roadQueue.add(new Road(new Intersection(startPoint), new Intersection(t.pos), RoadType.HIGHWAY));
+				roadQueue.add(new Road(new Intersection(startPoint), new Intersection(t.pos), RoadType.HIGHWAY, basicRule));
 				break;
 			}
 			case 1:{ //South
@@ -291,7 +295,7 @@ public class Roadmap{
 				Coordinate startPoint = new Coordinate(x, -city.sizeY/2);
 				Turtle t = new Turtle(startPoint, ((city.random.nextDouble()*180)%seedHighwayAngleSize)+90);
 				t.move(length);
-				roadQueue.add(new Road(new Intersection(startPoint), new Intersection(t.pos), RoadType.HIGHWAY));
+				roadQueue.add(new Road(new Intersection(startPoint), new Intersection(t.pos), RoadType.HIGHWAY, basicRule));
 				break;
 			}
 			case 2:{ //East
@@ -300,7 +304,7 @@ public class Roadmap{
 				Coordinate startPoint = new Coordinate(-city.sizeX/2, y);
 				Turtle t = new Turtle(startPoint, ((city.random.nextDouble()*180)%seedHighwayAngleSize)+0);
 				t.move(length);
-				roadQueue.add(new Road(new Intersection(startPoint), new Intersection(t.pos), RoadType.HIGHWAY));
+				roadQueue.add(new Road(new Intersection(startPoint), new Intersection(t.pos), RoadType.HIGHWAY, basicRule));
 				break;
 			}
 			case 3:{ //West
@@ -309,7 +313,7 @@ public class Roadmap{
 				Coordinate startPoint = new Coordinate(city.sizeX/2, y);
 				Turtle t = new Turtle(startPoint, ((city.random.nextDouble()*180)%seedHighwayAngleSize)+180);
 				t.move(length);
-				roadQueue.add(new Road(new Intersection(startPoint), new Intersection(t.pos), RoadType.HIGHWAY));
+				roadQueue.add(new Road(new Intersection(startPoint), new Intersection(t.pos), RoadType.HIGHWAY, basicRule));
 				break;
 			}
 			default:{
@@ -441,7 +445,7 @@ public class Roadmap{
 		if(r==null){
 			return false;
 		}
-		int expand = 16;
+		int expand = r.width*2;
 		Geometry a = r.getGeometry(expand);
 		//check related spaces in grid
 		ArrayList<GridSpace> spaces = grid.getSpaces(r);

@@ -15,6 +15,11 @@ public class Basic implements RoadRule {
 	private double idealLength = 128;
 	public float turnRateForward = 20;
 	public float turnRateLeftRight = 30;
+	public City c;
+	
+	public Basic(City c){
+		this.c = c;
+	}
 
 	@Override
 	public Road globalGoals(City city, Road road, Direction d) { //0 - left, 1 - forward, 2 - right, 3 - backward
@@ -80,11 +85,22 @@ public class Basic implements RoadRule {
 			double roadLength = Math.abs(Math.sin(Math.toRadians((previousAngle-angle)%360))*nextRoadLength); //sin approximates how long next road should be
 			t.angle = angle;
 			t.move((float)roadLength);
-			returnRoad = new Road(road.b, new Intersection(new Coordinate(t.pos)), nextRoadType); //roads set to default should die.
+			returnRoad = new Road(road.b, new Intersection(new Coordinate(t.pos)), nextRoadType, this); //roads set to default should die.
 		}else{
-			returnRoad = new Road(road.b, new Intersection(bestPosition), nextRoadType); //roads set to default should die.
+			returnRoad = new Road(road.b, new Intersection(bestPosition), nextRoadType, this); //roads set to default should die.
 		}
 		return returnRoad;
+	}
+
+	@Override
+	public RoadRule mutate() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	@Override
+	public City getCity() {
+		return c;
 	}
 
 }

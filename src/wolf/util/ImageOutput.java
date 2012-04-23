@@ -2,7 +2,6 @@ package wolf.util;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.image.*;
 import javax.imageio.*;
