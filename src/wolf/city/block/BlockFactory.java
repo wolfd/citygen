@@ -14,8 +14,6 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.util.PolygonExtracter;
 
 public class BlockFactory {
-	
-	
 	public static LinkedList<CityBlock> makeBlocks(City c, List<Road> roads){
 		Geometry[] geoms = new Geometry[roads.size()];
 		for(int i=0; i<roads.size(); i++){

@@ -53,7 +53,7 @@ public class City {
 		CityView cv = new CityView(this);
 		rm.generate(cv);
 		bm.getBlocks(rm);
-		bm.save("data/blocks.txt");
+		bm.save("data/blocks.txt", "data/lots.txt");
 		cv.close();
 		if(Popup.confirm("Render?", "CityGen")){
 			MapRender.render(this,"render");

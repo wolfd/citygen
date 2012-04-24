@@ -1,7 +1,11 @@
 package wolf.city.block;
 
-import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Polygon;
 
 public class Lot {
-	Geometry shape;
+	public Polygon shape;
+	
+	public Lot(Polygon f) {
+		shape = f;
+	}
 }
