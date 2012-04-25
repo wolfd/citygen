@@ -155,6 +155,6 @@ public class CityView{
 	public void close(){
 		c.windowClosed();
 		Display.destroy();
-		System.exit(0);
+		//System.exit(0);
 	}
 }

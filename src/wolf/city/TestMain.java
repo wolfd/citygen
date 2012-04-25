@@ -14,10 +14,13 @@ public class TestMain {
 		/*CADD Presentation seeds
 		 * 1335319695441
 		 * 1335319857501
-		 * 
+		 * 1335321126626
+		 * 1335321717775
 		 */
-		City city = new City(1024*delta,1024*delta,System.currentTimeMillis());
+		City city = new City(1024*delta,1024*delta,9);//System.currentTimeMillis());
 		city.generateRoadmap();
+		
+		System.exit(0);
 	}
 
 }
