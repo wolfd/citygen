@@ -50,15 +50,15 @@ public class City {
 	}
 
 	public void generateRoadmap(){
-		CityView cv = new CityView(this);
+		final CityView cv = new CityView(this);
 		rm.generate(cv);
 		bm.getBlocks(rm);
 		bm.save("data/blocks.txt", "data/lots.txt");
 		cv.close();
-		if(Popup.confirm("Render?", "CityGen")){
-			MapRender.render(this,"render");
-		}
-		log.save("/log.log");
+//		if(Popup.confirm("Render?", "CityGen")){
+//			MapRender.render(this,"render");
+//		}
+//		log.save("/log.log");
 	}
 
 	public void windowClosed(){

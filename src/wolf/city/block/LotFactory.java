@@ -17,9 +17,10 @@ public class LotFactory {
 
 	public static void makeLots(City c, List<CityBlock> blocks){
 		for(CityBlock block: blocks){
-			if(block.equals(blocks.get(0))){
-				//this block is the exterior
-			}else{
+//			if(block.equals(blocks.get(0))){
+//				//this block is the exterior (almost always)
+//				
+//			}else{
 				//make a stack of polygons
 				List<Polygon> stack = new LinkedList<Polygon>();
 
@@ -60,7 +61,7 @@ public class LotFactory {
 					//get the midpoint and the angle
 					Point midpoint = tempLine.getCentroid();
 					double angle = Angle.angle(tempLine.getCoordinates()[0], tempLine.getCoordinates()[1]);
-					double length = 2000;//size of the box that cuts the lots, make larger if having problems
+					double length = (c.sizeX+c.sizeY)*2; //size of the box that cuts the lots, make larger if having problems
 					//make a line from that point to a point perpendicular to the first (actually extended in both directions a long way)
 					LineString split = gf.createLineString(new Coordinate[]{new Coordinate(midpoint.getX()-Math.cos(angle+(Math.PI/2))*length, midpoint.getY()-Math.sin(angle+(Math.PI/2))*length), new Coordinate(midpoint.getX()+Math.cos(angle+(Math.PI/2))*length,midpoint.getY()+Math.sin(angle+(Math.PI/2))*length)});
 					LineString side1 = gf.createLineString(new Coordinate[]{new Coordinate(split.getCoordinates()[0].x-Math.cos(angle)*length, split.getCoordinates()[0].y-Math.sin(angle)*length), new Coordinate(split.getCoordinates()[1].x-Math.cos(angle)*length,split.getCoordinates()[1].y-Math.sin(angle)*length)});
@@ -136,7 +137,7 @@ public class LotFactory {
 
 				//System.out.println("Block's lots generated, number of lots: "+block.lots.size());
 
-			}
+//			}
 
 		}
 	}

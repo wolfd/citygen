@@ -24,7 +24,6 @@ import wolf.city.road.RoadQueue;
 import wolf.city.road.RoadType;
 import wolf.city.road.rules.Basic;
 import wolf.city.road.rules.Direction;
-import wolf.city.road.rules.Grid;
 import wolf.city.road.rules.OffRamp;
 import wolf.gui.CityView;
 import wolf.util.Log;
@@ -175,7 +174,6 @@ public class Roadmap{
 				cv.draw();
 			}
 		}
-		city.pop.reset();
 
 
 		//setup for main roads
@@ -200,7 +198,6 @@ public class Roadmap{
 				cv.draw();
 			}
 		}
-		city.pop.reset();
 		//generate streets entirely
 
 		log.log("Streets generating");
@@ -234,7 +231,6 @@ public class Roadmap{
 				waitInMs(100);
 			}
 		}
-		city.pop.reset();
 		//prune unnecessary roads (?)
 		log.log("Roads: "+roads.size());
 	}
