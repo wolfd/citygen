@@ -14,6 +14,8 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.util.PolygonExtracter;
 
 public class BlockFactory {
+	private static final int e = -16;
+
 	public static LinkedList<CityBlock> makeBlocks(City c, List<Road> roads){
 		Geometry[] geoms = new Geometry[roads.size()];
 		for(int i=0; i<roads.size(); i++){
@@ -24,7 +26,7 @@ public class BlockFactory {
 		//union all of the road geometries
 		Geometry union = polygonCollection.buffer(0);
 		//make a giant square the size of the city
-		Geometry cityTemplateSquare = gf.createPolygon(gf.createLinearRing(new Coordinate[]{new Coordinate(-c.sizeX,c.sizeY), new Coordinate(c.sizeX,c.sizeY), new Coordinate(c.sizeX,-c.sizeY), new Coordinate(-c.sizeX,-c.sizeY), new Coordinate(-c.sizeX,c.sizeY)}),null);
+		Geometry cityTemplateSquare = gf.createPolygon(gf.createLinearRing(new Coordinate[]{new Coordinate(-c.sizeX/2-e,c.sizeY/2+e), new Coordinate(c.sizeX/2+e,c.sizeY/2+e), new Coordinate(c.sizeX/2+e,-c.sizeY/2-e), new Coordinate(-c.sizeX/2-e,-c.sizeY/2-e), new Coordinate(-c.sizeX/2-e,c.sizeY/2+e)}),null);
 		//subtract the union from the square to find the blocks
 		Geometry difference = cityTemplateSquare.difference(union);
 		LinkedList<CityBlock> blocks = new LinkedList<CityBlock>();
