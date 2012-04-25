@@ -158,7 +158,7 @@ public class Roadmap{
 
 				OffRamp rampRule = new OffRamp(city);
 				//yes, have an intersection! Free, with your purchase!
-				rq.add(localConstraints(rampRule .globalGoals(city, road, Direction.LEFT)));
+				rq.add(localConstraints(rampRule.globalGoals(city, road, Direction.LEFT)));
 				rq.add(localConstraints(rampRule.globalGoals(city, road, Direction.RIGHT)));
 			}
 			if(road.getType() == RoadType.HIGHWAY){

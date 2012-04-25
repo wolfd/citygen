@@ -11,16 +11,18 @@ import wolf.city.City;
 
 public class LotFactory {
 	private static GeometryFactory gf = new GeometryFactory(new PrecisionModel(PrecisionModel.FIXED));
-	private static double cutOffSize = 791;
+	private final static double SMALL_LOT_SIZE = 791;
+	private static final double LARGE_LOT_SIZE = 1000;
+	private static final double DISTANCE_DELTA = 4;
 
 	public static void makeLots(City c, List<CityBlock> blocks){
-		LinkedList<Lot> fLots = new LinkedList<Lot>();
 		for(CityBlock block: blocks){
 			if(block.equals(blocks.get(0))){
 				//this block is the exterior
 			}else{
 				//make a stack of polygons
 				List<Polygon> stack = new LinkedList<Polygon>();
+
 				stack.add(block.shape);
 				//make a "finished" list
 				List<Polygon> finished = new LinkedList<Polygon>();
@@ -58,7 +60,7 @@ public class LotFactory {
 					//get the midpoint and the angle
 					Point midpoint = tempLine.getCentroid();
 					double angle = Angle.angle(tempLine.getCoordinates()[0], tempLine.getCoordinates()[1]);
-					double length = 1500;//size of the box that cuts the lots, make larger if having problems
+					double length = 2000;//size of the box that cuts the lots, make larger if having problems
 					//make a line from that point to a point perpendicular to the first (actually extended in both directions a long way)
 					LineString split = gf.createLineString(new Coordinate[]{new Coordinate(midpoint.getX()-Math.cos(angle+(Math.PI/2))*length, midpoint.getY()-Math.sin(angle+(Math.PI/2))*length), new Coordinate(midpoint.getX()+Math.cos(angle+(Math.PI/2))*length,midpoint.getY()+Math.sin(angle+(Math.PI/2))*length)});
 					LineString side1 = gf.createLineString(new Coordinate[]{new Coordinate(split.getCoordinates()[0].x-Math.cos(angle)*length, split.getCoordinates()[0].y-Math.sin(angle)*length), new Coordinate(split.getCoordinates()[1].x-Math.cos(angle)*length,split.getCoordinates()[1].y-Math.sin(angle)*length)});
@@ -96,20 +98,31 @@ public class LotFactory {
 							List<Polygon> lot2Arr = PolygonExtracter.getPolygons(g2);
 
 							//get the size of each polygon, if smaller than break-off point add to finished
+
 							if(lot1Arr.size()>=1){
-								Polygon lot1 = lot1Arr.get(0);
-								if(lot1.getArea()<cutOffSize ){
-									finished.add(lot1);
-								}else{
-									stack.add(lot1);
+								for(Polygon lot1:lot1Arr){
+									Point ctr = lot1.getCentroid();
+									double distanceFromCenter = Math.sqrt((ctr.getX()*ctr.getX())+(ctr.getY()*ctr.getY()));
+									double cutOffSize = Math.max(Math.min(distanceFromCenter,LARGE_LOT_SIZE)*DISTANCE_DELTA,SMALL_LOT_SIZE);
+									cutOffSize = cutOffSize + cutOffSize*(c.random.nextDouble()/4);
+									if(lot1.getArea()<cutOffSize ){
+										finished.add(lot1);
+									}else{
+										stack.add(lot1);
+									}
 								}
 							}
 							if(lot2Arr.size()>=1){
-								Polygon lot2 = lot2Arr.get(0);
-								if(lot2.getArea()<cutOffSize ){
-									finished.add(lot2);
-								}else{
-									stack.add(lot2);
+								for(Polygon lot2:lot2Arr){
+									Point ctr = lot2.getCentroid();
+									double distanceFromCenter = Math.sqrt((ctr.getX()*ctr.getX())+(ctr.getY()*ctr.getY()));
+									double cutOffSize = Math.max(Math.min(distanceFromCenter,LARGE_LOT_SIZE)*DISTANCE_DELTA,SMALL_LOT_SIZE);
+									cutOffSize = cutOffSize + cutOffSize*(c.random.nextDouble()/4);
+									if(lot2.getArea()<cutOffSize ){
+										finished.add(lot2);
+									}else{
+										stack.add(lot2);
+									}
 								}
 							}
 						}
@@ -120,16 +133,11 @@ public class LotFactory {
 					tempFinished.add(new Lot(f));
 				}
 				block.lots = tempFinished;
-			
+
 				//System.out.println("Block's lots generated, number of lots: "+block.lots.size());
 
-				//convert lots into polygon text
-//				Polygon[] pa = new Polygon[block.lots.size()];
-//				for(int i=0; i<block.lots.size(); i++){
-//					pa[i] = block.lots.get(i).shape;
-//				}
 			}
-			
+
 		}
 	}
 }
