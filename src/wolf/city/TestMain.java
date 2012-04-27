@@ -17,7 +17,9 @@ public class TestMain {
 		 * 1335321126626
 		 * 1335321717775
 		 */
-		City city = new City(1024*delta,1024*delta,9);//System.currentTimeMillis());
+		
+		//1335539797929l
+		City city = new City(1024*delta,1024*delta,System.currentTimeMillis());
 		city.generateRoadmap();
 		
 		System.exit(0);
