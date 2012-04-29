@@ -1,5 +1,10 @@
 package wolf.city;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
+import wolf.gui.engine.Camera;
+
 public class TestMain {
 
 	/**
@@ -17,10 +22,26 @@ public class TestMain {
 		 * 1335321126626
 		 * 1335321717775
 		 */
-		City city = new City(1024*delta,1024*delta,9);//System.currentTimeMillis());
-		city.generateRoadmap();
 		
-		System.exit(0);
+		//1335539797929l
+		final City city = new City(1024*delta,1024*delta,System.currentTimeMillis());
+		final Camera cam = new Camera();
+		//cam.render(city);
+//		TimerTask tt = new TimerTask(){
+//			public void run(){
+//				cam.render(city);
+//			}
+//		};
+//		
+//		Timer t = new Timer();
+//		
+//		t.schedule(tt, 1000, 1000/60);
+		
+		city.generateRoadmap();
+		while(true){
+			cam.render(city);
+		}
+		//System.exit(0);
 	}
 
 }

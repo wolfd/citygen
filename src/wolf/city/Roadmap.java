@@ -62,6 +62,7 @@ public class Roadmap{
 	@SuppressWarnings("unused")
 	private double minimumRoadSnapDistance;
 	private float minimumPopulationHighway;
+	public boolean finished = false;
 
 
 	public Roadmap(City city){
@@ -233,6 +234,7 @@ public class Roadmap{
 		}
 		//prune unnecessary roads (?)
 		log.log("Roads: "+roads.size());
+		finished = true;
 	}
 
 

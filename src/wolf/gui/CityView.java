@@ -4,6 +4,8 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.Project;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -36,12 +38,13 @@ public class CityView{
 		}
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
-		GL11.glOrtho(0, vSize, vSize, 0, 1000, -1000);
+		//GL11.glOrtho(0, vSize, vSize, 0, 1000, -1000);
 		//GL11.glFrustum(0, vSize, vSize, 0, 1, -1);
-		//Project.gluPerspective(70f, 1, .01f, 2000);
+		Project.gluPerspective(30f, 1, .01f, 2000);
 		GL11.glViewport(0, 0, windowSize, windowSize);
 		
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		GL11.glLoadIdentity();
 		//GL11.glTranslatef(0, 0, -5);
 		//GL11.glRotatef(30, 1, 0, 0);
 	}
@@ -90,8 +93,10 @@ public class CityView{
 				Road road = c.rm.roads.get(c.rm.roads.size()-1);
 				Coordinate p1 = road.a.pos;
 				Coordinate p2 = road.b.pos;
-				GL11.glVertex2d(p1.x+c.sizeX/2,vSize-(p1.y+c.sizeY/2));
-				GL11.glVertex2d(p2.x+c.sizeX/2,vSize-(p2.y+c.sizeY/2));
+//				GL11.glVertex2d(p1.x+c.sizeX/2,vSize-(p1.y+c.sizeY/2));
+//				GL11.glVertex2d(p2.x+c.sizeX/2,vSize-(p2.y+c.sizeY/2));
+				GL11.glVertex2d(p1.x,p1.y);
+				GL11.glVertex2d(p2.x,p2.y);
 				GL11.glEnd();
 			}
 			for(int i=0; i<c.rm.roads.size(); i++){
