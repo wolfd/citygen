@@ -1,5 +1,7 @@
 package wolf.gui.engine;
 
+import java.util.Random;
+
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -12,6 +14,9 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import wolf.city.City;
+import wolf.city.FakeBuilding;
+import wolf.city.block.CityBlock;
+import wolf.city.block.Lot;
 import wolf.city.road.Road;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -24,15 +29,15 @@ public class Camera {
 	public Vector3f rot;
 	private int windowWidth = 800;
 	private int windowHeight = 640;
-	private float fov = 90;
+	private float fov = 70;
 	private float zFar = 10000f;
 	private float zNear = .001f;
-	private float mouseSensitivity = .1f;
+	private float mouseSensitivity = .2f;
 
 
 	public Camera(){
-		pos = new Vector3f(0,0,100);
-		rot = new Vector3f(0,-90,0);
+		pos = new Vector3f(0,0,1000);
+		rot = new Vector3f(0,0,0);
 
 		try {
 			Display.setDisplayMode(new DisplayMode(windowWidth, windowHeight));
@@ -50,7 +55,17 @@ public class Camera {
 		}
 
 		Display.setTitle(WINDOW_TITLE);
-
+		glEnable(GL_LINE_SMOOTH);
+		//glEnable(GL_CULL_FACE);
+		glEnable(GL_DEPTH_TEST);
+//		glEnable(GL_LIGHTING);
+//		glEnable(GL_LIGHT0);
+//		glEnable(GL_COLOR_MATERIAL);
+//		glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glViewport(0,0,windowWidth,windowHeight);
@@ -71,10 +86,38 @@ public class Camera {
 		pos.z += z;
 	}
 
-	public void moveForward(float dist){
-		pos.y += dist*Math.sin(Math.toRadians(rot.x));
-		pos.x += dist*Math.cos(Math.toRadians(rot.y));
-		//pos.z += z*Math.cos(Math.toRadians(rot.z)); //?? this is probably not right
+	public void move(Vector3f v, float dist){
+		Vector3f mx = (Vector3f) rotX(rotY(new Vector3f(1,0,0), rot.x), rot.y).scale(v.x);
+		Vector3f my = (Vector3f) rotX(rotY(new Vector3f(0,1,0), rot.x), rot.y).scale(v.y);
+		Vector3f mz = (Vector3f) rotX(rotY(new Vector3f(0,0,1), rot.x), rot.y).scale(v.z);
+
+		Vector3f posChange1 = new Vector3f();
+		Vector3f posChange = new Vector3f();
+		Vector3f.add(mx, my, posChange1);
+		Vector3f.add(posChange1, mz, posChange);
+
+		Vector3f.add(posChange, pos, pos);
+	}
+
+	/*
+	 * 	p += v.x*roty(rotx(vec(1.0, 0.0, 0.0), CameraPhi), CameraTheta) +
+	 *	v.y*roty(rotx(vec(0.0, 1.0, 0.0), CameraPhi), CameraTheta) +
+	 *	v.z*roty(rotx(vec(0.0, 0.0, 1.0), CameraPhi), CameraTheta);
+	 */
+
+	public Vector3f rotX(Vector3f v, double a){
+		double c = Math.toRadians(a);
+		return new Vector3f(v.x, (float)(v.y*Math.cos(c) - v.z*Math.sin(c)), (float)(v.y*Math.sin(c) + v.z*Math.cos(c)));
+	}
+
+	public Vector3f rotY(Vector3f v, double a){
+		double c = Math.toRadians(a);
+		return new Vector3f((float)(v.x*Math.cos(c) + v.z*Math.sin(c)), v.y, (float)(-v.x*Math.sin(c) + v.z*Math.cos(c)));
+	}
+
+	public Vector3f rotZ(Vector3f v, double a){
+		double c = Math.toRadians(a);
+		return new Vector3f((float)(v.x*Math.cos(c) - v.y*Math.sin(c)), (float)(v.x*Math.sin(c) + v.y*Math.cos(c)), v.z);
 	}
 
 	private void update(){
@@ -85,7 +128,7 @@ public class Camera {
 		glLoadIdentity();
 		//update matrix
 		//gluLookAt(pos.x,pos.y,pos.z,0,0,0,0,-1,0);
-		
+
 		glRotatef(rot.x, 1, 0, 0);
 		glRotatef(rot.y, 0, 1, 0);
 		glRotatef(rot.z, 0, 0, 1);
@@ -94,41 +137,47 @@ public class Camera {
 
 	public void input(){
 		if(Mouse.isButtonDown(0) && Mouse.isInsideWindow()){
-			rot.y -= Mouse.getDX()*mouseSensitivity;
+			rot.y += Mouse.getDX()*mouseSensitivity;
 			rot.x -= Mouse.getDY()*mouseSensitivity;
 		}else{
 			Mouse.getDX();
 			Mouse.getDY();
 		}
-		
+		float speed = .5f;
+		if(Keyboard.isKeyDown(Keyboard.KEY_Q)){
+			//move(new Vector3f(0,0,1),.000001f);
+			translate(0,0,speed);
+		}
+		if(Keyboard.isKeyDown(Keyboard.KEY_E)){
+			//move(new Vector3f(0,0,1),.000001f);
+			translate(0,0,-speed);
+		}
+		if(Keyboard.isKeyDown(Keyboard.KEY_S)){
+			//move(new Vector3f(0,0,1),.000001f);
+			translate(0,speed,0);
+		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_W)){
-			moveForward(1f);
-		}else{
-			moveForward(.001f);
+			//move(new Vector3f(0,0,1),.000001f);
+			translate(0,-speed,0);
+		}
+		if(Keyboard.isKeyDown(Keyboard.KEY_A)){
+			//move(new Vector3f(0,0,1),.000001f);
+			translate(-speed,0,0);
+		}
+		if(Keyboard.isKeyDown(Keyboard.KEY_D)){
+			//move(new Vector3f(0,0,1),.000001f);
+			translate(speed,0,0);
 		}
 	}
 
 	public void render(City c){
 		if(!Display.isCloseRequested()){
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-
+			Random r = new Random(1);
 			input();
 			//rotate(0,.1f,0);
 			update();
-			System.out.println(rot.toString());
-			{
-				glPointSize(1);
-				glBegin(GL11.GL_POINTS);
-				glColor3f(.1f, .1f, .1f);
-				for(int ix=-100;ix<=100;ix+=10){
-					for(int iy=-100;iy<=100;iy+=10){
-						for(int iz=-100;iz<=100;iz+=10){
-							glVertex3i(ix,iy,iz);
-						}
-					}
-				}
-				glEnd();
-			}
+			//System.out.println(pos.toString());
 			if(c.rm.roads != null && c.rm.roads.size() > 0){ //road render
 				int red = 0;
 				int blue = 0;
@@ -195,6 +244,70 @@ public class Camera {
 					}
 				}
 				GL11.glEnd();
+			}
+			if(c.bm.blocks != null && c.bm.blocks.size() > 0){
+				for(CityBlock b : c.bm.blocks){
+					if(b.lots != null && b.lots.size()>0){
+						for(Lot l: b.lots){
+
+							Coordinate[] cs = l.shape.getCoordinates();
+							glBegin(GL_LINE_LOOP);
+							glColor3f(.3f,.3f,.3f);
+							//Coordinate q = cs[cs.length-1];
+							//glVertex2d(q.x,q.y);
+							for(int j=0;j<cs.length;j++){
+								Coordinate p = cs[j];
+								glVertex2d(p.x,p.y);
+							}
+							glEnd();
+						}
+						Coordinate[] cs = b.shape.getCoordinates();
+						glBegin(GL_LINE_LOOP);
+						glColor3f(.2f,.2f,.5f);
+						for(int j=0;j<cs.length;j++){
+							Coordinate p = cs[j];
+							glVertex2d(p.x,p.y);
+						}
+						glEnd();
+					}else{
+						//render block
+					}
+				}
+			}
+			if(c.fb != null && c.fb.buildings.size() > 0){
+				for(FakeBuilding b : c.fb.buildings){
+					Coordinate[] cs = b.g.getCoordinates();
+					glBegin(GL_POLYGON);
+					glColor3f(.2f,.2f,.5f);
+					for(int j=0;j<cs.length;j++){
+						Coordinate p = cs[j];
+						glVertex3d(p.x,p.y,0);
+					}
+					glEnd();
+					glBegin(GL_POLYGON);
+					glColor3f(.2f,.2f,.5f);
+					for(int j=0;j<cs.length;j++){
+						Coordinate p = cs[j];
+						glVertex3d(p.x,p.y,-b.height);
+					}
+					glEnd();
+					glBegin(GL_QUADS);
+					glColor3f(.2f,.2f,.5f);
+					if(cs.length>0){
+						Coordinate q = cs[cs.length-1];
+						for(int j=0;j<cs.length;j++){
+							glColor3f(.2f,r.nextFloat(),.5f);
+							Coordinate p = cs[j];
+							glVertex3d(p.x,p.y,0);
+							glVertex3d(p.x,p.y,-b.height);
+							glVertex3d(q.x,q.y,-b.height);
+							glVertex3d(q.x,q.y,0);
+
+							q = cs[j];
+						}
+					}
+					glEnd();
+				}
 			}
 			Display.update();
 		}else{

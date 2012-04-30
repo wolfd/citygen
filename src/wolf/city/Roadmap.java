@@ -15,6 +15,8 @@ import com.vividsolutions.jts.algorithm.LineIntersector;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 import wolf.city.road.GridSpace;
 import wolf.city.road.Intersection;
@@ -63,6 +65,7 @@ public class Roadmap{
 	private double minimumRoadSnapDistance;
 	private float minimumPopulationHighway;
 	public boolean finished = false;
+	public Geometry shape; //generate when final
 
 
 	public Roadmap(City city){
@@ -234,6 +237,16 @@ public class Roadmap{
 		}
 		//prune unnecessary roads (?)
 		log.log("Roads: "+roads.size());
+		{
+			Geometry[] geoms = new Geometry[roads.size()];
+			for(int i=0; i<roads.size(); i++){
+				geoms[i] = (roads.get(i).getFinalGeometry());
+			}
+			GeometryFactory gf = new GeometryFactory();
+			GeometryCollection polygonCollection = gf.createGeometryCollection(geoms);
+			//union all of the road geometries
+			shape = polygonCollection.buffer(0);
+		}
 		finished = true;
 	}
 
