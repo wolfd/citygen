@@ -37,7 +37,7 @@ public class Camera {
 
 	public Camera(){
 		pos = new Vector3f(0,0,1000);
-		rot = new Vector3f(0,0,0);
+		rot = new Vector3f(0,180,0);
 
 		try {
 			Display.setDisplayMode(new DisplayMode(windowWidth, windowHeight));
@@ -175,7 +175,7 @@ public class Camera {
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			Random r = new Random(1);
 			input();
-			//rotate(0,.1f,0);
+			//rotate(0,0,.01f);
 			update();
 			//System.out.println(pos.toString());
 			if(c.rm.roads != null && c.rm.roads.size() > 0){ //road render

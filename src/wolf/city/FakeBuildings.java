@@ -22,7 +22,7 @@ public class FakeBuildings {
 				if(b.lots != null && b.lots.size()>0){
 					for(Lot l: b.lots){
 						if(l.shape.distance(c.rm.shape)<4){
-							buildings.add(new FakeBuilding(l.shape.buffer(-5), (int) (MIN_HEIGHT+((c.random.nextDouble()+1)*200*c.pop.get((int)l.shape.getCentroid().getCoordinate().x, (int)l.shape.getCentroid().getCoordinate().y)))));
+							buildings.add(new FakeBuilding(l.shape.buffer(-5), (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*200*c.pop.get((int)l.shape.getCentroid().getCoordinate().x, (int)l.shape.getCentroid().getCoordinate().y))),256)));
 						}
 					}
 				}
