@@ -30,8 +30,8 @@ public class Camera {
 	private int windowWidth = 800;
 	private int windowHeight = 640;
 	private float fov = 70;
-	private float zFar = 10000f;
-	private float zNear = .001f;
+	private float zFar = 3000f;
+	private float zNear = 1f;
 	private float mouseSensitivity = .2f;
 
 
