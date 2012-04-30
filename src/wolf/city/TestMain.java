@@ -1,8 +1,5 @@
 package wolf.city;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import wolf.gui.engine.Camera;
 
 public class TestMain {
