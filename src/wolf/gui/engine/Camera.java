@@ -33,6 +33,7 @@ public class Camera {
 	private float zFar = 3000f;
 	private float zNear = 1f;
 	private float mouseSensitivity = .2f;
+	private boolean lookAtCenter;
 
 
 	public Camera(){
@@ -143,7 +144,13 @@ public class Camera {
 			Mouse.getDX();
 			Mouse.getDY();
 		}
-		float speed = .5f;
+		float speed;
+		if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
+			speed = 3f;
+		}else{
+			speed = .5f;
+		}
+		
 		if(Keyboard.isKeyDown(Keyboard.KEY_Q)){
 			//move(new Vector3f(0,0,1),.000001f);
 			translate(0,0,speed);
@@ -167,6 +174,11 @@ public class Camera {
 		if(Keyboard.isKeyDown(Keyboard.KEY_D)){
 			//move(new Vector3f(0,0,1),.000001f);
 			translate(speed,0,0);
+		}
+		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
+			lookAtCenter = true;
+		}else{
+			lookAtCenter = false;
 		}
 	}
 

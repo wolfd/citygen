@@ -17,10 +17,11 @@ public class LotFactory {
 
 	public static void makeLots(City c, List<CityBlock> blocks){
 		for(CityBlock block: blocks){
-//			if(block.equals(blocks.get(0))){
-//				//this block is the exterior (almost always)
-//				
-//			}else{
+			if(block.shape.getArea() > SMALL_LOT_SIZE){
+				//			if(block.equals(blocks.get(0))){
+				//				//this block is the exterior (almost always)
+				//				
+				//			}else{
 				//make a stack of polygons
 				List<Polygon> stack = new LinkedList<Polygon>();
 
@@ -106,6 +107,7 @@ public class LotFactory {
 									double distanceFromCenter = Math.sqrt((ctr.getX()*ctr.getX())+(ctr.getY()*ctr.getY()));
 									double cutOffSize = Math.max(Math.min(distanceFromCenter,LARGE_LOT_SIZE)*DISTANCE_DELTA,SMALL_LOT_SIZE);
 									cutOffSize = cutOffSize + cutOffSize*(c.random.nextDouble()/4);
+
 									if(lot1.getArea()<cutOffSize ){
 										finished.add(lot1);
 									}else{
@@ -134,11 +136,11 @@ public class LotFactory {
 					tempFinished.add(new Lot(f));
 				}
 				block.lots = tempFinished;
-
-				//System.out.println("Block's lots generated, number of lots: "+block.lots.size());
-
-//			}
-
+			}else{
+				List<Lot> lots = new LinkedList<Lot>();
+				lots.add(new Lot(block.shape));
+				block.lots = lots;
+			}
 		}
 	}
 }
