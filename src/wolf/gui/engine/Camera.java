@@ -26,6 +26,7 @@ import static org.lwjgl.util.glu.GLU.*;
 public class Camera {
 	private static final String WINDOW_TITLE = "World";
 	public Vector3f pos;
+	public Vector3f force;
 	public Vector3f rot;
 	private int windowWidth = 800;
 	private int windowHeight = 640;
@@ -39,6 +40,7 @@ public class Camera {
 	public Camera(){
 		pos = new Vector3f(0,0,1000);
 		rot = new Vector3f(0,180,0);
+		force = new Vector3f(0,0,0);
 
 		try {
 			Display.setDisplayMode(new DisplayMode(windowWidth, windowHeight));
@@ -86,6 +88,12 @@ public class Camera {
 		pos.y += y;
 		pos.z += z;
 	}
+	
+	public void addForce(float x, float y, float z){
+		force.x += x;
+		force.y += y;
+		force.z += z;
+	}
 
 	public void move(Vector3f v, float dist){
 		Vector3f mx = (Vector3f) rotX(rotY(new Vector3f(1,0,0), rot.x), rot.y).scale(v.x);
@@ -128,12 +136,16 @@ public class Camera {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		//update matrix
-		//gluLookAt(pos.x,pos.y,pos.z,0,0,0,0,-1,0);
-
+		
+		Vector3f.add(force, pos, pos);
+//		if(lookAtCenter){
+//			gluLookAt(pos.x,pos.y,pos.z,0,0,0,0,1,0);
+//		}
 		glRotatef(rot.x, 1, 0, 0);
 		glRotatef(rot.y, 0, 1, 0);
 		glRotatef(rot.z, 0, 0, 1);
 		glTranslatef(pos.x, pos.y, pos.z);
+		
 	}
 
 	public void input(){
@@ -146,34 +158,37 @@ public class Camera {
 		}
 		float speed;
 		if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
-			speed = 3f;
+			speed = .05f;
 		}else{
-			speed = .5f;
+			speed = .01f;
 		}
 		
 		if(Keyboard.isKeyDown(Keyboard.KEY_Q)){
 			//move(new Vector3f(0,0,1),.000001f);
-			translate(0,0,speed);
+			addForce(0,0,speed);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_E)){
 			//move(new Vector3f(0,0,1),.000001f);
-			translate(0,0,-speed);
+			addForce(0,0,-speed);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_S)){
 			//move(new Vector3f(0,0,1),.000001f);
-			translate(0,speed,0);
+			addForce(0,speed,0);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_W)){
 			//move(new Vector3f(0,0,1),.000001f);
-			translate(0,-speed,0);
+			addForce(0,-speed,0);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_A)){
 			//move(new Vector3f(0,0,1),.000001f);
-			translate(-speed,0,0);
+			addForce(-speed,0,0);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_D)){
 			//move(new Vector3f(0,0,1),.000001f);
-			translate(speed,0,0);
+			addForce(speed,0,0);
+		}
+		if(Keyboard.isKeyDown(Keyboard.KEY_Z)){
+			force = new Vector3f(0,0,0);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
 			lookAtCenter = true;
