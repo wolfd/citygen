@@ -145,35 +145,40 @@ public class Roadmap{
 		while(rqH.isNotEmpty()){
 			//generate highways, save street seeds to rq
 			Road road = rqH.remove();
-			if(city.pop.getCircleAvg((int)road.b.pos.x, (int)road.b.pos.y, populationSampleRadiusMainRoad) >= minimumPopulationMainRoad){
-				//seed a main road (these go from highway to highway)
-				Road r;
-				if(city.random.nextBoolean()){
-					r = road.rule.globalGoals(city, road, Direction.LEFT);
-				}else{
-					r = road.rule.globalGoals(city, road, Direction.RIGHT);
-				}
-				r.setType(RoadType.MAIN);
-				rqM.add(localConstraints(r));
-
-			}else if(city.pop.getCircleAvg((int)road.b.pos.x, (int)road.b.pos.y, populationSampleRadiusHighwayIntersection) >= minimumPopulationHighwayIntersection){
-				//determine if this location should have an intersection (or should all locations have an intersection and then prune later?)
-
-				OffRamp rampRule = new OffRamp(city);
-				//yes, have an intersection! Free, with your purchase!
-				rq.add(localConstraints(rampRule.globalGoals(city, road, Direction.LEFT)));
-				rq.add(localConstraints(rampRule.globalGoals(city, road, Direction.RIGHT)));
-			}
-			if(road.getType() == RoadType.HIGHWAY){
-				Basic basicRule = new Basic(city);
-				Road newRoad = basicRule.globalGoals(city, road, Direction.FORWARD);
-				rqH.add(localConstraints(newRoad));
+			if(road.finished){
+				//finished
 			}else{
-				rqM.add(road);
+				if(city.pop.getCircleAvg((int)road.b.pos.x, (int)road.b.pos.y, populationSampleRadiusMainRoad) >= minimumPopulationMainRoad){
+					//seed a main road (these go from highway to highway)
+					Road r;
+					if(city.random.nextBoolean()){
+						r = road.rule.globalGoals(city, road, Direction.LEFT);
+					}else{
+						r = road.rule.globalGoals(city, road, Direction.RIGHT);
+					}
+					r.setType(RoadType.MAIN);
+					rqM.add(localConstraints(r));
+
+				}else if(city.pop.getCircleAvg((int)road.b.pos.x, (int)road.b.pos.y, populationSampleRadiusHighwayIntersection) >= minimumPopulationHighwayIntersection){
+					//determine if this location should have an intersection (or should all locations have an intersection and then prune later?)
+
+					OffRamp rampRule = new OffRamp(city);
+					//yes, have an intersection! Free, with your purchase!
+					rq.add(localConstraints(rampRule.globalGoals(city, road, Direction.LEFT)));
+					rq.add(localConstraints(rampRule.globalGoals(city, road, Direction.RIGHT)));
+				}
+				if(road.getType() == RoadType.HIGHWAY){
+					Basic basicRule = new Basic(city);
+					Road newRoad = basicRule.globalGoals(city, road, Direction.FORWARD);
+					rqH.add(localConstraints(newRoad));
+				}else{
+					rqM.add(road);
+				}
+				//city.pop.removeDensityLine(road);
 			}
-			//city.pop.removeDensityLine(road);
 			roads.add(connect(road));
 			grid.add(road); //for collision detection
+
 			if(cv != null){
 				cv.draw();
 			}
@@ -185,19 +190,24 @@ public class Roadmap{
 		log.log("Main roads generating");
 		while(rqM.isNotEmpty()){
 			Road road = rqM.remove();
-			Road r = road.rule.globalGoals(city, road, Direction.FORWARD);
-			r.setType(RoadType.MAIN);
-			if(city.pop.getCircleAvg((int)road.b.pos.x, (int)road.b.pos.y, populationSampleRadiusHighwayIntersection) >= minimumPopulationHighwayIntersection){
-				//determine if this location should have an intersection (or should all locations have an intersection and then prune later?)
-				r.setType(RoadType.STREET);
-				//yes, have an intersection! Free, with your purchase!
-				rq.add(localConstraints(r.rule.globalGoals(city, road, Direction.LEFT)));
-				rq.add(localConstraints(r.rule.globalGoals(city, road, Direction.RIGHT)));
+			if(road.finished){
+				//finished
+			}else{
+				Road r = road.rule.globalGoals(city, road, Direction.FORWARD);
+				r.setType(RoadType.MAIN);
+				if(city.pop.getCircleAvg((int)road.b.pos.x, (int)road.b.pos.y, populationSampleRadiusHighwayIntersection) >= minimumPopulationHighwayIntersection){
+					//determine if this location should have an intersection (or should all locations have an intersection and then prune later?)
+					r.setType(RoadType.STREET);
+					//yes, have an intersection! Free, with your purchase!
+					rq.add(localConstraints(r.rule.globalGoals(city, road, Direction.LEFT)));
+					rq.add(localConstraints(r.rule.globalGoals(city, road, Direction.RIGHT)));
+				}
+				rqM.add(localConstraints(r));
+				//city.pop.removeDensityLine(road);
 			}
-			rqM.add(localConstraints(r));
-			//city.pop.removeDensityLine(road);
 			roads.add(connect(road));
 			grid.add(road); //for collision detection
+
 			if(cv != null){
 				cv.draw();
 			}
@@ -207,7 +217,7 @@ public class Roadmap{
 		log.log("Streets generating");
 		rq.stackStyle = true;
 		while(rq.isNotEmpty()){
-			
+
 			//generate streets
 			if(city.random.nextDouble()>.99){
 				rq.stackStyle = false;
@@ -216,19 +226,24 @@ public class Roadmap{
 			}
 			Road road = localConstraints(rq.remove());
 			if(road != null){
-				if(city.random.nextDouble()>.9){ //makes it look like a modern/whatever neighborhood
-					road.rule = road.rule.mutate();
+				if(road.finished){
+					//finished
+				}else{
+					if(city.random.nextDouble()>.9){ //makes it look like a modern/whatever neighborhood
+						road.rule = road.rule.mutate();
+					}
+					//use grid pattern to fill in areas between highways (Manhattan-esque pattern, but not perfect)
+					if(city.pop.get((int)road.b.pos.x, (int)road.b.pos.y)>minimumPopulation){
+						rq.add(localConstraints(road.rule.globalGoals(city, road, Direction.BACKWARD)));
+						rq.add(localConstraints(road.rule.globalGoals(city, road, Direction.FORWARD)));
+						rq.add(localConstraints(road.rule.globalGoals(city, road, Direction.LEFT)));
+						rq.add(localConstraints(road.rule.globalGoals(city, road, Direction.RIGHT)));
+					}
+					//city.pop.removeDensityLine(road);
 				}
-				//use grid pattern to fill in areas between highways (Manhattan-esque pattern, but not perfect)
-				if(city.pop.get((int)road.b.pos.x, (int)road.b.pos.y)>minimumPopulation){
-					rq.add(localConstraints(road.rule.globalGoals(city, road, Direction.BACKWARD)));
-					rq.add(localConstraints(road.rule.globalGoals(city, road, Direction.FORWARD)));
-					rq.add(localConstraints(road.rule.globalGoals(city, road, Direction.LEFT)));
-					rq.add(localConstraints(road.rule.globalGoals(city, road, Direction.RIGHT)));
-				}
-				//city.pop.removeDensityLine(road);
 				roads.add(connect(road));
 				grid.add(road); //for collision detection
+
 			}
 			if(cv != null){
 				cv.draw();
@@ -504,7 +519,8 @@ public class Roadmap{
 		boolean aInside = (r.a.pos.x > -city.sizeX/2 && r.a.pos.x <= city.sizeX/2 && r.a.pos.y > -city.sizeY/2 && r.a.pos.y <= city.sizeY/2);
 		boolean bInside = (r.b.pos.x > -city.sizeX/2 && r.b.pos.x <= city.sizeX/2 && r.b.pos.y > -city.sizeY/2 && r.b.pos.y <= city.sizeY/2);
 		if(!aInside || !bInside){
-			return null;
+			r.finished = true;
+			return r;
 		}
 
 		return r;
@@ -541,9 +557,9 @@ public class Roadmap{
 			double x = (xD/(popTests+(popTests/10)))*(i+(popTests/10));
 			double y = (yD/(popTests+(popTests/10)))*(i+(popTests/10));
 			if(r.getType() == RoadType.HIGHWAY){
-				if(city.pop.get((int)x, (int)y)<=minimumPopulationHighway){
-					r.setType(RoadType.MAIN); //no longer a highway, but a main road still;
-				}
+				//if(city.pop.get((int)x, (int)y)<=minimumPopulationHighway){
+				//	r.setType(RoadType.MAIN); //no longer a highway, but a main road still;
+				//}
 			}
 			if(city.pop.get((int)x, (int)y)<=minimumPopulation){
 				if(r.getType() != RoadType.HIGHWAY){

@@ -35,6 +35,7 @@ public class Camera {
 	private float zNear = 1f;
 	private float mouseSensitivity = .2f;
 	private boolean lookAtCenter;
+	private boolean renderBuildings = false;
 
 
 	public Camera(){
@@ -301,7 +302,7 @@ public class Camera {
 					}
 				}
 			}
-			if(c.fb != null && c.fb.buildings.size() > 0){
+			if(renderBuildings && c.fb != null && c.fb.buildings.size() > 0){
 				for(FakeBuilding b : c.fb.buildings){
 					Coordinate[] cs = b.g.getCoordinates();
 					glBegin(GL_POLYGON);
