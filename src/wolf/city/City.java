@@ -1,5 +1,6 @@
 package wolf.city;
 
+import java.sql.SQLException;
 import java.util.Random;
 
 import wolf.city.map.Population;
@@ -7,6 +8,7 @@ import wolf.city.map.Terrain;
 import wolf.city.map.Water;
 import wolf.city.map.Wealth;
 import wolf.gui.CityView;
+import wolf.util.Database;
 import wolf.util.Log;
 import wolf.util.MapRender;
 import wolf.util.Popup;
@@ -57,11 +59,24 @@ public class City {
 		bm.getBlocks(rm);
 		fb.generate();
 		bm.save("data/blocks.txt", "data/lots.txt");
+		try {
+			Database d = new Database();
+			d.open("city.db");
+			d.saveCityData(this);
+			d.close();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		//cv.close();
-//		if(Popup.confirm("Render?", "CityGen")){
-//			MapRender.render(this,"render");
-//		}
-//		log.save("/log.log");
+		//		if(Popup.confirm("Render?", "CityGen")){
+		//			MapRender.render(this,"render");
+		//		}
+		//		log.save("/log.log");
+		catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public void windowClosed(){

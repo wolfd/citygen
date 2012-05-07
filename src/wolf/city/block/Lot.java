@@ -8,4 +8,8 @@ public class Lot {
 	public Lot(Polygon f) {
 		shape = f;
 	}
+	
+	public String toString(){
+		return shape.toString();
+	}
 }

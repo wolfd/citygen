@@ -8,7 +8,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 
 public class Intersection{
 	private static int curId;
-	public static ArrayList<Intersection> intersections;
+	public static ArrayList<Intersection> intersections = new ArrayList<Intersection>();
 	public Coordinate pos;
 	public Road parent;
 	public int id;
