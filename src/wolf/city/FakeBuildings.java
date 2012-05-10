@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import wolf.city.block.CityBlock;
 import wolf.city.block.Lot;
+import wolf.util.TextFileOutput;
 
 
 public class FakeBuildings {
@@ -29,6 +30,21 @@ public class FakeBuildings {
 					}
 				}
 			}
+		}
+		c.log.log("Saving STL");
+		saveSTL();
+	}
+	
+	public void saveSTL(){
+		if(buildings.size() > 0){
+			String stl = "";
+			for(FakeBuilding b : buildings){
+				stl += b.toSTL();
+			}
+			
+			TextFileOutput tf = new TextFileOutput();
+			tf.data.add(stl);
+			tf.save("data/buildings.stl");
 		}
 	}
 

@@ -59,6 +59,7 @@ public class City {
 		bm.getBlocks(rm);
 		fb.generate();
 		bm.save("data/blocks.txt", "data/lots.txt");
+		
 		try {
 			Database d = new Database();
 			d.open("city.db");
