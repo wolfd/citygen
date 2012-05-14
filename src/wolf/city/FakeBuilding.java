@@ -61,23 +61,56 @@ public class FakeBuilding {
 		return sameSide(p, a, b, c) && sameSide(p, b, a,c) && sameSide(p, c, a, b);
 	}
 
-	private ArrayList<Coordinate[]> split(Coordinate[] cs){
+	private ArrayList<Coordinate[]> split(ArrayList<Coordinate> cs){
+		ArrayList<Coordinate> untouched = (ArrayList<Coordinate>) cs.clone();
 		ArrayList<Coordinate[]> tris = new ArrayList<Coordinate[]>();
 		boolean done = false;
 		while(!done ){
 			int leftmost = -1;
-			double left = cs[0].x;
-			for(int i=1; i<cs.length; i++){
-				if(cs[i].x < left){
-					left = cs[i].x;
+			double left = cs.get(0).x;
+			for(int i=1; i<cs.size(); i++){
+				if(cs.get(i).x < left){
+					left = cs.get(i).x;
 					leftmost = i;
 				}
 			}
 			if(leftmost == -1) return null;
-			tris.add(new Coordinate[]{cs[(leftmost-1)%cs.length], cs[leftmost], cs[(leftmost+1)%cs.length]});
-			//make new cs without these coords
+			int lastIndex = (leftmost-1)%cs.size();
+			
+			int nextIndex = (leftmost+1)%cs.size();
+			Coordinate[] test = new Coordinate[]{cs.get(lastIndex), cs.get(leftmost), cs.get(nextIndex)};
+			//test the test
+			for(int j=0; j<untouched.size(); j++){
+				Coordinate p = untouched.get(j);
+				Coordinate a = test[0];
+				Coordinate b = test[1];
+				Coordinate c = test[2];
+				if(!(p.equals(a) || p.equals(b) || p.equals(c))){
+					if(inside(p, a, b, c)){
+						//it failed
+						//find the new leftmost point
+						int leftmost2 = -1;
+						double left2 = cs.get(0).x;
+						for(int i=1; i<cs.size(); i++){
+							if(cs.get(i).x < left2){
+								left2 = cs.get(i).x;
+								leftmost2 = i;
+							}
+						}
+						if(leftmost2 == -1) return null;
+						
+						//connect old leftmost with new
+						
+					}
+				}//else nope
+			}
+			tris.add(test);
+			//remove these coords
+			//cs.remove(lastIndex);
+			cs.remove(leftmost);
+			//cs.remove(nextIndex);
 			//http://www.siggraph.org/education/materials/HyperGraph/scanline/outprims/polygon1.htm
 		}
-		return null;
+		return tris;
 	}
 }
