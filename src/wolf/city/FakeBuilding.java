@@ -64,9 +64,9 @@ public class FakeBuilding {
 				stl += "endfacet\n";
 				
 				//top
-				Coordinate a = tri.getCoordinates()[0];
-				Coordinate b = tri.getCoordinates()[1];
-				Coordinate c = tri.getCoordinates()[2];
+				Coordinate a = new Coordinate(tri.getCoordinates()[0]);
+				Coordinate b = new Coordinate(tri.getCoordinates()[1]);
+				Coordinate c = new Coordinate(tri.getCoordinates()[2]);
 				a.z += height;
 				b.z += height;
 				c.z += height;

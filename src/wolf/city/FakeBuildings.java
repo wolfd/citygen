@@ -37,16 +37,19 @@ public class FakeBuildings {
 	
 	public void saveSTL(){
 		if(buildings.size() > 0){
-			String stl = "";
-			stl += "solid buildings\n";
+			TextFileOutput tf = new TextFileOutput();
+			 tf.data.add("solid buildings\n");
 			
-			for(FakeBuilding b : buildings){
-				stl += b.toSTL();
+			for(int i=0; i<buildings.size(); i++){
+				FakeBuilding b = buildings.get(i);
+				if(i%20==0){
+					System.out.println((float)i/(float)buildings.size()*100f+"% Complete");
+				}
+				tf.data.add(b.toSTL());
 			}
 			
-			stl += "endsolid buildings\n";
-			TextFileOutput tf = new TextFileOutput();
-			tf.data.add(stl);
+			tf.data.add("endsolid buildings\n");
+			
 			tf.save("data/buildings.stl");
 		}
 	}
