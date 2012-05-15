@@ -4,8 +4,11 @@ import java.util.ArrayList;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder;
 
 public class FakeBuilding {
+	private static GeometryFactory gf = new GeometryFactory();
 	public Geometry g;
 	public int height;
 
@@ -18,99 +21,110 @@ public class FakeBuilding {
 		String stl = "";
 		Coordinate[] cs = g.getCoordinates();
 		if(cs.length >= 3){
-			stl += "solid building\n";
+			
 
 			Coordinate c1 = cs[cs.length-1];
 			for(int i=0; i<cs.length; i++){
 				Coordinate c2 = cs[i];
 				//make 2 triangles
 				Coordinate ch1 = new Coordinate(c1);
+				if(Double.isNaN(ch1.z)) ch1.z = 0;
 				ch1.z += height;
 				Coordinate ch2 = new Coordinate(c2);
+				if(Double.isNaN(ch2.z)) ch2.z = 0;
 				ch2.z += height;
 				//first triangle
-				stl += "facet normal \n";
+				
+				stl += normal(c1, c2, ch1);
 				stl += "outer loop\n";
-				stl += "vertex "+c1.x+" "+c1.y+" "+c1.z+"\n";
-				stl += "vertex "+c2.x+" "+c2.y+" "+c2.z+"\n";
-				stl += "vertex "+ch1.x+" "+ch1.y+" "+ch1.z+"\n";
+				stl += vertex(c1);
+				stl += vertex(c2);
+				stl += vertex(ch1);
 				stl += "endloop\n";
 				stl += "endfacet\n";
 				//second triangle
-				stl += "facet normal \n";
+				stl += normal(c2, ch2, ch1);
 				stl += "outer loop\n";
-				stl += "vertex "+c2.x+" "+c2.y+" "+c2.z+"\n";
-				stl += "vertex "+ch2.x+" "+ch2.y+" "+ch2.z+"\n";
-				stl += "vertex "+ch1.x+" "+ch1.y+" "+ch1.z+"\n";
+				stl += vertex(c2);
+				stl += vertex(ch2);
+				stl += vertex(ch1);
 				stl += "endloop\n";
 				stl += "endfacet\n";
 				c1 = c2;
 			}
-
-			stl += "endsolid building\n";
+			ArrayList<Geometry> gBase = toTriangles(g);
+			for(Geometry tri: gBase){
+				//base
+				stl += normal(tri.getCoordinates()[2],tri.getCoordinates()[1],tri.getCoordinates()[0]);
+				stl += "outer loop\n";
+				stl += vertex(tri.getCoordinates()[2]);
+				stl += vertex(tri.getCoordinates()[1]);
+				stl += vertex(tri.getCoordinates()[0]);
+				stl += "endloop\n";
+				stl += "endfacet\n";
+				
+				//top
+				Coordinate a = tri.getCoordinates()[0];
+				Coordinate b = tri.getCoordinates()[1];
+				Coordinate c = tri.getCoordinates()[2];
+				a.z += height;
+				b.z += height;
+				c.z += height;
+				
+				stl += normal(tri.getCoordinates()[0],tri.getCoordinates()[1],tri.getCoordinates()[2]);
+				stl += "outer loop\n";
+				stl += vertex(a);
+				stl += vertex(b);
+				stl += vertex(c);
+				stl += "endloop\n";
+				stl += "endfacet\n";
+			}
 		}
 		return stl;
 
 	}
 
-	private boolean sameSide(Coordinate p1, Coordinate p2, Coordinate l1, Coordinate l2){
-		return (((p1.x - l1.x) * (l2.y - l1.y) - (l2.x - l1.x) * (p1.y - l1.y)) * ((p2.x - l1.x) * (l2.y - l1.y) - (l2.x - l1.x) * (p2.y - l1.y)) > 0);
-	}
-
-	private boolean inside(Coordinate p, Coordinate a, Coordinate b, Coordinate c){
-		return sameSide(p, a, b, c) && sameSide(p, b, a,c) && sameSide(p, c, a, b);
-	}
-
-	private ArrayList<Coordinate[]> split(ArrayList<Coordinate> cs){
-		ArrayList<Coordinate> untouched = (ArrayList<Coordinate>) cs.clone();
-		ArrayList<Coordinate[]> tris = new ArrayList<Coordinate[]>();
-		boolean done = false;
-		while(!done ){
-			int leftmost = -1;
-			double left = cs.get(0).x;
-			for(int i=1; i<cs.size(); i++){
-				if(cs.get(i).x < left){
-					left = cs.get(i).x;
-					leftmost = i;
-				}
-			}
-			if(leftmost == -1) return null;
-			int lastIndex = (leftmost-1)%cs.size();
-			
-			int nextIndex = (leftmost+1)%cs.size();
-			Coordinate[] test = new Coordinate[]{cs.get(lastIndex), cs.get(leftmost), cs.get(nextIndex)};
-			//test the test
-			for(int j=0; j<untouched.size(); j++){
-				Coordinate p = untouched.get(j);
-				Coordinate a = test[0];
-				Coordinate b = test[1];
-				Coordinate c = test[2];
-				if(!(p.equals(a) || p.equals(b) || p.equals(c))){
-					if(inside(p, a, b, c)){
-						//it failed
-						//find the new leftmost point
-						int leftmost2 = -1;
-						double left2 = cs.get(0).x;
-						for(int i=1; i<cs.size(); i++){
-							if(cs.get(i).x < left2){
-								left2 = cs.get(i).x;
-								leftmost2 = i;
-							}
-						}
-						if(leftmost2 == -1) return null;
-						
-						//connect old leftmost with new
-						
-					}
-				}//else nope
-			}
-			tris.add(test);
-			//remove these coords
-			//cs.remove(lastIndex);
-			cs.remove(leftmost);
-			//cs.remove(nextIndex);
-			//http://www.siggraph.org/education/materials/HyperGraph/scanline/outprims/polygon1.htm
+	private ArrayList<Geometry> toTriangles(Geometry g){
+		ArrayList<Geometry> valid = new ArrayList<Geometry>();
+		DelaunayTriangulationBuilder triator = new DelaunayTriangulationBuilder();
+		triator.setSites(g);
+		Geometry tris = triator.getTriangles(gf);
+		for(int i=0; i<tris.getNumGeometries(); i++){
+			if(g.contains(tris.getGeometryN(i))) valid.add(tris.getGeometryN(i));
 		}
-		return tris;
+		return valid;
+	}
+	
+	private String vertex(Coordinate c){
+		if(Double.isNaN(c.z)) c.z = 0;
+		return "vertex "+c.x+" "+c.y+" "+c.z+"\n";
+	}
+	
+	private String normal(Coordinate a, Coordinate b, Coordinate c){
+		Coordinate edge1 = new Coordinate(b.x-a.x,b.y-a.y,b.z-a.z);
+		Coordinate edge2 = new Coordinate(c.x-a.x,c.y-a.y,c.z-a.z);
+		Coordinate normal = cross(edge1,edge2);
+		double mag = Math.sqrt(Math.pow(normal.x,2)+Math.pow(normal.z,2)+Math.pow(normal.z,2));
+		normal.x /= mag;
+		normal.y /= mag;
+		normal.z /= mag;
+		if(Double.isNaN(normal.x)) normal.x = 0;
+		if(Double.isNaN(normal.y)) normal.y = 0;
+		if(Double.isNaN(normal.z)) normal.z = 0;
+		return "facet normal "+normal.x+" "+normal.y+" "+normal.z+"\n";
+	}
+	
+	private Coordinate cross(Coordinate a, Coordinate b){
+		Coordinate result = new Coordinate();
+		if(Double.isNaN(a.z)) a.z = 0;
+		if(Double.isNaN(b.z)) b.z = 0;
+		result.x = a.y * b.z - a.z * b.y;
+		result.y = a.z * b.x - a.x * b.z;
+		result.z = a.x * b.y - a.y * b.x;
+		return result;
+	}
+	
+	private Coordinate correct(Coordinate c){
+		return null;
 	}
 }

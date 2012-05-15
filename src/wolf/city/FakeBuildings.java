@@ -38,10 +38,13 @@ public class FakeBuildings {
 	public void saveSTL(){
 		if(buildings.size() > 0){
 			String stl = "";
+			stl += "solid buildings\n";
+			
 			for(FakeBuilding b : buildings){
 				stl += b.toSTL();
 			}
 			
+			stl += "endsolid buildings\n";
 			TextFileOutput tf = new TextFileOutput();
 			tf.data.add(stl);
 			tf.save("data/buildings.stl");
