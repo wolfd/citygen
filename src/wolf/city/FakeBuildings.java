@@ -4,6 +4,7 @@ package wolf.city;
 import java.util.ArrayList;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 import wolf.city.block.CityBlock;
 import wolf.city.block.Lot;
@@ -16,20 +17,25 @@ public class FakeBuildings {
 	private static final double MAX_HEIGHT = 200;
 	private static final double MIN_AREA = 100;
 	private static final int baseHeight = 16;
+	private static final double MIN_RATIO_BUILDING = 4;
 	City c;
 	public ArrayList<FakeBuilding> buildings;
 	public FakeBuildings(City city) {
 		c = city;
 		buildings = new ArrayList<FakeBuilding>();
 	}
-	
+
 	public void generate(){
 		if(c.bm.blocks != null && c.bm.blocks.size() > 0){
 			for(CityBlock b : c.bm.blocks){
 				if(b.lots != null && b.lots.size()>0){
 					for(Lot l: b.lots){
 						if(l.shape.distance(c.rm.shape)<4 && l.shape.getArea() > MIN_AREA){
-							buildings.add(new FakeBuilding(l.shape.buffer(-1), (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*c.pop.get((int)l.shape.getCentroid().getCoordinate().x, (int)l.shape.getCentroid().getCoordinate().y))),MAX_HEIGHT)));
+							Geometry buildingShape = l.shape.buffer(-1);
+							double ratio = buildingShape.getArea()/buildingShape.getLength();
+							if(ratio > MIN_RATIO_BUILDING){
+								buildings.add(new FakeBuilding(buildingShape, (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*c.pop.get((int)l.shape.getCentroid().getCoordinate().x, (int)l.shape.getCentroid().getCoordinate().y))),MAX_HEIGHT)));
+							}
 						}
 					}
 				}
@@ -38,12 +44,12 @@ public class FakeBuildings {
 		c.log.log("Saving STL");
 		saveSTL();
 	}
-	
+
 	public void saveSTL(){
 		if(buildings.size() > 0){
 			TextFileOutput tf = new TextFileOutput();
 			tf.data.add("solid buildings\n"); //file header
-			
+
 			for(int i=0; i<buildings.size(); i++){
 				FakeBuilding b = buildings.get(i);
 				//print status to console
@@ -70,11 +76,11 @@ public class FakeBuildings {
 			tf.data.add(rect(b2,b4));
 			//end file
 			tf.data.add("endsolid buildings\n");
-			
+
 			tf.save("data/buildings.stl");
 		}
 	}
-	
-	
+
+
 
 }
