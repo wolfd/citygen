@@ -1,8 +1,5 @@
 package wolf.util;
 
-import static wolf.util.STL.normal;
-import static wolf.util.STL.vertex;
-
 import com.vividsolutions.jts.geom.Coordinate;
 
 public class STL {

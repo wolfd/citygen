@@ -12,7 +12,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.operation.buffer.BufferOp;
+import com.vividsolutions.jts.operation.buffer.BufferParameters;
 
 public class Road {
 
@@ -63,13 +63,6 @@ public class Road {
 		int modWidth = width + extraWidth;
 		Coordinate a0 = a.pos;
 		Coordinate b0 = b.pos;
-		//this added caps to the geometry	
-		//		Turtle ta = new Turtle(a0, Math.toDegrees(Angle.angle(b0, a0)));
-		//		ta.move(width);
-		//		Turtle tb = new Turtle(b0, Math.toDegrees(Angle.angle(a0, b0)));
-		//		tb.move(width);
-		//		Coordinate a1 = new Coordinate(ta.pos);
-		//		Coordinate b1 = new Coordinate(tb.pos);
 
 		double ang = Angle.angle(a.pos, b.pos);
 
@@ -141,6 +134,6 @@ public class Road {
 	
 	public Geometry getFinalGeometry(){
 		Geometry g = gf.createLineString(new Coordinate[]{a.pos, b.pos});
-		return g.buffer(width, width/2, BufferOp.CAP_ROUND);
+		return g.buffer(width, width/4, BufferParameters.CAP_ROUND);
 	}
 }

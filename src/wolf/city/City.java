@@ -7,7 +7,6 @@ import wolf.city.map.Population;
 import wolf.city.map.Terrain;
 import wolf.city.map.Water;
 import wolf.city.map.Wealth;
-import wolf.gui.CityView;
 import wolf.util.Database;
 import wolf.util.Log;
 import wolf.util.MapRender;

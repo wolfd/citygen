@@ -63,7 +63,7 @@ public class Roadmap{
 	private double maximumRoadSnapDistance;
 	@SuppressWarnings("unused")
 	private double minimumRoadSnapDistance;
-	private float minimumPopulationHighway;
+	//private float minimumPopulationHighway;
 	public boolean finished = false;
 	public Geometry shape; //generate when final
 
@@ -100,7 +100,7 @@ public class Roadmap{
 		intersectionMaxConnections = config.getInt("intersectionMaxConnections", 5);
 		seedHighwayAngleSize = config.getDouble("seedHighwayAngleSize", 35);
 		minimumPopulation = config.getFloat("minimumPopulation", .2f);
-		minimumPopulationHighway = config.getFloat("minimumPopulationHighway", .3f);
+		//minimumPopulationHighway = config.getFloat("minimumPopulationHighway", .3f);
 		seedAtCenter = config.getBoolean("seedAtCenter", false);
 		highwayCount = config.getInt("highwayCount", 4);
 		minimumPopulationMainRoad = config.getFloat("minimumPopulationMainRoad", .35f);

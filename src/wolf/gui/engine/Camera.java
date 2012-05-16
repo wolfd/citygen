@@ -34,7 +34,7 @@ public class Camera {
 	private float zFar = 3000f;
 	private float zNear = 1f;
 	private float mouseSensitivity = .2f;
-	private boolean lookAtCenter;
+//	private boolean lookAtCenter;
 	private boolean renderBuildings = true;
 
 
@@ -191,11 +191,11 @@ public class Camera {
 		if(Keyboard.isKeyDown(Keyboard.KEY_Z)){
 			force = new Vector3f(0,0,0);
 		}
-		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
-			lookAtCenter = true;
-		}else{
-			lookAtCenter = false;
-		}
+//		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
+//			lookAtCenter = true;
+//		}else{
+//			lookAtCenter = false;
+//		}
 	}
 
 	public void render(City c){
