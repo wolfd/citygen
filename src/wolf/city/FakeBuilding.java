@@ -2,10 +2,13 @@ package wolf.city;
 
 import java.util.ArrayList;
 
+import static wolf.util.STL.*;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder;
+
 
 public class FakeBuilding {
 	private static GeometryFactory gf = new GeometryFactory();
@@ -95,36 +98,5 @@ public class FakeBuilding {
 		return valid;
 	}
 	
-	private String vertex(Coordinate c){
-		if(Double.isNaN(c.z)) c.z = 0;
-		return "vertex "+c.x+" "+c.y+" "+c.z+"\n";
-	}
-	
-	private String normal(Coordinate a, Coordinate b, Coordinate c){
-		Coordinate edge1 = new Coordinate(b.x-a.x,b.y-a.y,b.z-a.z);
-		Coordinate edge2 = new Coordinate(c.x-a.x,c.y-a.y,c.z-a.z);
-		Coordinate normal = cross(edge1,edge2);
-		double mag = Math.sqrt(Math.pow(normal.x,2)+Math.pow(normal.z,2)+Math.pow(normal.z,2));
-		normal.x /= mag;
-		normal.y /= mag;
-		normal.z /= mag;
-		if(Double.isNaN(normal.x)) normal.x = 0;
-		if(Double.isNaN(normal.y)) normal.y = 0;
-		if(Double.isNaN(normal.z)) normal.z = 0;
-		return "facet normal "+normal.x+" "+normal.y+" "+normal.z+"\n";
-	}
-	
-	private Coordinate cross(Coordinate a, Coordinate b){
-		Coordinate result = new Coordinate();
-		if(Double.isNaN(a.z)) a.z = 0;
-		if(Double.isNaN(b.z)) b.z = 0;
-		result.x = a.y * b.z - a.z * b.y;
-		result.y = a.z * b.x - a.x * b.z;
-		result.z = a.x * b.y - a.y * b.x;
-		return result;
-	}
-	
-	private Coordinate correct(Coordinate c){
-		return null;
-	}
+
 }
