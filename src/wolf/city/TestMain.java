@@ -1,6 +1,6 @@
 package wolf.city;
 
-import wolf.gui.engine.Camera;
+import wolf.gui.Camera;
 
 public class TestMain {
 
@@ -8,7 +8,7 @@ public class TestMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		int delta = 2;
+		double delta = 2;
 		// 9 is really buggy currently
 		//1234890
 		//1335279392788l is a cool seed currently (delta 2) 1335967536290
@@ -22,7 +22,7 @@ public class TestMain {
 		 */
 		
 		//1335539797929l
-		final City city = new City(1024*delta,1024*delta,System.currentTimeMillis());
+		final City city = new City((int)(1024*delta),(int)(1024*delta),System.currentTimeMillis());
 		
 		//cam.render(city);
 //		TimerTask tt = new TimerTask(){

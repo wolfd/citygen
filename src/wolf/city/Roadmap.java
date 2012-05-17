@@ -247,33 +247,22 @@ public class Roadmap{
 			}
 			if(cv != null){
 				cv.draw();
-				waitInMs(100);
 			}
 		}
-		//prune unnecessary roads (?)
 		log.log("Roads: "+roads.size());
-		{
+		{//union all of the road geometries
 			Geometry[] geoms = new Geometry[roads.size()];
 			for(int i=0; i<roads.size(); i++){
 				geoms[i] = (roads.get(i).getFinalGeometry());
 			}
 			GeometryFactory gf = new GeometryFactory();
 			GeometryCollection polygonCollection = gf.createGeometryCollection(geoms);
-			//union all of the road geometries
+			//union
 			shape = polygonCollection.buffer(0);
 		}
 		finished = true;
 	}
 
-
-	@SuppressWarnings("unused")
-	private void waitInMs(int ms) {
-		if(false){
-			long time = System.currentTimeMillis();
-			while(System.currentTimeMillis()<time+ms){
-			}
-		}
-	}
 
 	private Road connect(Road road) {
 		road.a.addConnecting(road.b); //connect intersections

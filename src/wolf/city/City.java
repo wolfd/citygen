@@ -4,9 +4,8 @@ import java.sql.SQLException;
 import java.util.Random;
 
 import wolf.city.map.Population;
-import wolf.city.map.Terrain;
 import wolf.city.map.Water;
-import wolf.city.map.Wealth;
+import wolf.gui.CityView;
 import wolf.util.Database;
 import wolf.util.Log;
 import wolf.util.MapRender;
@@ -17,9 +16,7 @@ public class City {
 	public int sizeX;
 	public int sizeY;
 	//maps
-	public Terrain terrain;
 	public Water water;
-	public Wealth wealth;
 	public Population pop;
 
 	public Roadmap rm;
@@ -41,9 +38,7 @@ public class City {
 		for(int i=0; i<10; i++){ //warm up the random number generator
 			random.nextDouble();
 		}
-		//terrain = new Terrain(this);
 		water = new Water(this);
-		//wealth = new Wealth(this);
 		pop = new Population(this);
 
 		rm = new Roadmap(this);
@@ -53,30 +48,28 @@ public class City {
 	}
 
 	public void generateRoadmap(){
-		//final CityView cv = new CityView(this);
-		rm.generate(/*cv*/);
+		final CityView cv = new CityView(this);
+		rm.generate(cv);
 		bm.getBlocks(rm);
 		fb.generate();
 		bm.save("data/blocks.txt", "data/lots.txt");
 		
 		try {
 			Database d = new Database();
-			d.open("city.db");
+			d.open("data/city.db");
 			d.saveCityData(this);
 			d.close();
+			log.log("Database saved");
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//cv.close();
-		//		if(Popup.confirm("Render?", "CityGen")){
-		//			MapRender.render(this,"render");
-		//		}
-		//		log.save("/log.log");
+		
 		catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		cv.close();
 	}
 
 	public void windowClosed(){

@@ -1,4 +1,4 @@
-package wolf.gui.engine;
+package wolf.gui;
 
 import java.util.Random;
 
@@ -340,6 +340,7 @@ public class Camera {
 			Display.update();
 		}else{
 			Display.destroy();
+			c.windowClosed();
 			System.exit(0);
 		}
 	}
