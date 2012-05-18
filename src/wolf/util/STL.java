@@ -44,10 +44,10 @@ public class STL {
 		String stl = "";
 		Coordinate br = new Coordinate(bl);
 		br.x = tr.x;
-		Coordinate tl = new Coordinate(bl);
-		tl.y = tr.y;
+		Coordinate tl = new Coordinate(tr);
+		tl.x = bl.x;
 		//first triangle
-		stl += normal(bl, br, tr);
+		stl += normal(tr, tl, bl);
 		stl += "outer loop\n";
 		stl += vertex(tr);
 		stl += vertex(tl);
@@ -55,7 +55,7 @@ public class STL {
 		stl += "endloop\n";
 		stl += "endfacet\n";
 		//second triangle
-		stl += normal(bl, br, tr);
+		stl += normal(tr, bl, br);
 		stl += "outer loop\n";
 		stl += vertex(tr);
 		stl += vertex(bl);
