@@ -16,7 +16,7 @@ public class FakeBuildings {
 	private static final double MIN_HEIGHT = 16;
 	private static final double MAX_HEIGHT = 200;
 	private static final double MIN_AREA = 100;
-	private static final int baseHeight = 16;
+	private static final int baseHeight = 40;
 	private static final double MIN_RATIO_BUILDING = 4;
 	City c;
 	public ArrayList<FakeBuilding> buildings;

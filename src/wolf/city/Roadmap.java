@@ -52,7 +52,7 @@ public class Roadmap{
 	private double seedHighwayAngleSize;
 	private float minimumPopulation;
 	private boolean seedAtCenter;
-	private int highwayCount;
+	//private int highwayCount;
 	private float minimumPopulationMainRoad;
 	private int populationSampleRadiusMainRoad;
 	private int popTests;
@@ -102,7 +102,7 @@ public class Roadmap{
 		minimumPopulation = config.getFloat("minimumPopulation", .2f);
 		//minimumPopulationHighway = config.getFloat("minimumPopulationHighway", .3f);
 		seedAtCenter = config.getBoolean("seedAtCenter", false);
-		highwayCount = config.getInt("highwayCount", 4);
+		//highwayCount = config.getInt("highwayCount", 4);
 		minimumPopulationMainRoad = config.getFloat("minimumPopulationMainRoad", .35f);
 		populationSampleRadiusMainRoad = config.getInt("populationSampleRadiusMainRoad", 5);
 		popTests = config.getInt("popTests", 8);
@@ -110,7 +110,7 @@ public class Roadmap{
 		maximumRatioIntersectionArea = config.getDouble("maximumRatioIntersectionArea", .1);
 		minimumIntersectionAngle = config.getDouble("minimumIntersectionAngle", 25d);
 		minimumRoadLength = config.getDouble("minimumRoadLength", 17d);
-		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 30d);
+		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 50d);
 		minimumRoadSnapDistance = config.getDouble("minimumRoadSnapDistance", 3d);
 
 		try {
@@ -290,6 +290,7 @@ public class Roadmap{
 			t.move(32);
 			roadQueue.add(new Road(new Intersection(startPoint), new Intersection(t.pos), RoadType.HIGHWAY, basicRule));
 		}
+		int highwayCount = Math.max((city.sizeX*2+city.sizeY*2)/(2*1024),1);
 		for(int i=0; i<highwayCount; i++){
 			//highway from random side
 			int direction = Math.abs(city.random.nextInt()%4);

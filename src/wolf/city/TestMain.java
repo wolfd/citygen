@@ -8,7 +8,7 @@ public class TestMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		double delta = 2;
+		double delta = 1;
 		// 9 is really buggy currently
 		//1234890
 		//1335279392788l is a cool seed currently (delta 2) 1335967536290
@@ -20,6 +20,8 @@ public class TestMain {
 		 * 1335321717775
 		 * 
 		 */
+		
+		//1337268014460 small city (delta 1)
 		
 		//1335539797929l
 		final City city = new City((int)(1024*delta),(int)(1024*delta),System.currentTimeMillis());
