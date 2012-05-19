@@ -40,12 +40,12 @@ public class STL {
 		return c;
 	}
 	
-	public static String rect(Coordinate bl, Coordinate tr){
+	public static String rect(Coordinate tl, Coordinate br){
 		String stl = "";
-		Coordinate br = new Coordinate(bl);
-		br.x = tr.x;
-		Coordinate tl = new Coordinate(tr);
-		tl.x = bl.x;
+		Coordinate bl = new Coordinate(br);
+		bl.x = tl.x;
+		Coordinate tr = new Coordinate(tl);
+		tr.x = br.x;
 		//first triangle
 		stl += normal(tr, tl, bl);
 		stl += "outer loop\n";

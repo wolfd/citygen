@@ -60,20 +60,20 @@ public class FakeBuildings {
 			}
 			//base for printing
 			//corners
-			Coordinate a1 = new Coordinate(-c.sizeX/2, c.sizeY/2, 0);
-			Coordinate a2 = new Coordinate(c.sizeX/2, c.sizeY/2, 0);
-			Coordinate a3 = new Coordinate(c.sizeX/2, -c.sizeY/2, 0);
-			Coordinate a4 = new Coordinate(-c.sizeX/2, -c.sizeY/2, 0);
-			Coordinate b1 = new Coordinate(-c.sizeX/2, c.sizeY/2, -baseHeight);
-			Coordinate b2 = new Coordinate(c.sizeX/2, c.sizeY/2, -baseHeight);
-			Coordinate b3 = new Coordinate(c.sizeX/2, -c.sizeY/2, -baseHeight);
-			Coordinate b4 = new Coordinate(-c.sizeX/2, -c.sizeY/2, -baseHeight);
-			tf.data.add(rect(a1,a3));
-			tf.data.add(rect(a1,b4));
-			tf.data.add(rect(a4,b3));
-			tf.data.add(rect(a3,b2));
-			tf.data.add(rect(a2,b1));
-			tf.data.add(rect(b2,b4));
+//			Coordinate a1 = new Coordinate(-c.sizeX/2, c.sizeY/2, 0);
+//			Coordinate a2 = new Coordinate(c.sizeX/2, c.sizeY/2, 0);
+//			Coordinate a3 = new Coordinate(c.sizeX/2, -c.sizeY/2, 0);
+//			Coordinate a4 = new Coordinate(-c.sizeX/2, -c.sizeY/2, 0);
+//			Coordinate b1 = new Coordinate(-c.sizeX/2, c.sizeY/2, -baseHeight);
+//			Coordinate b2 = new Coordinate(c.sizeX/2, c.sizeY/2, -baseHeight);
+//			Coordinate b3 = new Coordinate(c.sizeX/2, -c.sizeY/2, -baseHeight);
+//			Coordinate b4 = new Coordinate(-c.sizeX/2, -c.sizeY/2, -baseHeight);
+//			tf.data.add(rect(a1,a3));
+//			tf.data.add(rect(b2,b4));
+//			tf.data.add(rect(a4,b3));
+//			tf.data.add(rect(a3,b2));
+//			tf.data.add(rect(a2,b1));
+//			tf.data.add(rect(a1,b4));
 			//end file
 			tf.data.add("endsolid buildings\n");
 

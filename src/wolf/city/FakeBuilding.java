@@ -58,23 +58,23 @@ public class FakeBuilding {
 			ArrayList<Geometry> gBase = toTriangles(g);
 			for(Geometry tri: gBase){
 				//base
-				stl += normal(tri.getCoordinates()[2],tri.getCoordinates()[1],tri.getCoordinates()[0]);
+				stl += normal(tri.getCoordinates()[0],tri.getCoordinates()[1],tri.getCoordinates()[2]);
 				stl += "outer loop\n";
-				stl += vertex(tri.getCoordinates()[2]);
-				stl += vertex(tri.getCoordinates()[1]);
 				stl += vertex(tri.getCoordinates()[0]);
+				stl += vertex(tri.getCoordinates()[1]);
+				stl += vertex(tri.getCoordinates()[2]);
 				stl += "endloop\n";
 				stl += "endfacet\n";
 				
 				//top
-				Coordinate a = new Coordinate(tri.getCoordinates()[0]);
+				Coordinate a = new Coordinate(tri.getCoordinates()[2]);
 				Coordinate b = new Coordinate(tri.getCoordinates()[1]);
-				Coordinate c = new Coordinate(tri.getCoordinates()[2]);
+				Coordinate c = new Coordinate(tri.getCoordinates()[0]);
 				a.z += height;
 				b.z += height;
 				c.z += height;
 				
-				stl += normal(tri.getCoordinates()[0],tri.getCoordinates()[1],tri.getCoordinates()[2]);
+				stl += normal(a,b,c);
 				stl += "outer loop\n";
 				stl += vertex(a);
 				stl += vertex(b);
