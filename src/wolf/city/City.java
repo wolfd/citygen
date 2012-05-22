@@ -3,6 +3,7 @@ package wolf.city;
 import java.sql.SQLException;
 import java.util.Random;
 
+import wolf.city.buildings.FakeBuildings;
 import wolf.city.map.Population;
 import wolf.city.map.Water;
 import wolf.gui.CityView;

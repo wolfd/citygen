@@ -110,7 +110,7 @@ public class Roadmap{
 		maximumRatioIntersectionArea = config.getDouble("maximumRatioIntersectionArea", .1);
 		minimumIntersectionAngle = config.getDouble("minimumIntersectionAngle", 25d);
 		minimumRoadLength = config.getDouble("minimumRoadLength", 17d);
-		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 50d);
+		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 30d);
 		minimumRoadSnapDistance = config.getDouble("minimumRoadSnapDistance", 3d);
 
 		try {
@@ -469,7 +469,7 @@ public class Roadmap{
 		for(GridSpace g: spaces){
 			LinkedList<Road> roads = grid.get(g);
 			for(Road i: roads){
-				if(!tested.contains(i) && !((i.getType() == RoadType.HIGHWAY || i.getType() == RoadType.MAIN) && r.getType() == RoadType.STREET) /*streets ignore main and highway types*/){
+				if(!tested.contains(i) && !((i.getType() == RoadType.HIGHWAY || i.getType() == RoadType.MAIN) && (r.getType() == RoadType.STREET || r.getType() == RoadType.HIGHWAY)) /*streets ignore main and highway types*/){
 					Geometry b = i.getGeometry(expand);
 					if(a.intersects(b)){
 						Geometry c = a.intersection(b);

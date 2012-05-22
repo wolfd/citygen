@@ -14,9 +14,9 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import wolf.city.City;
-import wolf.city.FakeBuilding;
 import wolf.city.block.CityBlock;
 import wolf.city.block.Lot;
+import wolf.city.buildings.FakeBuilding;
 import wolf.city.road.Road;
 
 import static org.lwjgl.opengl.GL11.*;
