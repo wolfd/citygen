@@ -647,7 +647,6 @@ public class Roadmap{
 							if(waterSeen){
 								r.setType(RoadType.BRIDGE);
 							}else{
-								System.out.println("changed");
 								r.setType(RoadType.HIGHWAY);
 							}
 							r.b.pos = bestBridgePosition;

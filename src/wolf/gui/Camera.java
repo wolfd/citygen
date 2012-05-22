@@ -238,7 +238,7 @@ public class Camera {
 						red = 50;
 						green = 50;
 						blue = 55;
-						zShift = 15f;
+						zShift = 5f;
 						break;
 					}
 					case STREET:{
