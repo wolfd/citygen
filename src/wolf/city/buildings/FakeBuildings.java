@@ -17,7 +17,6 @@ public class FakeBuildings {
 	private static final double MIN_HEIGHT = 4;
 	private static final double MAX_HEIGHT = 200;
 	private static final double MIN_AREA = 100;
-	private static final int baseHeight = 40;
 	private static final double MIN_RATIO_BUILDING = 4;
 	private static final float MIN_POPULATION_BUILDING = .2f;
 	City c;
@@ -32,14 +31,20 @@ public class FakeBuildings {
 			for(CityBlock b : c.bm.blocks){
 				if(b.lots != null && b.lots.size()>0){
 					for(Lot l: b.lots){
-						Coordinate center = l.shape.getCentroid().getCoordinate();
-						float population = c.pop.get((int)center.x, (int)center.y);
-						if(population>MIN_POPULATION_BUILDING){
-							if(l.shape.distance(c.rm.shape)<4 && l.shape.getArea() > MIN_AREA){
-								Geometry buildingShape = l.shape.buffer(-(int)(c.random.nextDouble()*4));
-								double ratio = buildingShape.getArea()/buildingShape.getLength();
-								if(ratio > MIN_RATIO_BUILDING){
-									buildings.add(new FakeBuilding(buildingShape, (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*population)),MAX_HEIGHT)));
+						boolean waterPresent = false;
+						for(Coordinate cord: l.shape.getCoordinates()){
+							if(c.water.get((int)cord.x, (int)cord.y)>c.rm.noWaterCutoffDensity) waterPresent = true;
+						}
+						if(!waterPresent){
+							Coordinate center = l.shape.getCentroid().getCoordinate();
+							float population = c.pop.get((int)center.x, (int)center.y);
+							if(population>MIN_POPULATION_BUILDING){
+								if(l.shape.distance(c.rm.shape)<4 && l.shape.getArea() > MIN_AREA){
+									Geometry buildingShape = l.shape.buffer(-(int)(c.random.nextDouble()*4));
+									double ratio = buildingShape.getArea()/buildingShape.getLength();
+									if(ratio > MIN_RATIO_BUILDING){
+										buildings.add(new FakeBuilding(buildingShape, (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*population)),MAX_HEIGHT)));
+									}
 								}
 							}
 						}
@@ -64,22 +69,6 @@ public class FakeBuildings {
 				}
 				tf.data.add(b.toSTL());
 			}
-			//base for printing
-			//corners
-			//			Coordinate a1 = new Coordinate(-c.sizeX/2, c.sizeY/2, 0);
-			//			Coordinate a2 = new Coordinate(c.sizeX/2, c.sizeY/2, 0);
-			//			Coordinate a3 = new Coordinate(c.sizeX/2, -c.sizeY/2, 0);
-			//			Coordinate a4 = new Coordinate(-c.sizeX/2, -c.sizeY/2, 0);
-			//			Coordinate b1 = new Coordinate(-c.sizeX/2, c.sizeY/2, -baseHeight);
-			//			Coordinate b2 = new Coordinate(c.sizeX/2, c.sizeY/2, -baseHeight);
-			//			Coordinate b3 = new Coordinate(c.sizeX/2, -c.sizeY/2, -baseHeight);
-			//			Coordinate b4 = new Coordinate(-c.sizeX/2, -c.sizeY/2, -baseHeight);
-			//			tf.data.add(rect(a1,a3));
-			//			tf.data.add(rect(b2,b4));
-			//			tf.data.add(rect(a4,b3));
-			//			tf.data.add(rect(a3,b2));
-			//			tf.data.add(rect(a2,b1));
-			//			tf.data.add(rect(a1,b4));
 			//end file
 			tf.data.add("endsolid buildings\n");
 

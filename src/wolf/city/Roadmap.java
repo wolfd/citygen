@@ -92,8 +92,8 @@ public class Roadmap{
 		minimumPopulationHighwayIntersection = config.getFloat("minimumPopulationHighwayIntersection", .3f); //load all parameters from generation properties file
 		populationSampleRadiusHighwayIntersection = config.getInt("populationSampleRadiusHighwayIntersection", 5);
 		noWaterSampleRadius = config.getInt("noWaterSampleRadius", 3);
-		noWaterCutoffDensity = config.getFloat("noWaterCutoffDensity", .9f); //.7 old value
-		bridgeMaxLength = config.getInt("bridgeMaxLength", 350);
+		noWaterCutoffDensity = config.getFloat("noWaterCutoffDensity", .7f); //.7 old value
+		bridgeMaxLength = config.getInt("bridgeMaxLength", 512);
 		bridgeTests = config.getInt("bridgeTests", 16);
 		bridgePopulationCheckRadius = config.getInt("bridgePopulationCheckRadius", 5);
 		bridgeMinimumPopulation = config.getFloat("bridgeMinimumPopulation", .4f);
@@ -590,7 +590,7 @@ public class Roadmap{
 
 			double x = (xD/waterTests)*test;
 			double y = (yD/waterTests)*test;
-			float waterAvg = city.water.getCircleAvg((int)x, (int)y, noWaterSampleRadius);
+			float waterAvg = city.water.getCircleAvg((int)(x+r.a.pos.x), (int)(y+r.a.pos.y), noWaterSampleRadius);
 			if(waterAvg >= noWaterCutoffDensity){
 				//BRIDGE
 				if(r.getType() == RoadType.HIGHWAY || r.getType() == RoadType.BRIDGE){ //technically, it should never be a bridge

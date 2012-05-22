@@ -225,30 +225,34 @@ public class Camera {
 				for(int i=0; i<c.rm.roads.size(); i++){
 					Road road = c.rm.roads.get(i);
 					Geometry g = road.getGeometry();
-
+					float zShift = 0f;
 					switch(road.getType()){
 					case BRIDGE:{ //grey
 						red = 50;
 						green = 50;
 						blue = 50;
+						zShift = 1f;
 						break;
 					}
-					case HIGHWAY:{ //blue-green
-						red = 0;
+					case HIGHWAY:{
+						red = 50;
 						green = 50;
-						blue = 50;
+						blue = 55;
+						zShift = 15f;
 						break;
 					}
-					case STREET:{ //green
-						red = 0;
-						green = 150;
-						blue = 50;
+					case STREET:{
+						red = 50;
+						green = 50;
+						blue = 55;
+						zShift = 0f;
 						break;
 					}
-					case MAIN:{ //green
-						red = 0;
-						green = 100;
-						blue = 100;
+					case MAIN:{
+						red = 75;
+						green = 75;
+						blue = 75;
+						zShift = .25f;
 						break;
 					}
 					case DEFAULT:{ //red
@@ -268,7 +272,7 @@ public class Camera {
 					GL11.glColor4ub((byte)red, (byte)green, (byte)blue, (byte)alpha);
 					for(int j=0;j<4;j++){
 						Coordinate p = g.getCoordinates()[j];
-						GL11.glVertex2d(p.x,p.y);
+						GL11.glVertex3d(p.x,p.y,-zShift);
 					}
 				}
 				GL11.glEnd();
@@ -291,10 +295,10 @@ public class Camera {
 						}
 						Coordinate[] cs = b.shape.getCoordinates();
 						glBegin(GL_LINE_LOOP);
-						glColor3f(.2f,.2f,.5f);
+						glColor3f(.2f,.2f,.3f);
 						for(int j=0;j<cs.length;j++){
 							Coordinate p = cs[j];
-							glVertex2d(p.x,p.y);
+							glVertex3d(p.x,p.y, -.1f);
 						}
 						glEnd();
 					}else{
@@ -306,25 +310,26 @@ public class Camera {
 				for(FakeBuilding b : c.fb.buildings){
 					Coordinate[] cs = b.g.getCoordinates();
 					glBegin(GL_POLYGON);
-					glColor3f(.2f,.2f,.5f);
+					glColor3f(.2f,.2f,.2f);
 					for(int j=0;j<cs.length;j++){
 						Coordinate p = cs[j];
 						glVertex3d(p.x,p.y,0);
 					}
 					glEnd();
 					glBegin(GL_POLYGON);
-					glColor3f(.2f,.2f,.5f);
+					glColor3f(.2f,.2f,.2f);
 					for(int j=0;j<cs.length;j++){
 						Coordinate p = cs[j];
 						glVertex3d(p.x,p.y,-b.height);
 					}
 					glEnd();
 					glBegin(GL_QUADS);
-					glColor3f(.2f,.2f,.5f);
+					float rand = r.nextFloat()/5;
+					glColor3f(.3f+rand,.3f+rand,.3f+rand);
 					if(cs.length>0){
 						Coordinate q = cs[cs.length-1];
 						for(int j=0;j<cs.length;j++){
-							glColor3f(.2f,r.nextFloat(),.5f);
+							//glColor3f(r.nextFloat(),r.nextFloat(),r.nextFloat());
 							Coordinate p = cs[j];
 							glVertex3d(p.x,p.y,0);
 							glVertex3d(p.x,p.y,-b.height);
