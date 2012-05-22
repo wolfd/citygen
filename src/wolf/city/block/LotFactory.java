@@ -18,10 +18,6 @@ public class LotFactory {
 	public static void makeLots(City c, List<CityBlock> blocks){
 		for(CityBlock block: blocks){
 			if(block.shape.getArea() > SMALL_LOT_SIZE){
-				//			if(block.equals(blocks.get(0))){
-				//				//this block is the exterior (almost always)
-				//				
-				//			}else{
 				//make a stack of polygons
 				List<Polygon> stack = new LinkedList<Polygon>();
 
@@ -105,10 +101,14 @@ public class LotFactory {
 								for(Polygon lot1:lot1Arr){
 									Point ctr = lot1.getCentroid();
 									double distanceFromCenter = Math.sqrt((ctr.getX()*ctr.getX())+(ctr.getY()*ctr.getY()));
-									double cutOffSize = Math.max(Math.min(distanceFromCenter,LARGE_LOT_SIZE)*DISTANCE_DELTA,SMALL_LOT_SIZE);
-									cutOffSize = cutOffSize + cutOffSize*(c.random.nextDouble()/4);
-
-									if(lot1.getArea()<cutOffSize ){
+									double cutOffSize;
+									if(c.random.nextBoolean()){
+										cutOffSize = Math.max(Math.min(distanceFromCenter,LARGE_LOT_SIZE)*DISTANCE_DELTA,SMALL_LOT_SIZE);
+										cutOffSize = cutOffSize + cutOffSize*(c.random.nextDouble()/4);
+									}else{
+										cutOffSize = c.random.nextDouble()*(LARGE_LOT_SIZE - SMALL_LOT_SIZE)+SMALL_LOT_SIZE;
+									}
+									if(lot1.getArea()<cutOffSize){
 										finished.add(lot1);
 									}else{
 										stack.add(lot1);
@@ -119,9 +119,14 @@ public class LotFactory {
 								for(Polygon lot2:lot2Arr){
 									Point ctr = lot2.getCentroid();
 									double distanceFromCenter = Math.sqrt((ctr.getX()*ctr.getX())+(ctr.getY()*ctr.getY()));
-									double cutOffSize = Math.max(Math.min(distanceFromCenter,LARGE_LOT_SIZE)*DISTANCE_DELTA,SMALL_LOT_SIZE);
-									cutOffSize = cutOffSize + cutOffSize*(c.random.nextDouble()/4);
-									if(lot2.getArea()<cutOffSize ){
+									double cutOffSize;
+									if(c.random.nextBoolean()){
+										cutOffSize = Math.max(Math.min(distanceFromCenter,LARGE_LOT_SIZE)*DISTANCE_DELTA,SMALL_LOT_SIZE);
+										cutOffSize = cutOffSize + cutOffSize*(c.random.nextDouble()/4);
+									}else{
+										cutOffSize = c.random.nextDouble()*(LARGE_LOT_SIZE - SMALL_LOT_SIZE)+SMALL_LOT_SIZE;
+									}
+									if(lot2.getArea()<cutOffSize){
 										finished.add(lot2);
 									}else{
 										stack.add(lot2);

@@ -19,7 +19,7 @@ public class FakeBuildings {
 	private static final double MIN_AREA = 100;
 	private static final int baseHeight = 40;
 	private static final double MIN_RATIO_BUILDING = 4;
-	private static final float MIN_POPULATION_BUILDING = .1f;
+	private static final float MIN_POPULATION_BUILDING = .2f;
 	City c;
 	public ArrayList<FakeBuilding> buildings;
 	public FakeBuildings(City city) {
