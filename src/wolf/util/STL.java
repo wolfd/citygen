@@ -5,7 +5,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 public class STL {
 	public static String vertex(Coordinate c){
 		c = correct(c);
-		return "vertex "+c.x+" "+c.y+" "+c.z+"\n";
+		return "vertex "+c.x+" "+c.z+" "+c.y+"\n";
 	}
 	
 	public static String normal(Coordinate a, Coordinate b, Coordinate c){
@@ -17,7 +17,7 @@ public class STL {
 		normal.y /= mag;
 		normal.z /= mag;
 		normal = correct(normal);
-		return "facet normal "+normal.x+" "+normal.y+" "+normal.z+"\n";
+		return "facet normal "+normal.x+" "+normal.z+" "+normal.y+"\n";
 	}
 	
 	public static Coordinate cross(Coordinate a, Coordinate b){
