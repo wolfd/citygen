@@ -85,9 +85,9 @@ public class Basic implements RoadRule {
 			double roadLength = Math.abs(Math.sin(Math.toRadians((previousAngle-angle)%360))*nextRoadLength); //sin approximates how long next road should be
 			t.angle = angle;
 			t.move((float)roadLength);
-			returnRoad = new Road(road.b, new Intersection(new Coordinate(t.pos)), nextRoadType, this); //roads set to default should die.
+			returnRoad = new Road(road.b, new Intersection(new Coordinate(t.pos)), nextRoadType, this, road); //roads set to default should die.
 		}else{
-			returnRoad = new Road(road.b, new Intersection(bestPosition), nextRoadType, this); //roads set to default should die.
+			returnRoad = new Road(road.b, new Intersection(bestPosition), nextRoadType, this, road); //roads set to default should die.
 		}
 		return returnRoad;
 	}

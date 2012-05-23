@@ -22,18 +22,27 @@ public class Road {
 	public boolean finished;
 	public RoadRule rule;
 	public int width;
+	public int numberParents;
 	private static GeometryFactory gf = new GeometryFactory();
 
-	public Road(Intersection a, Intersection b, RoadType type, RoadRule rr){
+	public Road(Intersection a, Intersection b, RoadType type, RoadRule rr, Road parent){
 		this.a = a;
 		this.b = b;
 		this.type = type;
 		width = type.getWidth();
 		rule = rr;
+		if(parent != null){
+			
+			numberParents += parent.numberParents;
+		}
+	}
+	
+	public Road(Intersection a, Intersection b, RoadType type, RoadRule rr){
+		this(a, b, type, rr, null);
 	}
 
 	public Road(Road r) {
-		this(new Intersection(r.a.pos), new Intersection(r.b.pos),r.type, r.rule);
+		this(new Intersection(r.a.pos), new Intersection(r.b.pos),r.type, r.rule, null);
 	}
 
 	public void setType(RoadType type){

@@ -55,7 +55,7 @@ public class OffRamp implements RoadRule {
 			t.angle = angle;
 			t.move((float)roadLength);
 			
-			returnRoad = new Road(road.b, new Intersection(new Coordinate(t.pos)), nextRoadType, new Basic(c));
+			returnRoad = new Road(road.b, new Intersection(new Coordinate(t.pos)), nextRoadType, new Basic(c), road);
 		}
 		return returnRoad;
 	}

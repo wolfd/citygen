@@ -30,12 +30,13 @@ public class Camera {
 	public Vector3f rot;
 	private int windowWidth = 800;
 	private int windowHeight = 640;
-	private float fov = 70;
+	private float fov = 110;
 	private float zFar = 3000f;
 	private float zNear = 1f;
 	private float mouseSensitivity = .2f;
 //	private boolean lookAtCenter;
 	private boolean renderBuildings = true;
+	private boolean renderBlocksAndLots = false;
 
 
 	public Camera(){
@@ -277,7 +278,7 @@ public class Camera {
 				}
 				GL11.glEnd();
 			}
-			if(c.bm.blocks != null && c.bm.blocks.size() > 0){
+			if(renderBlocksAndLots  && c.bm.blocks != null && c.bm.blocks.size() > 0){
 				for(CityBlock b : c.bm.blocks){
 					if(b.lots != null && b.lots.size()>0){
 						for(Lot l: b.lots){

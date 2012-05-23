@@ -66,6 +66,7 @@ public class Roadmap{
 	//private float minimumPopulationHighway;
 	public boolean finished = false;
 	public Geometry shape; //generate when final
+	private int minimumNumberParents;
 
 
 	public Roadmap(City city){
@@ -92,27 +93,27 @@ public class Roadmap{
 		minimumPopulationHighwayIntersection = config.getFloat("minimumPopulationHighwayIntersection", .3f); //load all parameters from generation properties file
 		populationSampleRadiusHighwayIntersection = config.getInt("populationSampleRadiusHighwayIntersection", 5);
 		noWaterSampleRadius = config.getInt("noWaterSampleRadius", 3);
-		noWaterCutoffDensity = config.getFloat("noWaterCutoffDensity", .7f); //.7 old value
+		noWaterCutoffDensity = config.getFloat("noWaterCutoffDensity", .7f);
 		bridgeMaxLength = config.getInt("bridgeMaxLength", 512);
-		bridgeTests = config.getInt("bridgeTests", 16);
+		bridgeTests = config.getInt("bridgeTests", 32);
 		bridgePopulationCheckRadius = config.getInt("bridgePopulationCheckRadius", 5);
 		bridgeMinimumPopulation = config.getFloat("bridgeMinimumPopulation", .4f);
 		intersectionMaxConnections = config.getInt("intersectionMaxConnections", 5);
-		seedHighwayAngleSize = config.getDouble("seedHighwayAngleSize", 35);
+		seedHighwayAngleSize = config.getDouble("seedHighwayAngleSize", 15);
 		minimumPopulation = config.getFloat("minimumPopulation", .2f);
 		//minimumPopulationHighway = config.getFloat("minimumPopulationHighway", .3f);
 		seedAtCenter = config.getBoolean("seedAtCenter", false);
-		//highwayCount = config.getInt("highwayCount", 4);
 		minimumPopulationMainRoad = config.getFloat("minimumPopulationMainRoad", .35f);
 		populationSampleRadiusMainRoad = config.getInt("populationSampleRadiusMainRoad", 5);
 		popTests = config.getInt("popTests", 8);
 		waterTests = config.getInt("waterTests", 8);
 		maximumRatioIntersectionArea = config.getDouble("maximumRatioIntersectionArea", .1);
-		minimumIntersectionAngle = config.getDouble("minimumIntersectionAngle", 25d);
+		minimumIntersectionAngle = config.getDouble("minimumIntersectionAngle", 35d); //25
 		minimumRoadLength = config.getDouble("minimumRoadLength", 17d);
-		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 30d);
-		minimumRoadSnapDistance = config.getDouble("minimumRoadSnapDistance", 3d);
-
+		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 40d);
+		minimumRoadSnapDistance = config.getDouble("minimumRoadSnapDistance", 2d);
+		minimumNumberParents = config.getInt("minimumNumberParents", 8);
+		
 		try {
 			((AbstractFileConfiguration) config).save();
 		} catch (ConfigurationException e) {
@@ -249,6 +250,13 @@ public class Roadmap{
 				cv.draw();
 			}
 		}
+//		{//trim roads with not enough 'parents'
+//			for(int i=0; i<roads.size(); i++){
+//				if(roads.get(i).numberParents<minimumNumberParents){
+//					roads.remove(i);
+//				}
+//			}
+//		}
 		log.log("Roads: "+roads.size());
 		{//union all of the road geometries
 			Geometry[] geoms = new Geometry[roads.size()];
@@ -350,11 +358,7 @@ public class Roadmap{
 		//expensive tests
 		r = waterCheck(r);
 		r = snapToIntersection(r);
-		if(proximityCheck(r)){
-
-		}else{
-			return null;
-		}
+		r = proximityCheck(r);
 		r = trimToIntersection(r);
 		r = lengthCheck(r); //fixes from trim
 		r = popCheck(r);
@@ -457,9 +461,9 @@ public class Roadmap{
 		return r;
 	}
 
-	private boolean proximityCheck(Road r) {
+	private Road proximityCheck(Road r) {
 		if(r==null){
-			return false;
+			return null;
 		}
 		int expand = r.width*2;
 		Geometry a = r.getGeometry(expand);
@@ -474,17 +478,17 @@ public class Roadmap{
 					if(a.intersects(b)){
 						Geometry c = a.intersection(b);
 						if(c.getArea()>maximumRatioIntersectionArea*a.getArea()){
-							return false;
+							return null;
 						}
 						if(c.getArea()>maximumRatioIntersectionArea*b.getArea()){
-							return false;
+							return null;
 						}
 					}
 				}
 				tested.add(i);
 			}
 		}
-		return true;
+		return r;
 	}
 
 

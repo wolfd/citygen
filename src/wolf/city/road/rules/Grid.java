@@ -25,7 +25,7 @@ public class Grid implements RoadRule {
 	@Override
 	public Road globalGoals(City city, Road road, Direction d) {
 		double previousAngle = Math.toDegrees(Angle.angle(road.a.pos, road.b.pos));
-		Road r = new Road(road.b, new Intersection(road.b.pos), RoadType.STREET, this);
+		Road r = new Road(road.b, new Intersection(road.b.pos), RoadType.STREET, this, road);
 		Turtle t;
 		if(road.getType() == RoadType.HIGHWAY){// || road.type == RoadType.MAIN){
 			t = new Turtle(r.a.pos, previousAngle);
