@@ -113,7 +113,7 @@ public class Roadmap{
 		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 40d);
 		minimumRoadSnapDistance = config.getDouble("minimumRoadSnapDistance", 2d);
 		minimumNumberParents = config.getInt("minimumNumberParents", 8);
-		
+
 		try {
 			((AbstractFileConfiguration) config).save();
 		} catch (ConfigurationException e) {
@@ -250,13 +250,13 @@ public class Roadmap{
 				cv.draw();
 			}
 		}
-//		{//trim roads with not enough 'parents'
-//			for(int i=0; i<roads.size(); i++){
-//				if(roads.get(i).numberParents<minimumNumberParents){
-//					roads.remove(i);
-//				}
-//			}
-//		}
+		//		{//trim roads with not enough 'parents'
+		//			for(int i=0; i<roads.size(); i++){
+		//				if(roads.get(i).numberParents<minimumNumberParents){
+		//					roads.remove(i);
+		//				}
+		//			}
+		//		}
 		log.log("Roads: "+roads.size());
 		{//union all of the road geometries
 			Geometry[] geoms = new Geometry[roads.size()];
@@ -592,12 +592,15 @@ public class Roadmap{
 			double xD = r.a.pos.x - r.b.pos.x;
 			double yD = r.a.pos.y - r.b.pos.y;
 
-			double x = (xD/waterTests)*test;
-			double y = (yD/waterTests)*test;
-			float waterAvg = city.water.getCircleAvg((int)(x+r.a.pos.x), (int)(y+r.a.pos.y), noWaterSampleRadius);
+			double x = ((xD/(double)waterTests)*(double)test)+r.a.pos.x;
+			double y = ((yD/(double)waterTests)*(double)test)+r.a.pos.y;
+			float waterAvg = city.water.getCircleAvg((int)x, (int)y, noWaterSampleRadius);
 			if(waterAvg >= noWaterCutoffDensity){
 				//BRIDGE
-				if(r.getType() == RoadType.HIGHWAY || r.getType() == RoadType.BRIDGE){ //technically, it should never be a bridge
+				if(!(r.getType() == RoadType.HIGHWAY || r.getType() == RoadType.BRIDGE)){
+					return null;
+				}else{
+					//technically, it should never be a bridge
 					//make a bridge if high enough population density
 					float population = city.pop.getCircleAvg((int)loc.x, (int)loc.y, bridgePopulationCheckRadius);
 
@@ -662,7 +665,6 @@ public class Roadmap{
 					}
 
 				}
-				return null;
 			}
 		}
 		//Road passed WATER CHECK

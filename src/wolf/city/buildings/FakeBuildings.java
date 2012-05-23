@@ -52,11 +52,11 @@ public class FakeBuildings {
 				}
 			}
 		}
-		c.log.log("Saving STL");
-		saveSTL();
+		
 	}
 
 	public void saveSTL(){
+		c.log.log("Saving STL");
 		if(buildings.size() > 0){
 			TextFileOutput tf = new TextFileOutput();
 			tf.data.add("solid buildings\n"); //file header

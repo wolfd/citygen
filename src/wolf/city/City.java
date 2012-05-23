@@ -74,8 +74,19 @@ public class City {
 	}
 
 	public void windowClosed(){
+		boolean renderMap = false;
+		boolean stlOutput = false;
 		if(Popup.confirm("Render?", "CityGen")){
+			renderMap = true;
+		}
+		if(Popup.confirm("Save STL file?", "CityGen")){
+			stlOutput = true;
+		}
+		if(renderMap){
 			MapRender.render(this,"render");
+		}
+		if(stlOutput){
+			fb.saveSTL();
 		}
 		log.save("/log-"+System.currentTimeMillis()+".log");
 	}
