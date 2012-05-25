@@ -26,6 +26,7 @@ import wolf.city.road.RoadQueue;
 import wolf.city.road.RoadType;
 import wolf.city.road.rules.Basic;
 import wolf.city.road.rules.Direction;
+import wolf.city.road.rules.Grid;
 import wolf.city.road.rules.OffRamp;
 import wolf.gui.CityView;
 import wolf.util.Log;
@@ -93,7 +94,7 @@ public class Roadmap{
 		minimumPopulationHighwayIntersection = config.getFloat("minimumPopulationHighwayIntersection", .3f); //load all parameters from generation properties file
 		populationSampleRadiusHighwayIntersection = config.getInt("populationSampleRadiusHighwayIntersection", 5);
 		noWaterSampleRadius = config.getInt("noWaterSampleRadius", 3);
-		noWaterCutoffDensity = config.getFloat("noWaterCutoffDensity", .7f);
+		noWaterCutoffDensity = config.getFloat("noWaterCutoffDensity", .8f);
 		bridgeMaxLength = config.getInt("bridgeMaxLength", 512);
 		bridgeTests = config.getInt("bridgeTests", 32);
 		bridgePopulationCheckRadius = config.getInt("bridgePopulationCheckRadius", 5);
@@ -109,7 +110,7 @@ public class Roadmap{
 		waterTests = config.getInt("waterTests", 8);
 		maximumRatioIntersectionArea = config.getDouble("maximumRatioIntersectionArea", .1);
 		minimumIntersectionAngle = config.getDouble("minimumIntersectionAngle", 35d); //25
-		minimumRoadLength = config.getDouble("minimumRoadLength", 17d);
+		minimumRoadLength = config.getDouble("minimumRoadLength", 5d);
 		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 40d);
 		minimumRoadSnapDistance = config.getDouble("minimumRoadSnapDistance", 2d);
 		minimumNumberParents = config.getInt("minimumNumberParents", 8);
@@ -196,15 +197,18 @@ public class Roadmap{
 			}else{
 				Road r = road.rule.globalGoals(city, road, Direction.FORWARD);
 				r.setType(RoadType.MAIN);
-				if(city.pop.getCircleAvg((int)road.b.pos.x, (int)road.b.pos.y, populationSampleRadiusHighwayIntersection) >= minimumPopulationHighwayIntersection){
-					//determine if this location should have an intersection (or should all locations have an intersection and then prune later?)
-					r.setType(RoadType.STREET);
-					//yes, have an intersection! Free, with your purchase!
-					rq.add(localConstraints(r.rule.globalGoals(city, road, Direction.LEFT)));
-					rq.add(localConstraints(r.rule.globalGoals(city, road, Direction.RIGHT)));
-				}
+				//have an intersection! Free, with your purchase!
+				Road inters1 = r.rule.globalGoals(city, road, Direction.LEFT);
+				Road inters2 = r.rule.globalGoals(city, road, Direction.RIGHT);
+				//set the type to street, give it a proper rule
+				inters1.setType(RoadType.STREET);
+				inters1.rule = new Grid(city);
+				inters2.setType(RoadType.STREET);
+				inters2.rule = new Grid(city);
+
+				rq.add(inters1);
+				rq.add(inters2);
 				rqM.add(localConstraints(r));
-				//city.pop.removeDensityLine(road);
 			}
 			roads.add(connect(road));
 			grid.add(road); //for collision detection
@@ -230,6 +234,9 @@ public class Roadmap{
 				if(road.finished){
 					//finished
 				}else{
+					if(road.rule instanceof OffRamp){
+						road.rule = new Grid(city);
+					}
 					if(city.random.nextDouble()>.9){ //makes it look like a modern/whatever neighborhood
 						road.rule = road.rule.mutate();
 					}
@@ -257,6 +264,35 @@ public class Roadmap{
 		//				}
 		//			}
 		//		}
+		//intersection fix
+//		for(int i=0; i<roads.size(); i++){
+//			Road a = roads.get(i);
+//			for(int j=0; j<roads.size(); j++){
+//				Road b = roads.get(j);
+//				Coordinate c = a.getLineSegment().intersection(b.getLineSegment()); //problem is that if they touch at all, it will intersect
+//				if(c != null){
+//					{
+//						Intersection end = a.b;
+//						Intersection mid = new Intersection(c);
+//						a.b = mid;
+//						Road r = new Road(a);
+//						r.a = mid;
+//						r.b = end;
+//						roads.add(r);
+//					}
+//					{
+//						Intersection end = b.b;
+//						Intersection mid = new Intersection(c);
+//						b.b = mid;
+//						Road r = new Road(b);
+//						r.a = mid;
+//						r.b = end;
+//						roads.add(r);
+//					}
+//
+//				}
+//			}
+//		}
 		log.log("Roads: "+roads.size());
 		{//union all of the road geometries
 			Geometry[] geoms = new Geometry[roads.size()];
@@ -497,7 +533,8 @@ public class Roadmap{
 			return null;
 		}
 		double distance = r.a.pos.distance(r.b.pos);
-		if(distance>minimumRoadLength){ //6 blocks is minimum road length
+
+		if(distance>minimumRoadLength){ //minimum road length
 			return r;
 		}
 

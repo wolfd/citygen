@@ -30,9 +30,9 @@ public class Camera {
 	public Vector3f rot;
 	private int windowWidth = 800;
 	private int windowHeight = 640;
-	private float fov = 110;
-	private float zFar = 3000f;
-	private float zNear = 1f;
+	private float fov = 80;
+	private float zFar = 4000f;
+	private float zNear = 4f;
 	private float mouseSensitivity = .2f;
 //	private boolean lookAtCenter;
 	private boolean renderBuildings = true;
