@@ -11,9 +11,9 @@ import wolf.city.City;
 
 public class LotFactory {
 	private static GeometryFactory gf = new GeometryFactory(new PrecisionModel(PrecisionModel.FIXED));
-	private final static double SMALL_LOT_SIZE = 700;
-	private static final double LARGE_LOT_SIZE = 1000;
-	private static final double DISTANCE_DELTA = 4;
+	private final static double SMALL_LOT_SIZE = 800;
+	private static final double LARGE_LOT_SIZE = 1100;
+	private static final double DISTANCE_DELTA = 1;
 
 	public static void makeLots(City c, List<CityBlock> blocks){
 		for(CityBlock block: blocks){

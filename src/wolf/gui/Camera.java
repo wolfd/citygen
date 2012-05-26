@@ -36,7 +36,7 @@ public class Camera {
 	private float mouseSensitivity = .2f;
 //	private boolean lookAtCenter;
 	private boolean renderBuildings = true;
-	private boolean renderBlocksAndLots = false;
+	private boolean renderBlocksAndLots = true;
 
 
 	public Camera(){

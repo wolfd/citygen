@@ -104,7 +104,7 @@ public class Roadmap{
 		minimumPopulation = config.getFloat("minimumPopulation", .2f);
 		//minimumPopulationHighway = config.getFloat("minimumPopulationHighway", .3f);
 		seedAtCenter = config.getBoolean("seedAtCenter", false);
-		minimumPopulationMainRoad = config.getFloat("minimumPopulationMainRoad", .35f);
+		minimumPopulationMainRoad = config.getFloat("minimumPopulationMainRoad", .40f);
 		populationSampleRadiusMainRoad = config.getInt("populationSampleRadiusMainRoad", 5);
 		popTests = config.getInt("popTests", 8);
 		waterTests = config.getInt("waterTests", 8);
@@ -176,7 +176,6 @@ public class Roadmap{
 				}else{
 					rqM.add(road);
 				}
-				//city.pop.removeDensityLine(road);
 			}
 			roads.add(connect(road));
 			grid.add(road); //for collision detection
@@ -190,6 +189,7 @@ public class Roadmap{
 		//setup for main roads
 		//basicRule.turnRateForward = 40;
 		log.log("Main roads generating");
+		rqM.stackStyle = true;
 		while(rqM.isNotEmpty()){
 			Road road = rqM.remove();
 			if(road.finished){
@@ -265,34 +265,34 @@ public class Roadmap{
 		//			}
 		//		}
 		//intersection fix
-//		for(int i=0; i<roads.size(); i++){
-//			Road a = roads.get(i);
-//			for(int j=0; j<roads.size(); j++){
-//				Road b = roads.get(j);
-//				Coordinate c = a.getLineSegment().intersection(b.getLineSegment()); //problem is that if they touch at all, it will intersect
-//				if(c != null){
-//					{
-//						Intersection end = a.b;
-//						Intersection mid = new Intersection(c);
-//						a.b = mid;
-//						Road r = new Road(a);
-//						r.a = mid;
-//						r.b = end;
-//						roads.add(r);
-//					}
-//					{
-//						Intersection end = b.b;
-//						Intersection mid = new Intersection(c);
-//						b.b = mid;
-//						Road r = new Road(b);
-//						r.a = mid;
-//						r.b = end;
-//						roads.add(r);
-//					}
-//
-//				}
-//			}
-//		}
+		//		for(int i=0; i<roads.size(); i++){
+		//			Road a = roads.get(i);
+		//			for(int j=0; j<roads.size(); j++){
+		//				Road b = roads.get(j);
+		//				Coordinate c = a.getLineSegment().intersection(b.getLineSegment()); //problem is that if they touch at all, it will intersect
+		//				if(c != null){
+		//					{
+		//						Intersection end = a.b;
+		//						Intersection mid = new Intersection(c);
+		//						a.b = mid;
+		//						Road r = new Road(a);
+		//						r.a = mid;
+		//						r.b = end;
+		//						roads.add(r);
+		//					}
+		//					{
+		//						Intersection end = b.b;
+		//						Intersection mid = new Intersection(c);
+		//						b.b = mid;
+		//						Road r = new Road(b);
+		//						r.a = mid;
+		//						r.b = end;
+		//						roads.add(r);
+		//					}
+		//
+		//				}
+		//			}
+		//		}
 		log.log("Roads: "+roads.size());
 		{//union all of the road geometries
 			Geometry[] geoms = new Geometry[roads.size()];
@@ -334,7 +334,7 @@ public class Roadmap{
 			t.move(32);
 			roadQueue.add(new Road(new Intersection(startPoint), new Intersection(t.pos), RoadType.HIGHWAY, basicRule));
 		}
-		int highwayCount = Math.max((city.sizeX*2+city.sizeY*2)/(2*1024),1);
+		int highwayCount = Math.max((city.sizeX*2+city.sizeY*2)/(3*1024),1);
 		for(int i=0; i<highwayCount; i++){
 			//highway from random side
 			int direction = Math.abs(city.random.nextInt()%4);
@@ -389,11 +389,11 @@ public class Roadmap{
 		r = lengthCheck(r);
 		r = maxConnections(r);
 		r = inBounds(r);
-
+		
+		r = snapToIntersection(r);
 		r = intersectionAngleCheck(r);
 		//expensive tests
 		r = waterCheck(r);
-		r = snapToIntersection(r);
 		r = proximityCheck(r);
 		r = trimToIntersection(r);
 		r = lengthCheck(r); //fixes from trim
@@ -501,7 +501,7 @@ public class Roadmap{
 		if(r==null){
 			return null;
 		}
-		int expand = r.width*2;
+		int expand = r.width*1;
 		Geometry a = r.getGeometry(expand);
 		//check related spaces in grid
 		ArrayList<GridSpace> spaces = grid.getSpaces(r);
@@ -509,15 +509,18 @@ public class Roadmap{
 		for(GridSpace g: spaces){
 			LinkedList<Road> roads = grid.get(g);
 			for(Road i: roads){
-				if(!tested.contains(i) && !((i.getType() == RoadType.HIGHWAY || i.getType() == RoadType.MAIN) && (r.getType() == RoadType.STREET || r.getType() == RoadType.HIGHWAY)) /*streets ignore main and highway types*/){
-					Geometry b = i.getGeometry(expand);
-					if(a.intersects(b)){
-						Geometry c = a.intersection(b);
-						if(c.getArea()>maximumRatioIntersectionArea*a.getArea()){
-							return null;
-						}
-						if(c.getArea()>maximumRatioIntersectionArea*b.getArea()){
-							return null;
+				if(i.getType() != RoadType.HIGHWAY && i.getType() != RoadType.MAIN){
+					//if(!tested.contains(i) && !((i.getType() == RoadType.HIGHWAY || i.getType() == RoadType.MAIN) && (r.getType() == RoadType.STREET || r.getType() == RoadType.HIGHWAY)) /*streets ignore main and highway types*/){
+					if(tested.contains(i)){
+						Geometry b = i.getGeometry(expand);
+						if(a.intersects(b)){
+							Geometry c = a.intersection(b);
+							if(c.getArea()>maximumRatioIntersectionArea*a.getArea()){
+								return null;
+							}
+							if(c.getArea()>maximumRatioIntersectionArea*b.getArea()){
+								return null;
+							}
 						}
 					}
 				}

@@ -17,7 +17,7 @@ public class FakeBuildings {
 	private static final double MIN_HEIGHT = 4;
 	private static final double MAX_HEIGHT = 200;
 	private static final double MIN_AREA = 100;
-	private static final double MIN_RATIO_BUILDING = 4;
+	private static final double MIN_RATIO_BUILDING = 3;
 	private static final float MIN_POPULATION_BUILDING = .2f;
 	City c;
 	public ArrayList<FakeBuilding> buildings;
@@ -40,7 +40,12 @@ public class FakeBuildings {
 							float population = c.pop.get((int)center.x, (int)center.y);
 							if(population>MIN_POPULATION_BUILDING){
 								if(l.shape.distance(c.rm.shape)<4 && l.shape.getArea() > MIN_AREA){
-									Geometry buildingShape = l.shape.buffer(-(int)(c.random.nextDouble()*4));
+									Geometry buildingShape;
+									if(c.random.nextBoolean()){
+										buildingShape = l.shape.buffer(-(int)(c.random.nextDouble()*4));
+									}else{
+										buildingShape = l.shape.buffer(0);
+									}
 									double ratio = buildingShape.getArea()/buildingShape.getLength();
 									if(ratio > MIN_RATIO_BUILDING){
 										buildings.add(new FakeBuilding(buildingShape, (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*population)),MAX_HEIGHT)));

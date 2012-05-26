@@ -12,8 +12,8 @@ import wolf.util.Turtle;
 
 public class Basic implements RoadRule {
 	int numberTests = 10;
-	private double idealLength = 128;
-	public float turnRateForward = 20;
+	private double idealLength = 64; //128
+	public float turnRateForward = 10; //20
 	public float turnRateLeftRight = 30;
 	public City c;
 	

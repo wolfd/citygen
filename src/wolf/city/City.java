@@ -51,8 +51,11 @@ public class City {
 	public void generateRoadmap(){
 		final CityView cv = new CityView(this);
 		rm.generate(cv);
+		log.log("Done generating roads");
 		bm.getBlocks(rm);
+		log.log("Done generating city blocks");
 		fb.generate();
+		log.log("Done generating mock buildings");
 		bm.save("data/blocks.txt", "data/lots.txt");
 		
 		try {
