@@ -34,6 +34,7 @@ import wolf.util.RandomHelper;
 import wolf.util.Turtle;
 
 public class Roadmap{
+	private static final double floatingPointError = 0.001f;
 	public volatile List<Road> roads;
 	private City city;
 	private Configuration config;
@@ -265,34 +266,35 @@ public class Roadmap{
 		//			}
 		//		}
 		//intersection fix
-		//		for(int i=0; i<roads.size(); i++){
-		//			Road a = roads.get(i);
-		//			for(int j=0; j<roads.size(); j++){
-		//				Road b = roads.get(j);
-		//				Coordinate c = a.getLineSegment().intersection(b.getLineSegment()); //problem is that if they touch at all, it will intersect
-		//				if(c != null){
-		//					{
-		//						Intersection end = a.b;
-		//						Intersection mid = new Intersection(c);
-		//						a.b = mid;
-		//						Road r = new Road(a);
-		//						r.a = mid;
-		//						r.b = end;
-		//						roads.add(r);
-		//					}
-		//					{
-		//						Intersection end = b.b;
-		//						Intersection mid = new Intersection(c);
-		//						b.b = mid;
-		//						Road r = new Road(b);
-		//						r.a = mid;
-		//						r.b = end;
-		//						roads.add(r);
-		//					}
-		//
-		//				}
-		//			}
-		//		}
+		for(int i=0; i<roads.size(); i++){
+			Road a = roads.get(i);
+			for(int j=0; j<roads.size(); j++){
+				Road b = roads.get(j);
+				
+				Coordinate c = a.getLineSegment().intersection(b.getLineSegment()); //problem is that if they touch at all, it will intersect
+				if(c != null && c.distance(a.a.pos)>floatingPointError && c.distance(a.b.pos)>floatingPointError && c.distance(b.a.pos)>floatingPointError && c.distance(b.b.pos)>floatingPointError){
+					{
+						Intersection end = a.b;
+						Intersection mid = new Intersection(c);
+						a.b = mid;
+						Road r = new Road(a);
+						r.a = mid;
+						r.b = end;
+						roads.add(r);
+					}
+					{
+						Intersection end = b.b;
+						Intersection mid = new Intersection(c);
+						b.b = mid;
+						Road r = new Road(b);
+						r.a = mid;
+						r.b = end;
+						roads.add(r);
+					}
+
+				}
+			}
+		}
 		log.log("Roads: "+roads.size());
 		{//union all of the road geometries
 			Geometry[] geoms = new Geometry[roads.size()];
@@ -389,7 +391,7 @@ public class Roadmap{
 		r = lengthCheck(r);
 		r = maxConnections(r);
 		r = inBounds(r);
-		
+
 		r = snapToIntersection(r);
 		r = intersectionAngleCheck(r);
 		//expensive tests
