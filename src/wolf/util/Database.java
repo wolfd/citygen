@@ -4,6 +4,7 @@ import java.sql.*;
 
 import wolf.city.City;
 import wolf.city.block.CityBlock;
+import wolf.city.block.Lot;
 import wolf.city.road.Intersection;
 import wolf.city.road.Road;
 
@@ -13,7 +14,7 @@ public class Database {
 	public Database() throws ClassNotFoundException{
 		Class.forName("org.sqlite.JDBC");
 	}
-	
+
 	public void open(String databaseLocation) throws SQLException{
 		con = DriverManager.getConnection("jdbc:sqlite:"+databaseLocation);
 		con.setAutoCommit(false);
@@ -42,7 +43,15 @@ public class Database {
 	public void saveCityData(City c) throws SQLException{
 		open("city.db");
 		Statement s = con.createStatement();
-
+		//city info
+		s.executeUpdate("DROP TABLE IF EXISTS CITY;");
+		s.executeUpdate("CREATE TABLE CITY (name, xSize, ySize);");
+		PreparedStatement ps = con.prepareStatement("INSERT INTO CITY VALUES (?,?,?)");
+		ps.setString(1, "City");
+		ps.setInt(2, c.sizeX);
+		ps.setInt(3, c.sizeY);
+		ps.addBatch();
+		ps.executeBatch();
 		//roads
 		s.executeUpdate("DROP TABLE IF EXISTS ROADS;");
 		s.executeUpdate("CREATE TABLE ROADS (id, a, b, type, width);");
@@ -74,7 +83,7 @@ public class Database {
 				p.setDouble(4, is.pos.z);
 				p.addBatch();
 			}
-			
+
 			p.executeBatch();
 		}
 		//blocks
@@ -90,38 +99,35 @@ public class Database {
 				p.setString(3, b.lots.toString());
 				p.addBatch();
 			}
-			
+
 			p.executeBatch();
 		}
-		
-		commit();
-	}
-	public void nothing() throws SQLException{
-		Statement stat = con.createStatement();
-		stat.executeUpdate("drop table if exists people;");
-		stat.executeUpdate("create table people (name, occupation);");
-		PreparedStatement prep = con.prepareStatement("insert into people values (?, ?);");
 
-		prep.setString(1, "Gandhi");
-		prep.setString(2, "politics");
-		prep.addBatch();
-		prep.setString(1, "Turing");
-		prep.setString(2, "computers");
-		prep.addBatch();
-		prep.setString(1, "Wittgenstein");
-		prep.setString(2, "smartypants");
-		prep.addBatch();
+		//lots
+		{
+			s.executeUpdate("DROP TABLE IF EXISTS LOTS;");
+			s.executeUpdate("CREATE TABLE LOTS (blockid, polygon, buildingpolygon, buildingheight);");
 
-		con.setAutoCommit(false);
-		prep.executeBatch();
-		con.setAutoCommit(true);
+			PreparedStatement p = con.prepareStatement("INSERT INTO LOTS VALUES (?, ?, ?, ?);");
+			for(int i=0; i<c.bm.blocks.size(); i++){
+				CityBlock b = c.bm.blocks.get(i);
+				for(int j=0; j<b.lots.size(); j++){
+					Lot l = b.lots.get(j);
+					
+					p.setInt(1, i);
+					p.setString(2, l.shape.toString());
+					if(l.building != null){
+					p.setString(3, l.building.g.toString());
+					p.setInt(4, l.building.height);
+					}
+					p.addBatch();
+				}
+				
+			}
 
-		ResultSet rs = stat.executeQuery("select * from people;");
-		while (rs.next()) {
-			System.out.println("name = " + rs.getString("name"));
-			System.out.println("job = " + rs.getString("occupation"));
+			p.executeBatch();
 		}
-		rs.close();
-		con.close();
+
+		commit();
 	}
 }

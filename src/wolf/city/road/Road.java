@@ -84,7 +84,7 @@ public class Road {
 		Coordinate p3 = new Coordinate(b0.x-x,b0.y-y);
 		Coordinate p4 = new Coordinate(a0.x-x,a0.y-y);
 		
-		LinearRing lr = gf .createLinearRing(new Coordinate[]{p1,p2,p3,p4,p1});
+		LinearRing lr = gf.createLinearRing(new Coordinate[]{p1,p2,p3,p4,p1});
 		Polygon poly = gf.createPolygon(lr, null);
 
 		return poly;

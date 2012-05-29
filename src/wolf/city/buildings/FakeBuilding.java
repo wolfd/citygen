@@ -2,6 +2,8 @@ package wolf.city.buildings;
 
 import java.util.ArrayList;
 
+import wolf.city.block.Lot;
+
 import static wolf.util.STL.*;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -14,10 +16,12 @@ public class FakeBuilding {
 	private static GeometryFactory gf = new GeometryFactory();
 	public Geometry g;
 	public int height;
+	public Lot lot;
 
-	public FakeBuilding(Geometry geometry, int h){
+	public FakeBuilding(Geometry geometry, int h, Lot l){
 		height = h;
 		g = geometry;
+		lot = l;
 	}
 
 	public String toSTL(){

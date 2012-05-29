@@ -60,10 +60,10 @@ public class Grid implements RoadRule {
 			return null;
 		}
 		}
-		
-		
+
+
 	}
-	
+
 	private double roadLength(double angle){
 		angle = angle%360;
 		int dirAngle = (int)Math.floor((angle+45)/90);
@@ -73,13 +73,17 @@ public class Grid implements RoadRule {
 			return verticalMoveDistance;
 		}	
 	}
-	
+
 	public RoadRule mutate(){
 		Grid g = new Grid(this);
 		if(c.random.nextBoolean()){
-			g.direction += 30;
+			if(c.random.nextBoolean()){
+				g.direction += 30;
+			}else{
+				g.direction -= 30;
+			}
 		}else{
-			g.direction -= 30;
+			g.direction = 0;
 		}
 		return g;
 	}

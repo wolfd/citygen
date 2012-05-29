@@ -44,11 +44,13 @@ public class FakeBuildings {
 									if(c.random.nextBoolean()){
 										buildingShape = l.shape.buffer(-(int)(c.random.nextDouble()*4));
 									}else{
-										buildingShape = l.shape.buffer(0);
+										buildingShape = l.shape.buffer(-1);
 									}
 									double ratio = buildingShape.getArea()/buildingShape.getLength();
 									if(ratio > MIN_RATIO_BUILDING){
-										buildings.add(new FakeBuilding(buildingShape, (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*population)),MAX_HEIGHT)));
+										FakeBuilding building = new FakeBuilding(buildingShape, (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*population)),MAX_HEIGHT), l);
+										buildings.add(building);
+										l.building = building;
 									}
 								}
 							}
@@ -80,7 +82,5 @@ public class FakeBuildings {
 			tf.save("data/buildings.stl");
 		}
 	}
-
-
 
 }
