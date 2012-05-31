@@ -17,6 +17,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineSegment;
 
 import wolf.city.road.GridSpace;
 import wolf.city.road.Intersection;
@@ -266,35 +267,39 @@ public class Roadmap{
 		//			}
 		//		}
 		//intersection fix
-		for(int i=0; i<roads.size(); i++){
-			Road a = roads.get(i);
-			for(int j=0; j<roads.size(); j++){
-				Road b = roads.get(j);
-				
-				Coordinate c = a.getLineSegment().intersection(b.getLineSegment()); //problem is that if they touch at all, it will intersect
-				if(c != null && c.distance(a.a.pos)>floatingPointError && c.distance(a.b.pos)>floatingPointError && c.distance(b.a.pos)>floatingPointError && c.distance(b.b.pos)>floatingPointError){
-					{
-						Intersection end = a.b;
-						Intersection mid = new Intersection(c);
-						a.b = mid;
-						Road r = new Road(a);
-						r.a = mid;
-						r.b = end;
-						roads.add(r);
-					}
-					{
-						Intersection end = b.b;
-						Intersection mid = new Intersection(c);
-						b.b = mid;
-						Road r = new Road(b);
-						r.a = mid;
-						r.b = end;
-						roads.add(r);
-					}
-
-				}
-			}
-		}
+//		for(int i=0; i<roads.size(); i++){
+//			Road a = roads.get(i);
+//			for(int j=0; j<roads.size(); j++){
+//				Road b = roads.get(j);
+//				LineSegment extendedLine = a.getLineSegment();
+//				double length = extendedLine.getLength();
+//				extendedLine.pointAlong(length*1.1);
+//				Coordinate c = extendedLine.intersection(b.getLineSegment()); //problem is that if they touch at all, it will intersect
+//				if(c != null && c.distance(a.a.pos)>floatingPointError && c.distance(a.b.pos)>floatingPointError && c.distance(b.a.pos)>floatingPointError && c.distance(b.b.pos)>floatingPointError){
+//					{
+//						Intersection end = a.b;
+//						Intersection mid = new Intersection(c);
+//						a.b = mid;
+//						Road r = new Road(a);
+//						r.a = mid;
+//						r.b = end;
+//						roads.add(r);
+//					}
+//					{
+//						Intersection end = b.b;
+//						Intersection mid = new Intersection(c);
+//						b.b = mid;
+//						Road r = new Road(b);
+//						r.a = mid;
+//						r.b = end;
+//						roads.add(r);
+//					}
+//				}
+//			}
+//			if(cv != null){
+//				cv.draw();
+//			}
+//		}
 		log.log("Roads: "+roads.size());
 		{//union all of the road geometries
 			Geometry[] geoms = new Geometry[roads.size()];
@@ -414,14 +419,15 @@ public class Roadmap{
 
 		Coordinate point =  r.b.pos;
 
-		for(Road i:roads){
+		for(int j=0; j<roads.size(); j++){
+			Road i = roads.get(j);
 			if(i.getType() == RoadType.HIGHWAY && r.getType() == RoadType.STREET){
 
 			}else{
 				//doesn't find closest, just finds one and goes with it.
 				double distA = r.b.pos.distance(i.a.pos);
 				double distB = r.b.pos.distance(i.b.pos);
-				if(distA<maximumRoadSnapDistance && distB <maximumRoadSnapDistance){
+				if(distA<maximumRoadSnapDistance && distB<maximumRoadSnapDistance){
 					if(distA<distB){
 						r.b = i.a;
 						return r;
