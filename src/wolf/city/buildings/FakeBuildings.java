@@ -48,7 +48,12 @@ public class FakeBuildings {
 									}
 									double ratio = buildingShape.getArea()/buildingShape.getLength();
 									if(ratio > MIN_RATIO_BUILDING){
-										FakeBuilding building = new FakeBuilding(buildingShape, (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*population)),MAX_HEIGHT), l);
+										FakeBuilding building;
+										if(c.random.nextDouble()>.9){
+											building = new FakeBuilding(buildingShape, (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*population)),MAX_HEIGHT), l);
+										}else{
+											building = new FakeBuilding(buildingShape, (int) Math.min(MIN_HEIGHT+(MAX_HEIGHT*Math.pow(population,2)),MAX_HEIGHT), l);
+										}
 										buildings.add(building);
 										l.building = building;
 									}
