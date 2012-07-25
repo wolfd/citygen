@@ -96,7 +96,7 @@ public class Roadmap{
 		minimumPopulationHighwayIntersection = config.getFloat("minimumPopulationHighwayIntersection", .3f); //load all parameters from generation properties file
 		populationSampleRadiusHighwayIntersection = config.getInt("populationSampleRadiusHighwayIntersection", 5);
 		noWaterSampleRadius = config.getInt("noWaterSampleRadius", 3);
-		noWaterCutoffDensity = config.getFloat("noWaterCutoffDensity", .8f);
+		noWaterCutoffDensity = config.getFloat("noWaterCutoffDensity", 3.0f);
 		bridgeMaxLength = config.getInt("bridgeMaxLength", 512);
 		bridgeTests = config.getInt("bridgeTests", 32);
 		bridgePopulationCheckRadius = config.getInt("bridgePopulationCheckRadius", 5);

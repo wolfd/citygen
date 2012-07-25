@@ -8,7 +8,7 @@ public class TestMain {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		double delta = 2;
+		double delta = 4;
 		// 9 is really buggy currently
 		//1234890
 		//1335279392788l is a cool seed currently (delta 2) 1335967536290
