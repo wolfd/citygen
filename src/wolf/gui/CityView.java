@@ -82,7 +82,7 @@ public class CityView{
 			//GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
 
 			//render endpoints of last road generated.
-			{
+			if(false){
 				GL11.glPointSize(20);
 				GL11.glBegin(GL11.GL_POINTS);
 				GL11.glColor3f(1, 1, 1);
@@ -146,7 +146,7 @@ public class CityView{
 				}
 			}
 			GL11.glEnd();
-			
+			if(false){
 			//render intersections
 			GL11.glPointSize(5);
 			GL11.glBegin(GL11.GL_POINTS);
@@ -155,6 +155,7 @@ public class CityView{
 				Intersection a = c.rm.roads.get(i).a;
 				Coordinate p = a.pos;
 				GL11.glVertex2d(p.x+c.sizeX/2,vSize-(p.y+c.sizeY/2));
+			}
 			}
 			GL11.glEnd();
 
