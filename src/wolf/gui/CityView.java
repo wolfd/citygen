@@ -107,9 +107,9 @@ public class CityView{
 					blue = 50;
 					break;
 				}
-				case HIGHWAY:{ //blue-green
+				case HIGHWAY:{ //green
 					red = 0;
-					green = 50;
+					green = 150;
 					blue = 50;
 					break;
 				}
@@ -121,8 +121,8 @@ public class CityView{
 				}
 				case MAIN:{ //green
 					red = 0;
-					green = 100;
-					blue = 100;
+					green = 150;
+					blue = 50;
 					break;
 				}
 				case DEFAULT:{ //red

@@ -21,7 +21,7 @@ public class OffRamp implements RoadRule {
 		Road returnRoad = null;
 
 		float previousAngle = (float)Math.toDegrees(Angle.angle(road.a.pos, road.b.pos));
-		double nextRoadLength = 32;
+		double nextRoadLength = 64;
 		//System.out.println(nextRoadLength);
 		if(road.getType() == RoadType.HIGHWAY || road.getType() == RoadType.BRIDGE){
 			RoadType nextRoadType = RoadType.STREET;

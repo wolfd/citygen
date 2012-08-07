@@ -14,7 +14,7 @@
 	<classpathentry kind="lib" path="wolfnoise.jar"/>
 	<classpathentry kind="lib" path="lwjgl.jar">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="CityGen/lwjgl/windows"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="CityGen/lwjgl/macosx"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lwjgl_util.jar"/>
