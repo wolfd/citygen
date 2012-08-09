@@ -2,12 +2,15 @@ package wolf.city.buildings.shape;
 
 import java.util.ArrayList;
 
+import com.vividsolutions.jts.geom.Coordinate;
+
 import wolf.city.buildings.Floor;
 
-public class Wall extends WallShape{
+public class Wall{
 	public float length;
 	public Floor floor;
-	public ArrayList<WallShape> children;
+	public ArrayList<WallSection> children;
+	
 	
 	/*
 	 * -specified # of sections
@@ -19,6 +22,13 @@ public class Wall extends WallShape{
 	 * -ratio vs absolute length patterns
 	 */
 	
+
+	public Wall(Floor f, float length) {
+		floor = f;
+		this.length = length;
+		children = new ArrayList<WallSection>();
+	}
+
 	public ArrayList<WallSection> split(int numSections){
 		float sectionLength = length/(float)numSections;
 		ArrayList<WallSection> sections = new ArrayList<WallSection>();
