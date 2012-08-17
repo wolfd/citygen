@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.LinkedList;
 
 public class RoadQueue {
-	public List<Road> roads = new LinkedList<Road>();
-	public boolean stackStyle = false;
+	public List<Road> roads;
+	public boolean stackStyle;
+	
 	public RoadQueue() {
-		// TODO Auto-generated constructor stub
+		roads = new LinkedList<Road>();
+		stackStyle = false;
 	}
 
 	public void add(Road road){

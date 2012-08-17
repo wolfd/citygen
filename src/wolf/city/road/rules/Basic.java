@@ -94,7 +94,13 @@ public class Basic implements RoadRule {
 
 	@Override
 	public RoadRule mutate() {
-		// TODO Auto-generated method stub
+		if(c.random.nextDouble()>.9){
+			if(c.random.nextBoolean()){
+				turnRateForward += (c.random.nextFloat()-.5)*2f*5*c.rm.chaos;
+			}else{
+				turnRateLeftRight += (c.random.nextFloat()-.5)*2f*5*c.rm.chaos;
+			}
+		}
 		return this;
 	}
 

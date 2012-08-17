@@ -18,9 +18,15 @@ public class BlockFactory {
 
 	public static LinkedList<CityBlock> makeBlocks(City c, List<Road> roads){
 		Geometry[] geoms = new Geometry[roads.size()];
+		long startTime = System.currentTimeMillis();
+//		for(int i=0; i<roads.size(); i++){
+//			geoms[i] = (roads.get(i).getFinalGeometry());
+//		}
+		
 		for(int i=0; i<roads.size(); i++){
 			geoms[i] = (roads.get(i).getFinalGeometry());
 		}
+		
 		GeometryFactory gf = new GeometryFactory();
 		GeometryCollection polygonCollection = gf.createGeometryCollection(geoms);
 		//union all of the road geometries
@@ -35,6 +41,7 @@ public class BlockFactory {
 		for(Polygon p:blockPolys){
 			blocks.add(new CityBlock(p));
 		}
+		System.out.println("BlockFactory took: "+(System.currentTimeMillis()-startTime)+"ms");
 		return blocks;
 	}
 }

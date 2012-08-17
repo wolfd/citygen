@@ -6,7 +6,7 @@ public class CityAge extends InputMap {
 
 	public CityAge(City city) {
 		super(city);
-		// TODO Auto-generated constructor stub
+		// TODO create CityAge inputmap
 	}
 	//determines (possibly road style and precedence in generator) and building style
 

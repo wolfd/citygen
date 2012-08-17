@@ -92,25 +92,27 @@ public class BuildingView {
 			//Random random = new Random(1);
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			GL11.glColor3b((byte)56, (byte)182, (byte)245);
-			GL11.glBegin(GL11.GL_QUADS);
+			
 			
 			float height = 0;
 			for(int i=0; i<b.sections.size(); i++){
+				GL11.glBegin(GL11.GL_POLYGON);
 				for(int j=1; j < b.sections.get(i).shape.getCoordinates().length; j++){
 					Coordinate c0 = b.sections.get(i).shape.getCoordinates()[j-1];
-					Coordinate c1 = b.sections.get(i).shape.getCoordinates()[j];
+					//Coordinate c1 = b.sections.get(i).shape.getCoordinates()[j];
 					//render stuff;
 					//System.out.println(c.x-offset.x+","+(c.y-offset.y)+","+c.z);
 					GL11.glVertex3d(c0.x-offset.x,c0.y-offset.y,c0.z-offset.z);
 					//GL11.glVertex3d(c1.x-offset.x,c1.y-offset.y,c1.z-offset.z);
 				}
-				
+				GL11.glEnd();
+				GL11.glBegin(GL11.GL_QUADS);
 				for(int f=0; f<b.sections.get(i).floors.size(); f++){
 					Floor floor = b.sections.get(i).floors.get(f);
 					height += floor.height;
 					for(int j=0; j < floor.exterior.size(); j++){
 						WallContainer wc = floor.exterior.get(j);
-						Coordinate p0 = wc.p0;
+						//Coordinate p0 = wc.p0;
 						Coordinate p1 = wc.p1;
 						
 						//render stuff;
@@ -135,7 +137,7 @@ public class BuildingView {
 						LineSegment line = new LineSegment(p0, p1);
 						
 						for(int k=0; k < wc.wall.children.size(); k++){
-							if(k%2==1){
+							if((k+f)%2==1){
 								GL11.glColor3f(.2f,.4f,.6f);
 							}else{
 								GL11.glColor3f(.5f,.4f,.3f);

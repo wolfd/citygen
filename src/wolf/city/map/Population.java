@@ -6,7 +6,6 @@ public class Population extends InputMap {
 
 	public Population(City city) {
 		super(city, true);
-		// TODO Auto-generated constructor stub
 	}
 
 

@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import com.vividsolutions.jts.geom.Coordinate;
 
 import wolf.city.buildings.Floor;
+import wolf.city.buildings.style.Pattern;
+import wolf.city.buildings.style.Pattern.OverflowBehavior;
+import wolf.city.buildings.style.Pattern.PatternType;
 
 public class Wall{
 	public float length;
@@ -29,17 +32,17 @@ public class Wall{
 		children = new ArrayList<WallSection>();
 	}
 
-	public ArrayList<WallSection> split(int numSections){
+	public void split(int numSections){
 		float sectionLength = length/(float)numSections;
 		ArrayList<WallSection> sections = new ArrayList<WallSection>();
 		for(int i=0; i<numSections; i++){
 			sections.add(new WallSection(this, sectionLength));
 		}
 		
-		return sections;
+		children = sections;
 	}
 	
-	public ArrayList<WallSection> split(float specifiedWidth, SplitMethod method){
+	public void split(float specifiedWidth, SplitMethod method){
 		int numSections = (int)(length/specifiedWidth);
 		float remainder = length%specifiedWidth;
 		ArrayList<WallSection> sections = new ArrayList<WallSection>();
@@ -49,17 +52,17 @@ public class Wall{
 			width = specifiedWidth+(remainder/(float)numSections);
 		}else if(method == SplitMethod.CONTRACT){
 			width = specifiedWidth-(remainder/(float)numSections);
-			numSections++;
+			if(remainder != 0) numSections++;
 		}
 		
 		for(int i=0; i<numSections; i++){
 			sections.add(new WallSection(this, width));
 		}
 		
-		return sections;
+		children = sections;
 	}
 	
-	public ArrayList<WallSection> split(float specifiedWidth, SplitDirection direction){
+	public void split(float specifiedWidth, SplitDirection direction){
 		int numSections = (int)(length/specifiedWidth);
 		float remainder = length%specifiedWidth;
 		ArrayList<WallSection> sections = new ArrayList<WallSection>();
@@ -118,7 +121,34 @@ public class Wall{
 			break;
 		}
 		
-		return sections;
+		children = sections;
+	}
+	
+	public void split(Pattern pat){
+		if(pat.type == PatternType.FIXED){
+			split(pat.value, SplitMethod.EXPAND);
+		}else{
+			WallSection ws = new WallSection(this, this.length);
+			children.add(ws);
+		}
+		float[] lengths = pat.getChildPattern(length, OverflowBehavior.SHRINK);
+		for(int i=0; i<pat.children.size(); i++){
+			Pattern child = pat.children.get(i);
+			if(lengths[i] != 0){
+				for(int j=0; j<children.size(); j++){
+					WallSection ws = new WallSection(this, lengths[i], child);
+					children.get(j).children.add(ws);
+				}
+			}
+		}
+	}
+	
+	public enum SplitMethod {
+		EXPAND, CONTRACT
+	}
+	
+	public enum SplitDirection {
+		LEFT, RIGHT, TOCENTER, FROMCENTER
 	}
 	
 }

@@ -65,12 +65,10 @@ public class City {
 			d.close();
 			log.log("Database saved");
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		
-		catch (SQLException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Sqlite did not launch correctly!");
+		} catch (SQLException e) {
+			System.err.println("SQL not formed correctly!");
 			e.printStackTrace();
 		}
 		cv.close();

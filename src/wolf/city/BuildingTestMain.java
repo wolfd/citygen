@@ -12,13 +12,13 @@ public class BuildingTestMain {
 	 */
 	public static void main(String[] args) {
 		
-		String geomString = "POLYGON((-1944 1909 0, -1944 1884 0, -1966 1884 0, -1966 1909 0, -1944 1909 0))";
+		String geomString = "POLYGON((-1944 1909 0, -1944 1884 0, -1966 1784 0, -1966 1909 0, -1944 1909 0))";
 		try {
 			BuildingView bv = new BuildingView(new Building(geomString));
 			while(bv.draw());
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.err.println("Polygon not correctly formed!");
 		}
 
 	}

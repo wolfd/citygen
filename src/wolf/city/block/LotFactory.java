@@ -16,6 +16,7 @@ public class LotFactory {
 	private static final double DISTANCE_DELTA = 1;
 
 	public static void makeLots(City c, List<CityBlock> blocks){
+		long startTime = System.currentTimeMillis();
 		for(CityBlock block: blocks){
 			if(block.shape.getArea() > SMALL_LOT_SIZE){
 				//make a stack of polygons
@@ -147,5 +148,7 @@ public class LotFactory {
 				block.lots = lots;
 			}
 		}
+		System.out.println("LotFactory took: "+(System.currentTimeMillis()-startTime)+"ms");
 	}
+	
 }

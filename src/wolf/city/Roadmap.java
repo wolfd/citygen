@@ -17,7 +17,6 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineSegment;
 
 import wolf.city.road.GridSpace;
 import wolf.city.road.Intersection;
@@ -35,7 +34,6 @@ import wolf.util.RandomHelper;
 import wolf.util.Turtle;
 
 public class Roadmap{
-	private static final double floatingPointError = 0.001f;
 	public volatile List<Road> roads;
 	private City city;
 	private Configuration config;
@@ -66,6 +64,7 @@ public class Roadmap{
 	private double maximumRoadSnapDistance;
 	@SuppressWarnings("unused")
 	private double minimumRoadSnapDistance;
+	public double chaos;
 	//private float minimumPopulationHighway;
 	public boolean finished = false;
 	public Geometry shape; //generate when final
@@ -116,6 +115,7 @@ public class Roadmap{
 		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 40d);
 		minimumRoadSnapDistance = config.getDouble("minimumRoadSnapDistance", 2d);
 		minimumNumberParents = config.getInt("minimumNumberParents", 8);
+		chaos = config.getDouble("chaos", 0);
 
 		try {
 			((AbstractFileConfiguration) config).save();

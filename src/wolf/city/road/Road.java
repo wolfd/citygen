@@ -10,6 +10,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.buffer.BufferParameters;
@@ -143,6 +144,10 @@ public class Road {
 	
 	public Geometry getFinalGeometry(){
 		Geometry g = gf.createLineString(new Coordinate[]{a.pos, b.pos});
-		return g.buffer(width, width/2, BufferParameters.CAP_ROUND);
+		return g.buffer(width, 2, BufferParameters.CAP_ROUND);
+	}
+	
+	public LineString getLineString(){
+		return gf.createLineString(new Coordinate[]{a.pos, b.pos});
 	}
 }

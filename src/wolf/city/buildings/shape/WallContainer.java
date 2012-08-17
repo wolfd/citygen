@@ -1,6 +1,8 @@
 package wolf.city.buildings.shape;
 
 import wolf.city.buildings.Floor;
+import wolf.city.buildings.style.Pattern;
+import wolf.city.buildings.style.Pattern.PatternType;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -17,10 +19,11 @@ public class WallContainer {
 		floor = f;
 		
 		wall = new Wall(floor, (float)this.p0.distance(this.p1));
-		if(Math.random()>.5){
-			wall.children = wall.split(5, SplitDirection.FROMCENTER);
-		}else{
-			wall.children = wall.split(16, SplitDirection.TOCENTER);
-		}
+		//wall.split(5, SplitMethod.CONTRACT);
+		Pattern p = new Pattern(PatternType.FIXED, (float)(Math.random()*.05f), new Pattern[]{new Pattern(PatternType.RELATIVE, .25f), new Pattern(PatternType.RELATIVE, .75f)});
+		
+		wall.split(p);
 	}
+	
+	
 }
