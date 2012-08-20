@@ -102,7 +102,7 @@ public class Roadmap{
 		bridgeMinimumPopulation = config.getFloat("bridgeMinimumPopulation", .4f);
 		intersectionMaxConnections = config.getInt("intersectionMaxConnections", 5);
 		seedHighwayAngleSize = config.getDouble("seedHighwayAngleSize", 15);
-		minimumPopulation = config.getFloat("minimumPopulation", .2f);
+		minimumPopulation = config.getFloat("minimumPopulation", .17f);
 		//minimumPopulationHighway = config.getFloat("minimumPopulationHighway", .3f);
 		seedAtCenter = config.getBoolean("seedAtCenter", false);
 		minimumPopulationMainRoad = config.getFloat("minimumPopulationMainRoad", .40f);
@@ -596,14 +596,14 @@ public class Roadmap{
 			double xD = r.a.pos.x - r.b.pos.x;
 			double yD = r.a.pos.y - r.b.pos.y;
 
-			double x = (xD/(popTests+(popTests/10)))*(i+(popTests/10));
+			double x = (xD/(popTests+(popTests/10d)))*(i+(popTests/10d));
 			double y = (yD/(popTests+(popTests/10)))*(i+(popTests/10));
 			if(r.getType() == RoadType.HIGHWAY){
 				//if(city.pop.get((int)x, (int)y)<=minimumPopulationHighway){
 				//	r.setType(RoadType.MAIN); //no longer a highway, but a main road still;
 				//}
 			}
-			if(city.pop.get((int)x, (int)y)<=minimumPopulation){
+			if(city.pop.get((int)(x+r.b.pos.x), (int)(y+r.b.pos.y))<=minimumPopulation){
 				if(r.getType() != RoadType.HIGHWAY){
 					return null;
 				}else{

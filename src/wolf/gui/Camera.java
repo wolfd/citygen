@@ -1,13 +1,18 @@
 package wolf.gui;
 
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.Random;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.ARBVertexBufferObject;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GLContext;
 import org.lwjgl.util.vector.Vector3f;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -34,16 +39,19 @@ public class Camera {
 	private float zFar = 4000f;
 	private float zNear = 4f;
 	private float mouseSensitivity = .2f;
-//	private boolean lookAtCenter;
+	//	private boolean lookAtCenter;
 	private boolean renderBuildings = true;
 	private boolean renderBlocksAndLots = true;
+	
+	private int cityList;
+	private City c;
 
 
-	public Camera(){
-		pos = new Vector3f(0,0,1000);
-		rot = new Vector3f(0,180,0);
+	public Camera(City city){
+		pos = new Vector3f(0,0,-1000);
+		rot = new Vector3f(0,0,0);
 		force = new Vector3f(0,0,0);
-
+		c = city;
 		try {
 			Display.setDisplayMode(new DisplayMode(windowWidth, windowHeight));
 			Display.create();
@@ -63,10 +71,10 @@ public class Camera {
 		glEnable(GL_LINE_SMOOTH);
 		//glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
-//		glEnable(GL_LIGHTING);
-//		glEnable(GL_LIGHT0);
-//		glEnable(GL_COLOR_MATERIAL);
-//		glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
+		//		glEnable(GL_LIGHTING);
+		//		glEnable(GL_LIGHT0);
+		//		glEnable(GL_COLOR_MATERIAL);
+		//		glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
 		//glEnable(GL_BLEND);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
@@ -77,6 +85,147 @@ public class Camera {
 		gluPerspective(fov, (float)windowWidth/(float)windowHeight, zNear, zFar);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+
+		//set up 3d info
+		Random r = new Random(1);
+		cityList = glGenLists(1);
+		
+		glNewList(cityList, GL_COMPILE);
+		//make the vbo
+		if(c.rm.roads != null && c.rm.roads.size() > 0){ //road render
+			int red = 0;
+			int blue = 0;
+			int alpha = 0;
+			int green = 0;
+			if(!c.rm.finished){ //render endpoints of last road generated
+				GL11.glPointSize(20);
+				GL11.glBegin(GL11.GL_POINTS);
+				GL11.glColor3f(1, 1, 1);
+				Road road = c.rm.roads.get(c.rm.roads.size()-1);
+				Coordinate p1 = road.a.pos;
+				Coordinate p2 = road.b.pos;
+				GL11.glVertex2d(p1.x,p1.y);
+				GL11.glVertex2d(p2.x,p2.y);
+				GL11.glEnd();
+			}
+			for(int i=0; i<c.rm.roads.size(); i++){
+				Road road = c.rm.roads.get(i);
+				Geometry g = road.getGeometry();
+				switch(road.getType()){
+				case BRIDGE:{ //grey
+					red = 50;
+					green = 50;
+					blue = 50;
+					break;
+				}
+				case HIGHWAY:{
+					red = 50;
+					green = 50;
+					blue = 55;
+					break;
+				}
+				case STREET:{
+					red = 50;
+					green = 50;
+					blue = 55;
+					break;
+				}
+				case MAIN:{
+					red = 75;
+					green = 75;
+					blue = 75;
+					break;
+				}
+				case DEFAULT:{ //red
+					red = 255;
+					green = 0;
+					blue = 0;
+					break;
+				}
+				default:{ //red
+					red = 255;
+					green = 0;
+					blue = 0;
+					break;
+				}
+				}
+				GL11.glBegin(GL11.GL_QUADS);
+				GL11.glColor4ub((byte)red, (byte)green, (byte)blue, (byte)alpha);
+				for(int j=0;j<4;j++){
+					Coordinate p = g.getCoordinates()[j];
+					GL11.glVertex3d(p.x,p.y,c.ter.get((int)p.x, (int)p.y));
+				}
+			}
+			GL11.glEnd();
+		}
+		if(renderBlocksAndLots  && c.bm.blocks != null && c.bm.blocks.size() > 0){
+			for(CityBlock b : c.bm.blocks){
+				if(b.lots != null && b.lots.size()>0){
+					for(Lot l: b.lots){
+
+						Coordinate[] cs = l.shape.getCoordinates();
+						glBegin(GL_LINE_LOOP);
+						glColor3f(.3f,.3f,.3f);
+						//Coordinate q = cs[cs.length-1];
+						//glVertex2d(q.x,q.y);
+						for(int j=0;j<cs.length;j++){
+							Coordinate p = cs[j];
+							GL11.glVertex3d(p.x,p.y,c.ter.get((int)p.x, (int)p.y));
+						}
+						glEnd();
+					}
+					Coordinate[] cs = b.shape.getCoordinates();
+					glBegin(GL_LINE_LOOP);
+					glColor3f(.2f,.2f,.3f);
+					for(int j=0;j<cs.length;j++){
+						Coordinate p = cs[j];
+						GL11.glVertex3d(p.x,p.y,c.ter.get((int)p.x, (int)p.y));
+					}
+					glEnd();
+				}else{
+					//render block
+				}
+			}
+		}
+		if(renderBuildings && c.fb != null && c.fb.buildings.size() > 0){
+			for(FakeBuilding b : c.fb.buildings){
+				Coordinate[] cs = b.g.getCoordinates();
+				glBegin(GL_POLYGON);
+				glColor3f(.2f,.2f,.2f);
+				for(int j=0;j<cs.length;j++){
+					Coordinate p = cs[j];
+					glVertex3d(p.x,p.y,p.z);
+				}
+				glEnd();
+				glBegin(GL_POLYGON);
+				glColor3f(.2f,.2f,.2f);
+				for(int j=0;j<cs.length;j++){
+					Coordinate p = cs[j];
+					glVertex3d(p.x,p.y,p.z+b.height);
+				}
+				glEnd();
+				glBegin(GL_QUADS);
+				float rand = r.nextFloat()/5;
+				glColor3f(.3f+rand,.3f+rand,.3f+rand);
+				if(cs.length>0){
+					Coordinate q = cs[cs.length-1];
+					for(int j=0;j<cs.length;j++){
+						//glColor3f(r.nextFloat(),r.nextFloat(),r.nextFloat());
+						Coordinate p = cs[j];
+						glVertex3d(p.x,p.y,p.z);
+						glVertex3d(p.x,p.y,p.z+b.height);
+						glVertex3d(q.x,q.y,p.z+b.height);
+						glVertex3d(q.x,q.y,p.z);
+
+						q = cs[j];
+					}
+				}
+				glEnd();
+			}
+		}
+		
+		glEndList();
+		
 	}
 
 	public void rotate(float x, float y, float z){
@@ -90,7 +239,7 @@ public class Camera {
 		pos.y += y;
 		pos.z += z;
 	}
-	
+
 	public void addForce(float x, float y, float z){
 		force.x += x;
 		force.y += y;
@@ -138,16 +287,16 @@ public class Camera {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		//update matrix
-		
+
 		Vector3f.add(force, pos, pos);
-//		if(lookAtCenter){
-//			gluLookAt(pos.x,pos.y,pos.z,0,0,0,0,1,0);
-//		}
+		//		if(lookAtCenter){
+		//			gluLookAt(pos.x,pos.y,pos.z,0,0,0,0,1,0);
+		//		}
 		glRotatef(rot.x, 1, 0, 0);
 		glRotatef(rot.y, 0, 1, 0);
 		glRotatef(rot.z, 0, 0, 1);
 		glTranslatef(pos.x, pos.y, pos.z);
-		
+
 	}
 
 	public void input(){
@@ -164,14 +313,14 @@ public class Camera {
 		}else{
 			speed = .01f;
 		}
-		
+
 		if(Keyboard.isKeyDown(Keyboard.KEY_Q)){
 			//move(new Vector3f(0,0,1),.000001f);
-			addForce(0,0,speed);
+			addForce(0,0,-speed);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_E)){
 			//move(new Vector3f(0,0,1),.000001f);
-			addForce(0,0,-speed);
+			addForce(0,0,speed);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_S)){
 			//move(new Vector3f(0,0,1),.000001f);
@@ -183,166 +332,33 @@ public class Camera {
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_A)){
 			//move(new Vector3f(0,0,1),.000001f);
-			addForce(-speed,0,0);
+			addForce(speed,0,0);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_D)){
 			//move(new Vector3f(0,0,1),.000001f);
-			addForce(speed,0,0);
+			addForce(-speed,0,0);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_Z)){
 			force = new Vector3f(0,0,0);
 		}
-//		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
-//			lookAtCenter = true;
-//		}else{
-//			lookAtCenter = false;
-//		}
+		//		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
+		//			lookAtCenter = true;
+		//		}else{
+		//			lookAtCenter = false;
+		//		}
 	}
 
-	public void render(City c){
+	public void render(){
 		if(!Display.isCloseRequested()){
 			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			Random r = new Random(1);
+			
 			input();
 			//rotate(0,0,.01f);
 			update();
 			//System.out.println(pos.toString());
-			if(c.rm.roads != null && c.rm.roads.size() > 0){ //road render
-				int red = 0;
-				int blue = 0;
-				int alpha = 0;
-				int green = 0;
-				if(!c.rm.finished){ //render endpoints of last road generated
-					GL11.glPointSize(20);
-					GL11.glBegin(GL11.GL_POINTS);
-					GL11.glColor3f(1, 1, 1);
-					Road road = c.rm.roads.get(c.rm.roads.size()-1);
-					Coordinate p1 = road.a.pos;
-					Coordinate p2 = road.b.pos;
-					GL11.glVertex2d(p1.x,p1.y);
-					GL11.glVertex2d(p2.x,p2.y);
-					GL11.glEnd();
-				}
-				for(int i=0; i<c.rm.roads.size(); i++){
-					Road road = c.rm.roads.get(i);
-					Geometry g = road.getGeometry();
-					float zShift = 0f;
-					switch(road.getType()){
-					case BRIDGE:{ //grey
-						red = 50;
-						green = 50;
-						blue = 50;
-						zShift = 1f;
-						break;
-					}
-					case HIGHWAY:{
-						red = 50;
-						green = 50;
-						blue = 55;
-						zShift = 5f;
-						break;
-					}
-					case STREET:{
-						red = 50;
-						green = 50;
-						blue = 55;
-						zShift = 0f;
-						break;
-					}
-					case MAIN:{
-						red = 75;
-						green = 75;
-						blue = 75;
-						zShift = .25f;
-						break;
-					}
-					case DEFAULT:{ //red
-						red = 255;
-						green = 0;
-						blue = 0;
-						break;
-					}
-					default:{ //red
-						red = 255;
-						green = 0;
-						blue = 0;
-						break;
-					}
-					}
-					GL11.glBegin(GL11.GL_QUADS);
-					GL11.glColor4ub((byte)red, (byte)green, (byte)blue, (byte)alpha);
-					for(int j=0;j<4;j++){
-						Coordinate p = g.getCoordinates()[j];
-						GL11.glVertex3d(p.x,p.y,-zShift);
-					}
-				}
-				GL11.glEnd();
-			}
-			if(renderBlocksAndLots  && c.bm.blocks != null && c.bm.blocks.size() > 0){
-				for(CityBlock b : c.bm.blocks){
-					if(b.lots != null && b.lots.size()>0){
-						for(Lot l: b.lots){
 
-							Coordinate[] cs = l.shape.getCoordinates();
-							glBegin(GL_LINE_LOOP);
-							glColor3f(.3f,.3f,.3f);
-							//Coordinate q = cs[cs.length-1];
-							//glVertex2d(q.x,q.y);
-							for(int j=0;j<cs.length;j++){
-								Coordinate p = cs[j];
-								glVertex2d(p.x,p.y);
-							}
-							glEnd();
-						}
-						Coordinate[] cs = b.shape.getCoordinates();
-						glBegin(GL_LINE_LOOP);
-						glColor3f(.2f,.2f,.3f);
-						for(int j=0;j<cs.length;j++){
-							Coordinate p = cs[j];
-							glVertex3d(p.x,p.y, -.1f);
-						}
-						glEnd();
-					}else{
-						//render block
-					}
-				}
-			}
-			if(renderBuildings && c.fb != null && c.fb.buildings.size() > 0){
-				for(FakeBuilding b : c.fb.buildings){
-					Coordinate[] cs = b.g.getCoordinates();
-					glBegin(GL_POLYGON);
-					glColor3f(.2f,.2f,.2f);
-					for(int j=0;j<cs.length;j++){
-						Coordinate p = cs[j];
-						glVertex3d(p.x,p.y,0);
-					}
-					glEnd();
-					glBegin(GL_POLYGON);
-					glColor3f(.2f,.2f,.2f);
-					for(int j=0;j<cs.length;j++){
-						Coordinate p = cs[j];
-						glVertex3d(p.x,p.y,-b.height);
-					}
-					glEnd();
-					glBegin(GL_QUADS);
-					float rand = r.nextFloat()/5;
-					glColor3f(.3f+rand,.3f+rand,.3f+rand);
-					if(cs.length>0){
-						Coordinate q = cs[cs.length-1];
-						for(int j=0;j<cs.length;j++){
-							//glColor3f(r.nextFloat(),r.nextFloat(),r.nextFloat());
-							Coordinate p = cs[j];
-							glVertex3d(p.x,p.y,0);
-							glVertex3d(p.x,p.y,-b.height);
-							glVertex3d(q.x,q.y,-b.height);
-							glVertex3d(q.x,q.y,0);
-
-							q = cs[j];
-						}
-					}
-					glEnd();
-				}
-			}
+			glCallList(cityList);
+			
 			Display.update();
 		}else{
 			Display.destroy();

@@ -36,7 +36,7 @@ public class LotFactory {
 
 						LineString tempLine;
 						if(i==curStack.getCoordinates().length-1){
-							tempLine = gf .createLineString(new Coordinate[]{curStack.getCoordinates()[i], curStack.getCoordinates()[0]});
+							tempLine = gf.createLineString(new Coordinate[]{curStack.getCoordinates()[i], curStack.getCoordinates()[0]});
 
 						}else{
 							tempLine = gf.createLineString(new Coordinate[]{curStack.getCoordinates()[i], curStack.getCoordinates()[i+1]});

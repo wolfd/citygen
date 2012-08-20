@@ -16,17 +16,26 @@ public class FakeBuilding {
 	private static GeometryFactory gf = new GeometryFactory();
 	public Geometry g;
 	public int height;
+	public double zOffset;
 	public Lot lot;
 
-	public FakeBuilding(Geometry geometry, int h, Lot l){
+	public FakeBuilding(Geometry geometry, int h, double z, Lot l){
 		height = h;
+		zOffset = z;
 		g = geometry;
 		lot = l;
+		Coordinate[] cs = g.getCoordinates();
+		for(int i=0; i<cs.length; i++){
+			cs[i].z = zOffset;
+		}
 	}
 
 	public String toSTL(){
 		String stl = "";
 		Coordinate[] cs = g.getCoordinates();
+		for(int i=0; i<cs.length; i++){
+			cs[i].z = zOffset;
+		}
 		if(cs.length >= 3){
 			
 

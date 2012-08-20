@@ -5,6 +5,7 @@ import java.util.Random;
 
 import wolf.city.buildings.FakeBuildings;
 import wolf.city.map.Population;
+import wolf.city.map.Terrain;
 import wolf.city.map.Water;
 import wolf.gui.CityView;
 import wolf.util.Database;
@@ -19,6 +20,7 @@ public class City {
 	//maps
 	public Water water;
 	public Population pop;
+	public Terrain ter;
 
 	public Roadmap rm;
 	public Blockmap bm;
@@ -30,6 +32,7 @@ public class City {
 	//statistics
 	public Statistics statistics;
 	public Log log;
+	
 
 	public City(int sizeX, int sizeY, long seed){
 		log = new Log();
@@ -41,6 +44,7 @@ public class City {
 		}
 		water = new Water(this);
 		pop = new Population(this);
+		ter = new Terrain(this);
 
 		rm = new Roadmap(this);
 		bm = new Blockmap(this);
@@ -48,9 +52,14 @@ public class City {
 		log.log("Seed: "+seed);
 	}
 
-	public void generateRoadmap(){
-		final CityView cv = new CityView(this);
-		rm.generate(cv);
+	public void generateRoadmap(boolean viewCity){
+		if(viewCity){
+			final CityView cv = new CityView(this);
+			rm.generate(cv);
+			cv.close();
+		}else{
+			rm.generate();
+		}
 		log.log("Done generating roads");
 		bm.getBlocks(rm);
 		log.log("Done generating city blocks");
@@ -71,7 +80,7 @@ public class City {
 			System.err.println("SQL not formed correctly!");
 			e.printStackTrace();
 		}
-		cv.close();
+		
 	}
 
 	public void windowClosed(){

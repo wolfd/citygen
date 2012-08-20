@@ -50,9 +50,9 @@ public class FakeBuildings {
 									if(ratio > MIN_RATIO_BUILDING){
 										FakeBuilding building;
 										if(c.random.nextDouble()>.9){
-											building = new FakeBuilding(buildingShape, (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*population)),MAX_HEIGHT), l);
+											building = new FakeBuilding(buildingShape, (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*population)),MAX_HEIGHT), c.ter.get((int)center.x, (int)center.y), l);
 										}else{
-											building = new FakeBuilding(buildingShape, (int) Math.min(MIN_HEIGHT+(MAX_HEIGHT*Math.pow(population,2)),MAX_HEIGHT), l);
+											building = new FakeBuilding(buildingShape, (int) Math.min(MIN_HEIGHT+(MAX_HEIGHT*Math.pow(population,2)),MAX_HEIGHT), c.ter.get((int)center.x, (int)center.y), l);
 										}
 										buildings.add(building);
 										l.building = building;
