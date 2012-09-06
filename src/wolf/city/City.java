@@ -11,6 +11,7 @@ import wolf.gui.CityView;
 import wolf.util.Database;
 import wolf.util.Log;
 import wolf.util.MapRender;
+import wolf.util.OBJ;
 import wolf.util.Popup;
 
 public class City {
@@ -65,7 +66,11 @@ public class City {
 		log.log("Done generating city blocks");
 		fb.generate();
 		log.log("Done generating mock buildings");
-		bm.save("data/blocks.txt", "data/lots.txt");
+		new Thread(new Runnable(){
+			public void run(){
+				bm.save("data/blocks.txt", "data/lots.txt");
+			}
+		}).start();
 		
 		try {
 			Database d = new Database();
@@ -80,23 +85,35 @@ public class City {
 			System.err.println("SQL not formed correctly!");
 			e.printStackTrace();
 		}
-		
 	}
 
 	public void windowClosed(){
 		boolean renderMap = false;
 		boolean stlOutput = false;
+		boolean objOutput = false;
+		
 		if(Popup.confirm("Render?", "CityGen")){
 			renderMap = true;
 		}
 		if(Popup.confirm("Save STL file?", "CityGen")){
 			stlOutput = true;
 		}
+		if(Popup.confirm("Save OBJ file?", "CityGen")){
+			objOutput = true;
+		}
 		if(renderMap){
 			MapRender.render(this,"render");
 		}
 		if(stlOutput){
 			fb.saveSTL();
+		}
+		if(objOutput){
+			OBJ obj = new OBJ();
+			for(int i=0; i<fb.buildings.size(); i++){
+				fb.buildings.get(i).asOBJ(obj);
+			}
+			
+			obj.save("data/city.obj");
 		}
 		log.save("/log-"+System.currentTimeMillis()+".log");
 	}

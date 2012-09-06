@@ -24,6 +24,7 @@ public class CityView{
 		try{
 			
 			Display.setDisplayMode(new DisplayMode(windowSize, windowSize ));
+			
 			Display.create();
 		} catch (LWJGLException e) {
 			e.printStackTrace();
@@ -36,6 +37,8 @@ public class CityView{
 				System.exit(0);
 			}
 		}
+		//GL11.glEnable(GL11.GL_BLEND); 
+		//GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
 		GL11.glLoadIdentity();
 		GL11.glOrtho(vSize, 0, vSize, 0, 1000, -1000);
@@ -160,7 +163,7 @@ public class CityView{
 			GL11.glEnd();
 
 			Display.update();
-			Display.setTitle("Roads: "+c.rm.roads.size());
+			//Display.setTitle("Roads: "+c.rm.roads.size());
 		}else{
 			close();
 		}

@@ -1,5 +1,10 @@
 package wolf.gui;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Random;
@@ -8,13 +13,21 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.ARBVertexBufferObject;
+import org.lwjgl.opengl.ARBFragmentShader;
+import org.lwjgl.opengl.ARBShaderObjects;
+import org.lwjgl.opengl.ARBVertexShader;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.util.glu.GLUtessellator;
+import org.lwjgl.util.glu.GLUtessellatorCallback;
+import org.lwjgl.util.glu.GLUtessellatorCallbackAdapter;
+import org.lwjgl.util.glu.Sphere;
+import org.lwjgl.util.vector.Matrix3f;
 import org.lwjgl.util.vector.Vector3f;
 
+import com.vividsolutions.jts.algorithm.CGAlgorithms;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -23,6 +36,8 @@ import wolf.city.block.CityBlock;
 import wolf.city.block.Lot;
 import wolf.city.buildings.FakeBuilding;
 import wolf.city.road.Road;
+import wolf.util.tess.TessCallback;
+import wolf.util.tess.VertexData;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.util.glu.GLU.*;
@@ -39,10 +54,18 @@ public class Camera {
 	private float zFar = 4000f;
 	private float zNear = 4f;
 	private float mouseSensitivity = .2f;
-	//	private boolean lookAtCenter;
+	private boolean lookAtCenter;
 	private boolean renderBuildings = true;
-	private boolean renderBlocksAndLots = true;
-	
+	private boolean renderBlocksAndLots = false;
+	private GLUtessellator tess = gluNewTess();
+
+	private int shader = 0;
+	private int vertShader = 0;
+	private int fragShader = 0;
+
+	private boolean useShader = true;
+	private int program=0;
+
 	private int cityList;
 	private City c;
 
@@ -70,11 +93,12 @@ public class Camera {
 		Display.setTitle(WINDOW_TITLE);
 		glEnable(GL_LINE_SMOOTH);
 		//glEnable(GL_CULL_FACE);
+		//glEnable(GL_LIGHTING);
 		glEnable(GL_DEPTH_TEST);
 		//		glEnable(GL_LIGHTING);
-		//		glEnable(GL_LIGHT0);
-		//		glEnable(GL_COLOR_MATERIAL);
-		//		glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
+		//glEnable(GL_LIGHT0);
+		//glEnable(GL_COLOR_MATERIAL);
+		//glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
 		//glEnable(GL_BLEND);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
@@ -85,29 +109,75 @@ public class Camera {
 		gluPerspective(fov, (float)windowWidth/(float)windowHeight, zNear, zFar);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+		
+		tess.gluTessProperty(GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
+		GLUtessellatorCallback callback = new TessCallback();
+        tess.gluTessCallback(GLU_TESS_VERTEX, callback);
+        tess.gluTessCallback(GLU_TESS_BEGIN, callback);
+        tess.gluTessCallback(GLU_TESS_END, callback);
+        tess.gluTessCallback(GLU_TESS_COMBINE, callback);
+		/*
+		 * create the shader program. If OK, create vertex
+		 * and fragment shaders
+		 */
+		try {
+			vertShader = createShader("shaders/basic.vert",ARBVertexShader.GL_VERTEX_SHADER_ARB);
+			fragShader = createShader("shaders/basic.frag",ARBFragmentShader.GL_FRAGMENT_SHADER_ARB);
+		}
+		catch(Exception exc) {
+			exc.printStackTrace();
+			return;
+		}
+		finally {
+			if(vertShader == 0 || fragShader == 0){
+				System.out.println("Shaders broke or something");
+				return;
+			}
+		}
+
+		program = ARBShaderObjects.glCreateProgramObjectARB();
+
+		if(program == 0)
+			return;
+
+		/*
+		 * if the vertex and fragment shaders setup sucessfully,
+		 * attach them to the shader program, link the sahder program
+		 * (into the GL context I suppose), and validate
+		 */
+		ARBShaderObjects.glAttachObjectARB(program, vertShader);
+		ARBShaderObjects.glAttachObjectARB(program, fragShader);
+
+		ARBShaderObjects.glLinkProgramARB(program);
+		if (ARBShaderObjects.glGetObjectParameteriARB(program, ARBShaderObjects.GL_OBJECT_LINK_STATUS_ARB) == GL_FALSE) {
+			System.err.println(getLogInfo(program));
+			return;
+		}
+
+		ARBShaderObjects.glValidateProgramARB(program);
+		if (ARBShaderObjects.glGetObjectParameteriARB(program, ARBShaderObjects.GL_OBJECT_VALIDATE_STATUS_ARB) == GL_FALSE) {
+			System.err.println(getLogInfo(program));
+			return;
+		}
+
+		useShader = true;
+
+
 
 		//set up 3d info
-		Random r = new Random(1);
+		//Random r = new Random(1);
 		cityList = glGenLists(1);
-		
+
 		glNewList(cityList, GL_COMPILE);
-		//make the vbo
+		//		Sphere s = new Sphere();
+		//		s.draw(150, 25, 25);
+		//make the display list
 		if(c.rm.roads != null && c.rm.roads.size() > 0){ //road render
 			int red = 0;
 			int blue = 0;
 			int alpha = 0;
 			int green = 0;
-			if(!c.rm.finished){ //render endpoints of last road generated
-				GL11.glPointSize(20);
-				GL11.glBegin(GL11.GL_POINTS);
-				GL11.glColor3f(1, 1, 1);
-				Road road = c.rm.roads.get(c.rm.roads.size()-1);
-				Coordinate p1 = road.a.pos;
-				Coordinate p2 = road.b.pos;
-				GL11.glVertex2d(p1.x,p1.y);
-				GL11.glVertex2d(p2.x,p2.y);
-				GL11.glEnd();
-			}
+
 			for(int i=0; i<c.rm.roads.size(); i++){
 				Road road = c.rm.roads.get(i);
 				Geometry g = road.getGeometry();
@@ -149,28 +219,36 @@ public class Camera {
 					break;
 				}
 				}
-				GL11.glBegin(GL11.GL_QUADS);
-				GL11.glColor4ub((byte)red, (byte)green, (byte)blue, (byte)alpha);
-				for(int j=0;j<4;j++){
-					Coordinate p = g.getCoordinates()[j];
-					GL11.glVertex3d(p.x,p.y,c.ter.get((int)p.x, (int)p.y));
+				Coordinate[] cs = g.reverse().getCoordinates();
+				if(cs.length >= 3){
+					glBegin(GL_QUADS);
+					glColor4ub((byte)red, (byte)green, (byte)blue, (byte)alpha);
+
+					Vector3f n = normal(cs[0], cs[1], cs[2]);
+					glNormal3f(n.x, n.y, n.z);
+					for(int j=0;j<4;j++){
+						Coordinate p = cs[j];
+						glVertex3d(p.x,p.y,c.ter.get((int)p.x, (int)p.y));
+
+					}
+					glEnd();
 				}
 			}
-			GL11.glEnd();
+
 		}
 		if(renderBlocksAndLots  && c.bm.blocks != null && c.bm.blocks.size() > 0){
 			for(CityBlock b : c.bm.blocks){
 				if(b.lots != null && b.lots.size()>0){
 					for(Lot l: b.lots){
 
-						Coordinate[] cs = l.shape.getCoordinates();
+						Coordinate[] cs = l.shape.reverse().getCoordinates();
 						glBegin(GL_LINE_LOOP);
 						glColor3f(.3f,.3f,.3f);
 						//Coordinate q = cs[cs.length-1];
 						//glVertex2d(q.x,q.y);
 						for(int j=0;j<cs.length;j++){
 							Coordinate p = cs[j];
-							GL11.glVertex3d(p.x,p.y,c.ter.get((int)p.x, (int)p.y));
+							glVertex3d(p.x,p.y,c.ter.get((int)p.x, (int)p.y));
 						}
 						glEnd();
 					}
@@ -179,7 +257,8 @@ public class Camera {
 					glColor3f(.2f,.2f,.3f);
 					for(int j=0;j<cs.length;j++){
 						Coordinate p = cs[j];
-						GL11.glVertex3d(p.x,p.y,c.ter.get((int)p.x, (int)p.y));
+						glVertex3d(p.x,p.y,c.ter.get((int)p.x, (int)p.y));
+
 					}
 					glEnd();
 				}else{
@@ -188,44 +267,97 @@ public class Camera {
 			}
 		}
 		if(renderBuildings && c.fb != null && c.fb.buildings.size() > 0){
+			if(useShader){ 
+				ARBShaderObjects.glUseProgramObjectARB(program);
+				GL20.glUniform1f(GL20.glGetUniformLocation(program, "shininess"), 1f);
+				System.out.println("Using shader");
+			}
 			for(FakeBuilding b : c.fb.buildings){
 				Coordinate[] cs = b.g.getCoordinates();
-				glBegin(GL_POLYGON);
-				glColor3f(.2f,.2f,.2f);
-				for(int j=0;j<cs.length;j++){
-					Coordinate p = cs[j];
-					glVertex3d(p.x,p.y,p.z);
-				}
-				glEnd();
-				glBegin(GL_POLYGON);
-				glColor3f(.2f,.2f,.2f);
-				for(int j=0;j<cs.length;j++){
-					Coordinate p = cs[j];
-					glVertex3d(p.x,p.y,p.z+b.height);
-				}
-				glEnd();
-				glBegin(GL_QUADS);
-				float rand = r.nextFloat()/5;
-				glColor3f(.3f+rand,.3f+rand,.3f+rand);
-				if(cs.length>0){
-					Coordinate q = cs[cs.length-1];
+				if(!CGAlgorithms.isCCW(cs)) cs = b.g.reverse().getCoordinates(); 
+				if(cs.length >= 3){
+					//glBegin(GL_TRIANGLE_STRIP);
+					Vector3f n = normal(cs[0], cs[1], cs[2]);
+					//render top of building
+					tess.gluTessBeginPolygon(null);
+					tess.gluTessBeginContour();
+					tess.gluTessNormal(n.x, n.y, n.z);
+					for(int j=cs.length-1; j>=0; j--){
+						Coordinate p = cs[j];
+						double[] vert = new double[]{p.x,p.y,p.z+b.height};
+						tess.gluTessVertex(vert, 0, new VertexData(vert));
+					}
+					tess.gluTessEndContour();
+					tess.gluTessEndPolygon();
+					//glEnd();
+					glBegin(GL_LINES);
+					glVertex3d(cs[0].x,cs[0].y,cs[0].z+b.height);
+					float normalLen = 50;
+					glVertex3d(cs[0].x+(n.x*normalLen),cs[0].y+(n.y*normalLen),cs[0].z+b.height+(n.z*normalLen));
+					glEnd();
+					glBegin(GL_POLYGON);
+					//render bottom of building
+					tess.gluBeginPolygon();
+					tess.gluTessNormal(n.x, n.y, -n.z);
 					for(int j=0;j<cs.length;j++){
-						//glColor3f(r.nextFloat(),r.nextFloat(),r.nextFloat());
 						Coordinate p = cs[j];
 						glVertex3d(p.x,p.y,p.z);
-						glVertex3d(p.x,p.y,p.z+b.height);
-						glVertex3d(q.x,q.y,p.z+b.height);
-						glVertex3d(q.x,q.y,p.z);
 
-						q = cs[j];
 					}
+					tess.gluEndPolygon();
+					glEnd();
+
+					//float rand = r.nextFloat()/5;
+					//glColor3f(.3f+rand,.3f+rand,.3f+rand);
+
+					if(cs.length>0){
+						Coordinate q = cs[0];
+
+						for(int j=cs.length-1;j>=0;j--){
+							//glColor3f(r.nextFloat(),r.nextFloat(),r.nextFloat());
+							Coordinate p = cs[j];
+							Vector3f n1 = normal(new Coordinate(q.x,q.y,p.z), new Coordinate(q.x,q.y,p.z+b.height), new Coordinate(p.x,p.y,p.z+b.height));
+							glBegin(GL_QUADS);
+							glNormal3f(n1.x, n1.y, n1.z);
+							glVertex3d(q.x,q.y,p.z);
+							glVertex3d(q.x,q.y,p.z+b.height);
+							glVertex3d(p.x,p.y,p.z+b.height);							
+							glVertex3d(p.x,p.y,p.z);
+							glEnd();
+
+							q = cs[j];
+						}
+						
+						/*
+						Coordinate q = cs[cs.length-1];
+
+						for(int j=0;j<cs.length;j++){
+							//glColor3f(r.nextFloat(),r.nextFloat(),r.nextFloat());
+							Coordinate p = cs[j];
+							Vector3f n1 = normal(new Coordinate(q.x,q.y,p.z), new Coordinate(q.x,q.y,p.z+b.height), new Coordinate(p.x,p.y,p.z+b.height));
+							glBegin(GL_QUADS);
+							glNormal3f(n1.x, n1.y, n1.z);
+							glVertex3d(q.x,q.y,p.z);
+							glVertex3d(q.x,q.y,p.z+b.height);
+							glVertex3d(p.x,p.y,p.z+b.height);							
+							glVertex3d(p.x,p.y,p.z);
+							glEnd();
+
+							q = cs[j];
+						}
+						 */
+					}
+
 				}
-				glEnd();
 			}
+			//release the shader
+			ARBShaderObjects.glUseProgramObjectARB(0);
 		}
-		
+		ByteBuffer posbuff = ByteBuffer.allocateDirect(4*Float.SIZE/8);
+		posbuff.putFloat(1.0f).putFloat(1.0f).putFloat(1.0f).putFloat(0.0f).flip();
+		glLight(GL_LIGHT0, GL_POSITION, posbuff.asFloatBuffer());
 		glEndList();
-		
+
 	}
 
 	public void rotate(float x, float y, float z){
@@ -289,21 +421,57 @@ public class Camera {
 		//update matrix
 
 		Vector3f.add(force, pos, pos);
-		//		if(lookAtCenter){
-		//			gluLookAt(pos.x,pos.y,pos.z,0,0,0,0,1,0);
-		//		}
 		glRotatef(rot.x, 1, 0, 0);
 		glRotatef(rot.y, 0, 1, 0);
 		glRotatef(rot.z, 0, 0, 1);
-		glTranslatef(pos.x, pos.y, pos.z);
 
+		if(lookAtCenter){
+			gluLookAt(-pos.x,-pos.y,-pos.z,0,0,0,0,1,0);
+		}else{
+			//gluLookAt(-pos.x,-pos.y,-pos.z,0,0,0,0,1,0);
+			glTranslatef(pos.x, pos.y, pos.z);
+		}
 	}
 
-	public void input(){
+	//newell's method
+	private static Vector3f normal(Coordinate[] cs){
+		Vector3f normal = new Vector3f(0,0,0);
+		for(int i=0; i<cs.length; i++){
+			Vector3f cur = new Vector3f((float)cs[i].x, (float)cs[i].y, (float)((cs[i].z != Double.NaN) ? cs[i].z : 0));
+			Vector3f next = new Vector3f((float)cs[(i+1) % cs.length].x, (float)cs[(i+1) % cs.length].y, (float)((cs[(i+1) % cs.length].z != Double.NaN) ? cs[(i+1) % cs.length].z : 0));
+
+			normal.x = normal.x + ((cur.y - next.y) * (cur.z - next.z));
+			normal.y = normal.y + ((cur.z - next.z) * (cur.x - next.x));
+			normal.z = normal.z + ((cur.x - next.x) * (cur.y - next.y));
+		}
+
+		//normalize the normal vector!
+		normalize(normal);
+		return normal;
+	}
+
+	private static Vector3f normal(Coordinate a, Coordinate b, Coordinate c){
+		Vector3f u = new Vector3f((float)(b.x-a.x), (float)(b.y-a.y), (float)(b.z-a.z));
+		Vector3f v = new Vector3f((float)(c.x-a.x), (float)(c.y-a.y), (float)(c.z-a.z));
+
+		return normalize(new Vector3f((u.y*u.z)-(u.z*v.y), ((u.z*v.x)-(u.x*v.z)), ((u.x*v.y)-(u.y*v.x))));
+	}
+
+	private static Vector3f normalize(Vector3f v){
+		float length = (float)Math.sqrt(Math.pow(v.x,2)+Math.pow(v.y,2)+Math.pow(v.z,2));
+		v.x /= length;
+		v.y /= length;
+		v.z /= length;
+		return v;
+	}
+
+	private void input(){
 		if(Mouse.isButtonDown(0) && Mouse.isInsideWindow()){
+			//Mouse.setGrabbed(true);
 			rot.y += Mouse.getDX()*mouseSensitivity;
 			rot.x -= Mouse.getDY()*mouseSensitivity;
 		}else{
+			//Mouse.setGrabbed(false);
 			Mouse.getDX();
 			Mouse.getDY();
 		}
@@ -341,24 +509,22 @@ public class Camera {
 		if(Keyboard.isKeyDown(Keyboard.KEY_Z)){
 			force = new Vector3f(0,0,0);
 		}
-		//		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
-		//			lookAtCenter = true;
-		//		}else{
-		//			lookAtCenter = false;
-		//		}
+		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
+			lookAtCenter = true;
+		}else{
+			lookAtCenter = false;
+		}
 	}
 
 	public void render(){
 		if(!Display.isCloseRequested()){
-			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 			input();
 			//rotate(0,0,.01f);
 			update();
-			//System.out.println(pos.toString());
-
 			glCallList(cityList);
-			
+
 			Display.update();
 		}else{
 			Display.destroy();
@@ -367,4 +533,90 @@ public class Camera {
 		}
 	}
 
+	/*
+	 * With the exception of syntax, setting up vertex and fragment shaders
+	 * is the same.
+	 * @param the name and path to the vertex shader
+	 */
+	private int createShader(String filename, int shaderType) throws Exception {
+		int shader = 0;
+		try {
+			shader = ARBShaderObjects.glCreateShaderObjectARB(shaderType);
+
+			if(shader == 0)
+				return 0;
+
+			ARBShaderObjects.glShaderSourceARB(shader, readFileAsString(filename));
+			ARBShaderObjects.glCompileShaderARB(shader);
+
+			if (ARBShaderObjects.glGetObjectParameteriARB(shader, ARBShaderObjects.GL_OBJECT_COMPILE_STATUS_ARB) == GL_FALSE)
+				throw new RuntimeException("Error creating shader: " + getLogInfo(shader));
+
+			return shader;
+		}
+		catch(Exception exc) {
+			ARBShaderObjects.glDeleteObjectARB(shader);
+			throw exc;
+		}
+	}
+
+	private static String getLogInfo(int obj) {
+		return ARBShaderObjects.glGetInfoLogARB(obj, ARBShaderObjects.glGetObjectParameteriARB(obj, ARBShaderObjects.GL_OBJECT_INFO_LOG_LENGTH_ARB));
+	}
+
+	private String readFileAsString(String filename) throws Exception {
+		StringBuilder source = new StringBuilder();
+
+		FileInputStream in = new FileInputStream(filename);
+
+		Exception exception = null;
+
+		BufferedReader reader;
+		try{
+			reader = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+
+			Exception innerExc= null;
+			try {
+				String line;
+				while((line = reader.readLine()) != null)
+					source.append(line).append('\n');
+			}
+			catch(Exception exc) {
+				exception = exc;
+			}
+			finally {
+				try {
+					reader.close();
+				}
+				catch(Exception exc) {
+					if(innerExc == null)
+						innerExc = exc;
+					else
+						exc.printStackTrace();
+				}
+			}
+
+			if(innerExc != null)
+				throw innerExc;
+		}
+		catch(Exception exc) {
+			exception = exc;
+		}
+		finally {
+			try {
+				in.close();
+			}
+			catch(Exception exc) {
+				if(exception == null)
+					exception = exc;
+				else
+					exc.printStackTrace();
+			}
+
+			if(exception != null)
+				throw exception;
+		}
+
+		return source.toString();
+	}
 }

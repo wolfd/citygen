@@ -14,11 +14,20 @@
 	<classpathentry kind="lib" path="wolfnoise.jar"/>
 	<classpathentry kind="lib" path="lwjgl.jar">
 		<attributes>
+			<attribute name="javadoc_location" value="http://lwjgl.org/javadoc/"/>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="CityGen/lwjgl/macosx"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lwjgl_util.jar"/>
+	<classpathentry kind="lib" path="lwjgl_util.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="http://lwjgl.org/javadoc/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="PNGDecoder.jar"/>
-	<classpathentry kind="lib" path="jts-1.12.jar" sourcepath="C:/Users/Dan Wolf/Downloads/jts-1.12.zip"/>
+	<classpathentry kind="lib" path="jts-1.12.jar" sourcepath="C:/Users/Dan Wolf/Downloads/jts-1.12.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="http://tsusiatsoftware.net/jts/javadoc/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

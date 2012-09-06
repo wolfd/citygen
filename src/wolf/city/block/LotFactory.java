@@ -17,7 +17,9 @@ public class LotFactory {
 
 	public static void makeLots(City c, List<CityBlock> blocks){
 		long startTime = System.currentTimeMillis();
-		for(CityBlock block: blocks){
+		for(int blockIndex=0; blockIndex < blocks.size(); blockIndex++){
+			CityBlock block = blocks.get(blockIndex);
+			
 			if(block.shape.getArea() > SMALL_LOT_SIZE){
 				//make a stack of polygons
 				List<Polygon> stack = new LinkedList<Polygon>();
@@ -61,10 +63,19 @@ public class LotFactory {
 					double angle = Angle.angle(tempLine.getCoordinates()[0], tempLine.getCoordinates()[1]);
 					double length = (c.sizeX+c.sizeY)*2; //size of the box that cuts the lots, make larger if having problems
 					//make a line from that point to a point perpendicular to the first (actually extended in both directions a long way)
-					LineString split = gf.createLineString(new Coordinate[]{new Coordinate(midpoint.getX()-Math.cos(angle+(Math.PI/2))*length, midpoint.getY()-Math.sin(angle+(Math.PI/2))*length), new Coordinate(midpoint.getX()+Math.cos(angle+(Math.PI/2))*length,midpoint.getY()+Math.sin(angle+(Math.PI/2))*length)});
-					LineString side1 = gf.createLineString(new Coordinate[]{new Coordinate(split.getCoordinates()[0].x-Math.cos(angle)*length, split.getCoordinates()[0].y-Math.sin(angle)*length), new Coordinate(split.getCoordinates()[1].x-Math.cos(angle)*length,split.getCoordinates()[1].y-Math.sin(angle)*length)});
-					LineString side2 = gf.createLineString(new Coordinate[]{new Coordinate(split.getCoordinates()[0].x+Math.cos(angle)*length, split.getCoordinates()[0].y+Math.sin(angle)*length), new Coordinate(split.getCoordinates()[1].x+Math.cos(angle)*length,split.getCoordinates()[1].y+Math.sin(angle)*length)});
+//					LineString split = gf.createLineString(new Coordinate[]{new Coordinate(midpoint.getX()-Math.cos(angle+(Math.PI/2))*length, midpoint.getY()-Math.sin(angle+(Math.PI/2))*length,0), new Coordinate(midpoint.getX()+Math.cos(angle+(Math.PI/2))*length,midpoint.getY()+Math.sin(angle+(Math.PI/2))*length,0)});
+//					LineString side1 = gf.createLineString(new Coordinate[]{new Coordinate(split.getCoordinates()[0].x-Math.cos(angle)*length, split.getCoordinates()[0].y-Math.sin(angle)*length,0), new Coordinate(split.getCoordinates()[1].x-Math.cos(angle)*length,split.getCoordinates()[1].y-Math.sin(angle)*length,0)});
+//					LineString side2 = gf.createLineString(new Coordinate[]{new Coordinate(split.getCoordinates()[0].x+Math.cos(angle)*length, split.getCoordinates()[0].y+Math.sin(angle)*length,0), new Coordinate(split.getCoordinates()[1].x+Math.cos(angle)*length,split.getCoordinates()[1].y+Math.sin(angle)*length,0)});	
+					double cosAngle = Math.cos(angle);
+					double sinAngle = Math.sin(angle);
+					double cosAngle2 = Math.cos(angle+(Math.PI/2));
+					double sinAngle2 = Math.sin(angle+(Math.PI/2));
+					
+					LineString split = gf.createLineString(new Coordinate[]{new Coordinate(midpoint.getX()-cosAngle2*length, midpoint.getY()-sinAngle2*length,0), new Coordinate(midpoint.getX()+cosAngle2*length,midpoint.getY()+sinAngle2*length,0)});
+					LineString side1 = gf.createLineString(new Coordinate[]{new Coordinate(split.getCoordinates()[0].x-cosAngle*length, split.getCoordinates()[0].y-sinAngle*length,0), new Coordinate(split.getCoordinates()[1].x-cosAngle*length,split.getCoordinates()[1].y-sinAngle*length,0)});
+					LineString side2 = gf.createLineString(new Coordinate[]{new Coordinate(split.getCoordinates()[0].x+cosAngle*length, split.getCoordinates()[0].y+sinAngle*length,0), new Coordinate(split.getCoordinates()[1].x+cosAngle*length,split.getCoordinates()[1].y+sinAngle*length,0)});
 
+					
 					//create rings to make polygons
 					LinearRing ring1 = gf.createLinearRing(new Coordinate[]{split.getCoordinates()[0],split.getCoordinates()[1],side1.getCoordinates()[1], side1.getCoordinates()[0], split.getCoordinates()[0]});
 					LinearRing ring2 = gf.createLinearRing(new Coordinate[]{split.getCoordinates()[0],split.getCoordinates()[1],side2.getCoordinates()[1], side2.getCoordinates()[0], split.getCoordinates()[0]});
@@ -98,48 +109,46 @@ public class LotFactory {
 
 							//get the size of each polygon, if smaller than break-off point add to finished
 
-							if(lot1Arr.size()>=1){
-								for(Polygon lot1:lot1Arr){
-									Point ctr = lot1.getCentroid();
-									double distanceFromCenter = Math.sqrt((ctr.getX()*ctr.getX())+(ctr.getY()*ctr.getY()));
-									double cutOffSize;
-									if(c.random.nextBoolean()){
-										cutOffSize = Math.max(Math.min(distanceFromCenter,LARGE_LOT_SIZE)*DISTANCE_DELTA,SMALL_LOT_SIZE);
-										cutOffSize = cutOffSize + cutOffSize*(c.random.nextDouble()/4);
-									}else{
-										cutOffSize = c.random.nextDouble()*(LARGE_LOT_SIZE - SMALL_LOT_SIZE)+SMALL_LOT_SIZE;
-									}
-									if(lot1.getArea()<cutOffSize){
-										finished.add(lot1);
-									}else{
-										stack.add(lot1);
-									}
+							for(int lot1Index=0; lot1Index<lot1Arr.size(); lot1Index++){
+								Polygon lot1 = lot1Arr.get(lot1Index);
+								Point ctr = lot1.getCentroid();
+								double distanceFromCenter = Math.sqrt((ctr.getX()*ctr.getX())+(ctr.getY()*ctr.getY()));
+								double cutOffSize;
+								if(c.random.nextBoolean()){
+									cutOffSize = Math.max(Math.min(distanceFromCenter,LARGE_LOT_SIZE)*DISTANCE_DELTA,SMALL_LOT_SIZE);
+									cutOffSize = cutOffSize + cutOffSize*(c.random.nextDouble()/4);
+								}else{
+									cutOffSize = c.random.nextDouble()*(LARGE_LOT_SIZE - SMALL_LOT_SIZE)+SMALL_LOT_SIZE;
+								}
+								if(lot1.getArea()<cutOffSize){
+									finished.add(lot1);
+								}else{
+									stack.add(lot1);
 								}
 							}
-							if(lot2Arr.size()>=1){
-								for(Polygon lot2:lot2Arr){
-									Point ctr = lot2.getCentroid();
-									double distanceFromCenter = Math.sqrt((ctr.getX()*ctr.getX())+(ctr.getY()*ctr.getY()));
-									double cutOffSize;
-									if(c.random.nextBoolean()){
-										cutOffSize = Math.max(Math.min(distanceFromCenter,LARGE_LOT_SIZE)*DISTANCE_DELTA,SMALL_LOT_SIZE);
-										cutOffSize = cutOffSize + cutOffSize*(c.random.nextDouble()/4);
-									}else{
-										cutOffSize = c.random.nextDouble()*(LARGE_LOT_SIZE - SMALL_LOT_SIZE)+SMALL_LOT_SIZE;
-									}
-									if(lot2.getArea()<cutOffSize){
-										finished.add(lot2);
-									}else{
-										stack.add(lot2);
-									}
+							for(int lot2Index=0; lot2Index<lot2Arr.size(); lot2Index++){
+								Polygon lot2 = lot2Arr.get(lot2Index);
+								Point ctr = lot2.getCentroid();
+								double distanceFromCenter = Math.sqrt((ctr.getX()*ctr.getX())+(ctr.getY()*ctr.getY()));
+								double cutOffSize;
+								if(c.random.nextBoolean()){
+									cutOffSize = Math.max(Math.min(distanceFromCenter,LARGE_LOT_SIZE)*DISTANCE_DELTA,SMALL_LOT_SIZE);
+									cutOffSize = cutOffSize + cutOffSize*(c.random.nextDouble()/4);
+								}else{
+									cutOffSize = c.random.nextDouble()*(LARGE_LOT_SIZE - SMALL_LOT_SIZE)+SMALL_LOT_SIZE;
+								}
+								if(lot2.getArea()<cutOffSize){
+									finished.add(lot2);
+								}else{
+									stack.add(lot2);
 								}
 							}
 						}
 					}
 				}
 				List<Lot> tempFinished = new LinkedList<Lot>();
-				for(Polygon f: finished){
-					tempFinished.add(new Lot(f));
+				for(int fIndex=0; fIndex<finished.size(); fIndex++){
+					tempFinished.add(new Lot(finished.get(fIndex)));
 				}
 				block.lots = tempFinished;
 			}else{

@@ -115,7 +115,7 @@ public class Roadmap{
 		maximumRoadSnapDistance = config.getDouble("maximumRoadSnapDistance", 40d);
 		minimumRoadSnapDistance = config.getDouble("minimumRoadSnapDistance", 2d);
 		minimumNumberParents = config.getInt("minimumNumberParents", 8);
-		chaos = config.getDouble("chaos", 0);
+		chaos = config.getDouble("chaos", .5);
 
 		try {
 			((AbstractFileConfiguration) config).save();
@@ -137,7 +137,6 @@ public class Roadmap{
 		RoadQueue rqH = new RoadQueue(); //highways
 		RoadQueue rqM = new RoadQueue(); //main roads
 		RoadQueue rq = new RoadQueue(); //streets
-
 
 		//seed map with a couple highways
 		seedRoadMap(rqH);
