@@ -136,6 +136,7 @@ public class FakeBuilding implements STLOutput, OBJOutput{
 
 	@Override
 	public void asOBJ(OBJ objfile) {
+		objfile.startObject("building_"+System.nanoTime());
 		Coordinate[] cs = g.getCoordinates();
 		if(cs.length >= 3){
 			Coordinate c1 = cs[cs.length-1];
@@ -172,6 +173,7 @@ public class FakeBuilding implements STLOutput, OBJOutput{
 				objfile.face(new Vector3f[]{toVector3f(a), toVector3f(b), toVector3f(c)});
 			}
 		}
+		objfile.endObject();
 	}
 
 	private Vector3f toVector3f(Coordinate c) {

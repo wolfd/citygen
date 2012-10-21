@@ -7,25 +7,65 @@ import org.lwjgl.util.vector.Vector3f;
 import com.vividsolutions.jts.geom.Coordinate;
 
 public class OBJ {
-	ArrayList<String> v;
-	ArrayList<String> vt;
-	ArrayList<String> vn;
-	ArrayList<String> faces;
+	private ArrayList<String> v;
+	private int vCount;
+	private ArrayList<String> vt;
+	private int vtCount;
+	private ArrayList<String> vn;
+	private int vnCount;
+	private ArrayList<String> faces;
+	private boolean saveForEachObject;
 	
-	public OBJ(){
+	private TextFileOutput tf = new TextFileOutput();
+	private String currentObjectName;
+	
+	public OBJ(boolean saveForEachObject){
 		v = new ArrayList<String>();
 		vt = new ArrayList<String>();
 		vn = new ArrayList<String>();
 		faces = new ArrayList<String>();
+		vCount = 0;
+		vtCount = 0;
+		vnCount = 0;
+		this.saveForEachObject = saveForEachObject;
+	}
+	
+	public void startObject(String name){
+		tf.data.add("o "+name);
+		currentObjectName = name;
+	}
+	
+	public void endObject(){
+		tf.data.addAll(v);
+		tf.data.addAll(vt);
+		tf.data.addAll(vn);
+		tf.data.addAll(faces);
+		v.clear();
+		vt.clear();
+		vn.clear();
+		faces.clear();
+		
+		
+		if(saveForEachObject){ 
+			tf.save("data/objects/"+currentObjectName+".obj");
+			tf.data.clear();
+			vCount = 0;
+			vtCount = 0;
+			vnCount = 0;
+		}
+		//add material data?
 	}
 	
 	public void face(Vector3f[] verts){//, Vector3f[] vnorm, Vector3f[] vtex){
 		String face = "f";
-		Vector3f normal = normal(verts[0], verts[1], verts[2]);
-		vn.add("vn "+normal.x+" "+normal.y+" "+normal.z);
+		//Vector3f normal = normal(verts[0], verts[1], verts[2]);
+		//vn.add("vn "+normal.x+" "+normal.y+" "+normal.z);
+		//vnCount++;
 		for(int i=0; i<verts.length; i++){
 			v.add("v "+verts[i].x+" "+verts[i].y+" "+verts[i].z);
-			face += " "+v.size()+"/"+vn.size()+"/";
+			vCount++; //use a static counter because array gets reset for every object
+			//face += " "+vCount+"/"+vnCount+"/";
+			face += " "+vCount+"//";
 		}
 		faces.add(face);
 	}
@@ -46,12 +86,6 @@ public class OBJ {
 	}
 	
 	public void save(String filename){
-		TextFileOutput tf = new TextFileOutput();
-		tf.data.addAll(v);
-		tf.data.addAll(vt);
-		tf.data.addAll(vn);
-		tf.data.addAll(faces);
-		
 		tf.save(filename);
 	}
 }

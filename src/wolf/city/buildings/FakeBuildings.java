@@ -31,11 +31,11 @@ public class FakeBuildings {
 			for(CityBlock b : c.bm.blocks){
 				if(b.lots != null && b.lots.size()>0){
 					for(Lot l: b.lots){
-						boolean waterPresent = false;
+						/*boolean waterPresent = false;
 						for(Coordinate cord: l.shape.getCoordinates()){
 							if(c.water.get((int)cord.x, (int)cord.y)>c.rm.noWaterCutoffDensity) waterPresent = true;
 						}
-						if(!waterPresent){
+						if(!waterPresent){*/
 							Coordinate center = l.shape.getCentroid().getCoordinate();
 							float population = c.pop.get((int)center.x, (int)center.y);
 							if(population>MIN_POPULATION_BUILDING){
@@ -59,7 +59,7 @@ public class FakeBuildings {
 									}
 								}
 							}
-						}
+						//}
 					}
 				}
 			}

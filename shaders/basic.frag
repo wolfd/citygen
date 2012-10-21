@@ -20,7 +20,7 @@ void main()
 	// the material properties are embedded in the shader (for now)
 	vec4 mat_ambient = vec4(1.0, 1.0, 1.0, 1.0);
 	vec4 mat_diffuse = vec4(1.0, 1.0, 1.0, 1.0);
-	vec4 mat_specular = vec4(1.0, 1.0, 1.0, 1.0);
+	vec4 mat_specular = vec4(0.5, 1.0, 1.0, 1.0);
 	
 	// ambient term
 	vec4 ambient = mat_ambient * gl_LightSource[0].ambient;

@@ -29,11 +29,11 @@ public class RoadQueue {
 		return returnRoad;
 	}
 
-	public boolean isNotEmpty(){
+	public boolean isEmpty(){
 		if(roads.size()>0){
-			return true;
-		}else{
 			return false;
+		}else{
+			return true;
 		}
 	}
 

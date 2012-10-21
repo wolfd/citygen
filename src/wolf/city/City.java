@@ -19,7 +19,7 @@ public class City {
 	public int sizeX;
 	public int sizeY;
 	//maps
-	public Water water;
+	//public Water water;
 	public Population pop;
 	public Terrain ter;
 
@@ -43,7 +43,7 @@ public class City {
 		for(int i=0; i<10; i++){ //warm up the random number generator
 			random.nextDouble();
 		}
-		water = new Water(this);
+		//water = new Water(this);
 		pop = new Population(this);
 		ter = new Terrain(this);
 
@@ -108,7 +108,7 @@ public class City {
 			fb.saveSTL();
 		}
 		if(objOutput){
-			OBJ obj = new OBJ();
+			OBJ obj = new OBJ(false);
 			for(int i=0; i<fb.buildings.size(); i++){
 				fb.buildings.get(i).asOBJ(obj);
 			}

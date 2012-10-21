@@ -14,7 +14,7 @@ public class MapRender {
 		rm = c.rm;
 		filename = file;
 		ImageOutput img = new ImageOutput(sizeX, sizeY);
-		for(int iy=0; iy<sizeY; iy++){
+		/*for(int iy=0; iy<sizeY; iy++){
 			for(int ix=0; ix<sizeX; ix++){
 				float red = c.pop.get(ix-(sizeX/2), iy-(sizeY/2));
 				float blue = c.water.get(ix-(sizeX/2), iy-(sizeY/2));
@@ -23,9 +23,10 @@ public class MapRender {
 				}else{
 					blue = 0;
 				}
-				img.setColor(ix,sizeY-iy-1, red, 0, blue);
+				img.setColor(ix,sizeY-iy-1, red, 0, 0);
 			}
 		}
+		*/
 
 		for(int i=rm.roads.size()-1; i>=0; i--){
 			Road r = rm.roads.get(i);
@@ -36,30 +37,30 @@ public class MapRender {
 			switch(r.getType()){
 			case BRIDGE:{ //grey
 				width=r.getType().getWidth();
+				red = 70;
+				green = 70;
+				blue = 70;
+				break;
+			}
+			case HIGHWAY:{ //blue
+				width=r.getType().getWidth();
 				red = 50;
 				green = 50;
 				blue = 50;
 				break;
 			}
-			case HIGHWAY:{ //blue
-				width=r.getType().getWidth();
-				red = 0;
-				green = 50;
-				blue = 150;
-				break;
-			}
 			case STREET:{ //green
 				width=r.getType().getWidth();
-				red = 0;
-				green = 150;
-				blue = 50;
+				red = 55;
+				green = 55;
+				blue = 55;
 				break;
 			}
 			case MAIN:{ //green
 				width=r.getType().getWidth();
-				red = 0;
-				green = 100;
-				blue = 100;
+				red = 45;
+				green = 45;
+				blue = 45;
 				break;
 			}
 			case DEFAULT:{ //red

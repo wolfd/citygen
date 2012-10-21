@@ -68,6 +68,7 @@ public class Camera {
 
 	private int cityList;
 	private City c;
+	private long lastNanoTime;
 
 
 	public Camera(City city){
@@ -290,21 +291,23 @@ public class Camera {
 					tess.gluTessEndContour();
 					tess.gluTessEndPolygon();
 					//glEnd();
-					glBegin(GL_LINES);
+					/*glBegin(GL_LINES);
 					glVertex3d(cs[0].x,cs[0].y,cs[0].z+b.height);
 					float normalLen = 50;
 					glVertex3d(cs[0].x+(n.x*normalLen),cs[0].y+(n.y*normalLen),cs[0].z+b.height+(n.z*normalLen));
-					glEnd();
+					glEnd();*/
 					glBegin(GL_POLYGON);
 					//render bottom of building
-					tess.gluBeginPolygon();
-					tess.gluTessNormal(n.x, n.y, -n.z);
+//					tess.gluBeginPolygon();
+//					tess.gluTessBeginContour();
+//					tess.gluTessNormal(n.x, n.y, -n.z);
 					for(int j=0;j<cs.length;j++){
 						Coordinate p = cs[j];
 						glVertex3d(p.x,p.y,p.z);
 
 					}
-					tess.gluEndPolygon();
+//					tess.gluTessEndContour();
+//					tess.gluEndPolygon();
 					glEnd();
 
 					//float rand = r.nextFloat()/5;
@@ -466,6 +469,9 @@ public class Camera {
 	}
 
 	private void input(){
+		long nanoTime = System.nanoTime();
+		long deltaTime = nanoTime-lastNanoTime;
+		lastNanoTime = nanoTime;
 		if(Mouse.isButtonDown(0) && Mouse.isInsideWindow()){
 			//Mouse.setGrabbed(true);
 			rot.y += Mouse.getDX()*mouseSensitivity;
@@ -477,34 +483,34 @@ public class Camera {
 		}
 		float speed;
 		if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
-			speed = .05f;
+			speed = .0000000005f;
 		}else{
-			speed = .01f;
+			speed = .0000000001f;
 		}
 
 		if(Keyboard.isKeyDown(Keyboard.KEY_Q)){
 			//move(new Vector3f(0,0,1),.000001f);
-			addForce(0,0,-speed);
+			addForce(0,0,-speed*deltaTime);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_E)){
 			//move(new Vector3f(0,0,1),.000001f);
-			addForce(0,0,speed);
+			addForce(0,0,speed*deltaTime);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_S)){
 			//move(new Vector3f(0,0,1),.000001f);
-			addForce(0,speed,0);
+			addForce(0,speed*deltaTime,0);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_W)){
 			//move(new Vector3f(0,0,1),.000001f);
-			addForce(0,-speed,0);
+			addForce(0,-speed*deltaTime,0);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_A)){
 			//move(new Vector3f(0,0,1),.000001f);
-			addForce(speed,0,0);
+			addForce(speed*deltaTime,0,0);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_D)){
 			//move(new Vector3f(0,0,1),.000001f);
-			addForce(-speed,0,0);
+			addForce(-speed*deltaTime,0,0);
 		}
 		if(Keyboard.isKeyDown(Keyboard.KEY_Z)){
 			force = new Vector3f(0,0,0);

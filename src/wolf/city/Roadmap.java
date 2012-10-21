@@ -69,6 +69,10 @@ public class Roadmap{
 	public boolean finished = false;
 	public Geometry shape; //generate when final
 	private int minimumNumberParents;
+	
+	private RoadQueue rqH; //highways
+	private RoadQueue rqM; //main roads
+	private RoadQueue rq; //streets
 
 
 	public Roadmap(City city){
@@ -131,12 +135,12 @@ public class Roadmap{
 	public void generate(){
 		generate(null);
 	}
-
-	public void generate(CityView cv){
+	
+	public void setupGeneration(){
 		log.log("Starting roadmap generation");
-		RoadQueue rqH = new RoadQueue(); //highways
-		RoadQueue rqM = new RoadQueue(); //main roads
-		RoadQueue rq = new RoadQueue(); //streets
+		rqH = new RoadQueue(); //highways
+		rqM = new RoadQueue(); //main roads
+		rq = new RoadQueue(); //streets
 
 		//seed map with a couple highways
 		seedRoadMap(rqH);
@@ -144,8 +148,10 @@ public class Roadmap{
 		//generate highways entirely
 
 		log.log("Highways generating");
-
-		while(rqH.isNotEmpty()){
+	}
+	
+	public boolean generateIteration(CityView cv){
+		if(!rqH.isEmpty()){
 			//generate highways, save street seeds to rq
 			Road road = rqH.remove();
 			if(road.finished){
@@ -191,7 +197,7 @@ public class Roadmap{
 		//basicRule.turnRateForward = 40;
 		log.log("Main roads generating");
 		rqM.stackStyle = true;
-		while(rqM.isNotEmpty()){
+		if(!rqM.isEmpty()){
 			Road road = rqM.remove();
 			if(road.finished){
 				//finished
@@ -222,8 +228,8 @@ public class Roadmap{
 
 		log.log("Streets generating");
 		rq.stackStyle = true;
-		while(rq.isNotEmpty()){
-
+		if(!rq.isEmpty()){
+			
 			//generate streets
 			if(city.random.nextDouble()>.99){
 				rq.stackStyle = false;
@@ -258,6 +264,16 @@ public class Roadmap{
 				cv.draw();
 			}
 		}
+		if(rq.isEmpty() && rqH.isEmpty() && rqM.isEmpty()){
+			return false;
+		}else return true;
+	}
+	
+	public void generate(CityView cv){
+		setupGeneration();
+
+		while(generateIteration(cv));
+		
 		//		{//trim roads with not enough 'parents'
 		//			for(int i=0; i<roads.size(); i++){
 		//				if(roads.get(i).numberParents<minimumNumberParents){
@@ -329,9 +345,10 @@ public class Roadmap{
 			while(true){ //keep these variables in check
 				x = (float) ((this.city.random.nextFloat()-.5)*city.sizeX); //can place in center half of city
 				y = (float) ((this.city.random.nextFloat()-.5)*city.sizeY);
-				if(city.water.getCircleAvg((int)x, (int)y, noWaterSampleRadius) < noWaterCutoffDensity){
+				/*if(city.water.getCircleAvg((int)x, (int)y, noWaterSampleRadius) < noWaterCutoffDensity){
 					break;
-				}
+				}*/
+				break;
 			}
 			Coordinate startPoint = new Coordinate(x,y);
 			double angle = Math.toDegrees(Angle.angle(startPoint, new Coordinate(0,0)));
@@ -628,7 +645,7 @@ public class Roadmap{
 		return r;
 	}
 
-	private Road waterCheck(Road r){
+	/*private Road waterCheck(Road r){
 		if(r==null){
 			return null;
 		}
@@ -716,5 +733,5 @@ public class Roadmap{
 		}
 		//Road passed WATER CHECK
 		return r;
-	}
+	}*/
 }
