@@ -277,20 +277,22 @@ public class Camera {
 				Coordinate[] cs = b.g.getCoordinates();
 				if(!CGAlgorithms.isCCW(cs)) cs = b.g.reverse().getCoordinates(); 
 				if(cs.length >= 3){
-					//glBegin(GL_TRIANGLE_STRIP);
+					glBegin(GL11.GL_POLYGON);
 					Vector3f n = normal(cs[0], cs[1], cs[2]);
 					//render top of building
-					tess.gluTessBeginPolygon(null);
-					tess.gluTessBeginContour();
-					tess.gluTessNormal(n.x, n.y, n.z);
+//					tess.gluTessBeginPolygon(null);
+//					tess.gluTessBeginContour();
+//					tess.gluTessNormal(n.x, n.y, n.z);
+					glNormal3f(n.x,n.y,n.z);
 					for(int j=cs.length-1; j>=0; j--){
 						Coordinate p = cs[j];
-						double[] vert = new double[]{p.x,p.y,p.z+b.height};
-						tess.gluTessVertex(vert, 0, new VertexData(vert));
+						glVertex3d(p.x,p.y,p.z+b.height);
+//						double[] vert = new double[]{p.x,p.y,p.z+b.height};
+//						tess.gluTessVertex(vert, 0, new VertexData(vert));
 					}
-					tess.gluTessEndContour();
-					tess.gluTessEndPolygon();
-					//glEnd();
+//					tess.gluTessEndContour();
+//					tess.gluTessEndPolygon();
+					glEnd();
 					/*glBegin(GL_LINES);
 					glVertex3d(cs[0].x,cs[0].y,cs[0].z+b.height);
 					float normalLen = 50;
@@ -301,6 +303,7 @@ public class Camera {
 //					tess.gluBeginPolygon();
 //					tess.gluTessBeginContour();
 //					tess.gluTessNormal(n.x, n.y, -n.z);
+					glNormal3f(n.x,n.y,-n.z);
 					for(int j=0;j<cs.length;j++){
 						Coordinate p = cs[j];
 						glVertex3d(p.x,p.y,p.z);
