@@ -46,6 +46,7 @@ public class Roadmap implements OBJOutput{
 	private Log log;
 
 	private static final float roadThickness = 5;
+	private static final boolean roadToZero = true; //exported .obj file's roads will go to the base, or just have a thickness
 	private float minimumPopulationHighwayIntersection; //load all parameters from generation properties file
 	private int populationSampleRadiusHighwayIntersection;
 	private int noWaterSampleRadius;
@@ -671,11 +672,19 @@ public class Roadmap implements OBJOutput{
 			Vector3f p3 = new Vector3f(b.x-x, b.y-y, b.z);
 			Vector3f p4 = new Vector3f(a.x-x, a.y-y, a.z);
 			
-			Vector3f p1z = new Vector3f(a.x+x, a.y+y, a.z-roadThickness);
-			Vector3f p2z = new Vector3f(b.x+x, b.y+y, b.z-roadThickness);
-
-			Vector3f p3z = new Vector3f(b.x-x, b.y-y, b.z-roadThickness);
-			Vector3f p4z = new Vector3f(a.x-x, a.y-y, a.z-roadThickness);
+			Vector3f p1z, p2z, p3z, p4z;
+			
+			if(roadToZero){
+				p1z = new Vector3f(a.x+x, a.y+y, 0);
+				p2z = new Vector3f(b.x+x, b.y+y, 0);
+				p3z = new Vector3f(b.x-x, b.y-y, 0);
+				p4z = new Vector3f(a.x-x, a.y-y, 0);
+			}else{
+				p1z = new Vector3f(a.x+x, a.y+y, a.z-roadThickness);
+				p2z = new Vector3f(b.x+x, b.y+y, b.z-roadThickness);
+				p3z = new Vector3f(b.x-x, b.y-y, b.z-roadThickness);
+				p4z = new Vector3f(a.x-x, a.y-y, a.z-roadThickness);
+			}
 			
 			obj.face(new Vector3f[]{p4,p3,p2,p1});
 			

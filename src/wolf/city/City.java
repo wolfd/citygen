@@ -16,6 +16,7 @@ import wolf.util.OBJ;
 import wolf.util.Popup;
 
 public class City {
+	private static final boolean singleObjFile = false;
 	//dimensions
 	public int sizeX;
 	public int sizeY;
@@ -96,9 +97,9 @@ public class City {
 		if(Popup.confirm("Render?", "CityGen")){
 			renderMap = true;
 		}
-		if(Popup.confirm("Save STL file?", "CityGen")){
-			stlOutput = true;
-		}
+//		if(Popup.confirm("Save STL file?", "CityGen")){
+//			stlOutput = true;
+//		}
 		if(Popup.confirm("Save OBJ file?", "CityGen")){
 			objOutput = true;
 		}
@@ -109,27 +110,45 @@ public class City {
 //			fb.saveSTL();
 //		}
 		if(objOutput){
-			OBJ obj = new OBJ(false);
-			for(int i=0; i<fb.buildings.size(); i++){
-				fb.buildings.get(i).asOBJ(obj);
-			}
-			
-			obj.save("data/city.obj");
-			
-			OBJ objRoads = new OBJ(false);
-			rm.asOBJ(objRoads);
-			
-			objRoads.save("data/roads.obj");
-			
-			OBJ objLots = new OBJ(false);
-			for(int i=0; i<bm.blocks.size(); i++){
-				CityBlock cb = bm.blocks.get(i);
-				for(int j=0; j<cb.lots.size(); j++){
-					cb.lots.get(j).asOBJ(objLots);
+			if(singleObjFile){
+				OBJ obj = new OBJ(false);
+				for(int i=0; i<fb.buildings.size(); i++){
+					fb.buildings.get(i).asOBJ(obj);
 				}
+				
+				rm.asOBJ(obj);
+				
+				for(int i=0; i<bm.blocks.size(); i++){
+					CityBlock cb = bm.blocks.get(i);
+					for(int j=0; j<cb.lots.size(); j++){
+						cb.lots.get(j).asOBJ(obj);
+					}
+				}
+				
+				obj.save("data/city.obj");
+			}else{
+				OBJ obj = new OBJ(false);
+				for(int i=0; i<fb.buildings.size(); i++){
+					fb.buildings.get(i).asOBJ(obj);
+				}
+
+				obj.save("data/city.obj");
+
+				OBJ objRoads = new OBJ(false);
+				rm.asOBJ(objRoads);
+
+				objRoads.save("data/roads.obj");
+
+				OBJ objLots = new OBJ(false);
+				for(int i=0; i<bm.blocks.size(); i++){
+					CityBlock cb = bm.blocks.get(i);
+					for(int j=0; j<cb.lots.size(); j++){
+						cb.lots.get(j).asOBJ(objLots);
+					}
+				}
+
+				objLots.save("data/lots.obj");
 			}
-			
-			objLots.save("data/lots.obj");
 		}
 		log.save("/log-"+System.currentTimeMillis()+".log");
 	}
