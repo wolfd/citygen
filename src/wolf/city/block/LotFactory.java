@@ -148,12 +148,12 @@ public class LotFactory {
 				}
 				List<Lot> tempFinished = new LinkedList<Lot>();
 				for(int fIndex=0; fIndex<finished.size(); fIndex++){
-					tempFinished.add(new Lot(finished.get(fIndex)));
+					tempFinished.add(new Lot(c, finished.get(fIndex)));
 				}
 				block.lots = tempFinished;
 			}else{
 				List<Lot> lots = new LinkedList<Lot>();
-				lots.add(new Lot(block.shape));
+				lots.add(new Lot(c, block.shape));
 				block.lots = lots;
 			}
 		}

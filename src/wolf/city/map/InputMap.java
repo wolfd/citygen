@@ -2,8 +2,10 @@ package wolf.city.map;
 
 import wolf.city.City;
 import wolf.noise.FBM;
+import wolf.util.OBJ;
+import wolf.util.OBJOutput;
 
-public abstract class InputMap {
+public abstract class InputMap{
 	//protected float[][] m; //totally a memory waster, used to be used, now not.
 	
 	public int sizeX;
@@ -23,36 +25,11 @@ public abstract class InputMap {
 		this.delta = 25;
 		//set up noise generator
 		noise = new FBM(octaves, city.random.nextLong());
-		//set up map
-		//m = new float[sizeX][sizeY];
 	}
 	
 	public InputMap(City city, boolean faded){ //for dimensions
 		this(city, faded, 6);
 	}
-	
-//	@SuppressWarnings("unused")
-//	private InputMap(float[][] map){
-//		m = map;
-//		sizeX = m.length;
-//		sizeY = m[0].length;
-//	}
-
-	
-//	public InputMap(String file){
-//		BufferedImage img = null;
-//		try{
-//			img = ImageIO.read(new File(file));
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//		
-//		float[] fArray = null;
-//		sizeX = img.getWidth();
-//		sizeY = img.getHeight();
-//		img.getData().getPixels(0, 0, sizeX, sizeY, fArray);fArray
-//		//todo: separate the colors, save into m
-//	}
 	
 	
 	public float get(int x, int y) {

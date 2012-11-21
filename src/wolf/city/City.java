@@ -3,6 +3,7 @@ package wolf.city;
 import java.sql.SQLException;
 import java.util.Random;
 
+import wolf.city.block.CityBlock;
 import wolf.city.buildings.FakeBuildings;
 import wolf.city.map.Population;
 import wolf.city.map.Terrain;
@@ -104,9 +105,9 @@ public class City {
 		if(renderMap){
 			MapRender.render(this,"render");
 		}
-		if(stlOutput){
-			fb.saveSTL();
-		}
+//		if(stlOutput){
+//			fb.saveSTL();
+//		}
 		if(objOutput){
 			OBJ obj = new OBJ(false);
 			for(int i=0; i<fb.buildings.size(); i++){
@@ -114,6 +115,21 @@ public class City {
 			}
 			
 			obj.save("data/city.obj");
+			
+			OBJ objRoads = new OBJ(false);
+			rm.asOBJ(objRoads);
+			
+			objRoads.save("data/roads.obj");
+			
+			OBJ objLots = new OBJ(false);
+			for(int i=0; i<bm.blocks.size(); i++){
+				CityBlock cb = bm.blocks.get(i);
+				for(int j=0; j<cb.lots.size(); j++){
+					cb.lots.get(j).asOBJ(objLots);
+				}
+			}
+			
+			objLots.save("data/lots.obj");
 		}
 		log.save("/log-"+System.currentTimeMillis()+".log");
 	}

@@ -9,6 +9,7 @@ import org.apache.commons.configuration.AbstractFileConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.lwjgl.util.vector.Vector3f;
 
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.algorithm.LineIntersector;
@@ -30,10 +31,13 @@ import wolf.city.road.rules.Grid;
 import wolf.city.road.rules.OffRamp;
 import wolf.gui.CityView;
 import wolf.util.Log;
+import wolf.util.OBJ;
+import wolf.util.OBJOutput;
 import wolf.util.RandomHelper;
 import wolf.util.Turtle;
 
-public class Roadmap{
+public class Roadmap implements OBJOutput{
+	
 	public volatile List<Road> roads;
 	private City city;
 	private Configuration config;
@@ -41,6 +45,7 @@ public class Roadmap{
 	public RoadGrid grid;
 	private Log log;
 
+	private static final float roadThickness = 5;
 	private float minimumPopulationHighwayIntersection; //load all parameters from generation properties file
 	private int populationSampleRadiusHighwayIntersection;
 	private int noWaterSampleRadius;
@@ -147,7 +152,7 @@ public class Roadmap{
 
 		//generate highways entirely
 
-		log.log("Highways generating");
+		//log.log("Highways generating");
 	}
 	
 	public boolean generateIteration(CityView cv){
@@ -195,7 +200,7 @@ public class Roadmap{
 
 		//setup for main roads
 		//basicRule.turnRateForward = 40;
-		log.log("Main roads generating");
+		//log.log("Main roads generating");
 		rqM.stackStyle = true;
 		if(!rqM.isEmpty()){
 			Road road = rqM.remove();
@@ -226,7 +231,7 @@ public class Roadmap{
 		}
 		//generate streets entirely
 
-		log.log("Streets generating");
+		//log.log("Streets generating");
 		rq.stackStyle = true;
 		if(!rq.isEmpty()){
 			
@@ -643,6 +648,46 @@ public class Roadmap{
 			return null;
 		}
 		return r;
+	}
+
+	@Override
+	public void asOBJ(OBJ obj) {
+		obj.startObject("roads");
+		for(int i=0; i<roads.size(); i++){
+			
+			Road r = roads.get(i);
+			//make rectangle geometry with road ends as terrain height.
+			Vector3f a = new Vector3f((float)r.a.pos.x, (float)r.a.pos.y, city.ter.get((int)r.a.pos.x, (int)r.a.pos.y));
+			Vector3f b = new Vector3f((float)r.b.pos.x, (float)r.b.pos.y, city.ter.get((int)r.b.pos.x, (int)r.b.pos.y));
+
+			double ang = Angle.angle(r.a.pos, r.b.pos);
+
+			float x = (float)Math.cos(ang+Math.toRadians(90))*(r.width/2);
+			float y = (float)Math.sin(ang+Math.toRadians(90))*(r.width/2);
+
+			Vector3f p1 = new Vector3f(a.x+x, a.y+y, a.z);
+			Vector3f p2 = new Vector3f(b.x+x, b.y+y, b.z);
+
+			Vector3f p3 = new Vector3f(b.x-x, b.y-y, b.z);
+			Vector3f p4 = new Vector3f(a.x-x, a.y-y, a.z);
+			
+			Vector3f p1z = new Vector3f(a.x+x, a.y+y, a.z-roadThickness);
+			Vector3f p2z = new Vector3f(b.x+x, b.y+y, b.z-roadThickness);
+
+			Vector3f p3z = new Vector3f(b.x-x, b.y-y, b.z-roadThickness);
+			Vector3f p4z = new Vector3f(a.x-x, a.y-y, a.z-roadThickness);
+			
+			obj.face(new Vector3f[]{p4,p3,p2,p1});
+			
+			obj.face(new Vector3f[]{p4z,p3z,p3,p4});
+			obj.face(new Vector3f[]{p3z,p2z,p2,p3});
+			obj.face(new Vector3f[]{p2z,p1z,p1,p2});
+			obj.face(new Vector3f[]{p1z,p4z,p4,p1});
+			
+			obj.face(new Vector3f[]{p1z,p2z,p3z,p4z});
+			
+		}
+		obj.endObject();
 	}
 
 	/*private Road waterCheck(Road r){
