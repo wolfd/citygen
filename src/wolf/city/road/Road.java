@@ -144,7 +144,7 @@ public class Road {
 	
 	public Geometry getFinalGeometry(){
 		Geometry g = gf.createLineString(new Coordinate[]{a.pos, b.pos});
-		return g.buffer(width, 2, BufferParameters.CAP_ROUND);
+		return g.buffer(width/2, 2, BufferParameters.CAP_ROUND);
 	}
 	
 	public LineString getLineString(){

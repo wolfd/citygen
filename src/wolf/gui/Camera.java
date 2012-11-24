@@ -92,6 +92,7 @@ public class Camera {
 		}
 
 		Display.setTitle(WINDOW_TITLE);
+		Display.setVSyncEnabled(true);
 		glEnable(GL_LINE_SMOOTH);
 		//glEnable(GL_CULL_FACE);
 		//glEnable(GL_LIGHTING);

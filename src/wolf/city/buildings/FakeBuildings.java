@@ -19,6 +19,7 @@ public class FakeBuildings {
 	private static final double MIN_AREA = 100;
 	private static final double MIN_RATIO_BUILDING = 3;
 	private static final float MIN_POPULATION_BUILDING = .2f;
+	private static final float basementDepth = 3;
 	City c;
 	public ArrayList<FakeBuilding> buildings;
 	public FakeBuildings(City city) {
@@ -50,9 +51,9 @@ public class FakeBuildings {
 									if(ratio > MIN_RATIO_BUILDING){
 										FakeBuilding building;
 										if(c.random.nextDouble()>.9){
-											building = new FakeBuilding(buildingShape, (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*population)),MAX_HEIGHT), c.ter.get((int)center.x, (int)center.y), l);
+											building = new FakeBuilding(buildingShape, (int) Math.min((MIN_HEIGHT+((c.random.nextDouble()+1)*100*population)),MAX_HEIGHT), c.ter.get((int)center.x, (int)center.y)-basementDepth, l);
 										}else{
-											building = new FakeBuilding(buildingShape, (int) Math.min(MIN_HEIGHT+(MAX_HEIGHT*Math.pow(population,2)),MAX_HEIGHT), c.ter.get((int)center.x, (int)center.y), l);
+											building = new FakeBuilding(buildingShape, (int) Math.min(MIN_HEIGHT+(MAX_HEIGHT*Math.pow(population,2)),MAX_HEIGHT), c.ter.get((int)center.x, (int)center.y)-basementDepth, l);
 										}
 										buildings.add(building);
 										l.building = building;

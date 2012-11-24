@@ -337,8 +337,8 @@ public class Roadmap implements OBJOutput{
 
 
 	private Road connect(Road road) {
-		road.a.addConnecting(road.b); //connect intersections
-		road.b.addConnecting(road.a);
+		road.a.addConnecting(road); //connect intersections
+		road.b.addConnecting(road);
 		return road;
 	}
 
