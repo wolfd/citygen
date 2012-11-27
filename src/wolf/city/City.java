@@ -148,6 +148,11 @@ public class City {
 				}
 
 				objLots.save("data/lots.obj");
+				
+				OBJ objTerrain = new OBJ(false);
+				ter.asOBJ(objTerrain);
+
+				objTerrain.save("data/ter.obj");
 			}
 		}
 		log.save("/log-"+System.currentTimeMillis()+".log");
