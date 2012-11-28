@@ -68,11 +68,11 @@ public class City {
 		log.log("Done generating city blocks");
 		fb.generate();
 		log.log("Done generating mock buildings");
-		new Thread(new Runnable(){
-			public void run(){
-				bm.save("data/blocks.txt", "data/lots.txt");
-			}
-		}).start();
+//		new Thread(new Runnable(){
+//			public void run(){
+//				bm.save("data/blocks.txt", "data/lots.txt");
+//			}
+//		}).start();
 		
 		try {
 			Database d = new Database();
