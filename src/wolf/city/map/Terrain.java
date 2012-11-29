@@ -11,10 +11,10 @@ import wolf.util.OBJOutput;
 public class Terrain extends InputMap implements OBJOutput{
 
 	private static final float APX_MAX_HEIGHT = 25;
-	private static final int MESH_GRID_SIZE = 8;
+	private static final int MESH_GRID_SIZE = 4;
 
 	public Terrain(City city) {
-		super(city, false);
+		super(city, false, 3);
 	}
 	
 	public float get(int x, int y) {

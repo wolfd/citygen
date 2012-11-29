@@ -18,6 +18,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineSegment;
 
 import wolf.city.road.GridSpace;
 import wolf.city.road.Intersection;
@@ -654,8 +655,17 @@ public class Roadmap implements OBJOutput{
 	@Override
 	public void asOBJ(OBJ obj) {
 		obj.startObject("roads");
+		
+//		for(int i=0; i<Intersection.intersections.size(); i++){
+//			Intersection is = Intersection.intersections.get(i);
+//			for(int j=0; j<is.connecting.size(); j++){
+//				Road r = is.connecting.get(j);
+//				LineSegment ls = r.getLineSegment();
+//				double angle = ls.angle();
+//			}
+//		}
+		
 		for(int i=0; i<roads.size(); i++){
-			
 			Road r = roads.get(i);
 			//make rectangle geometry with road ends as terrain height.
 			Vector3f a = new Vector3f((float)r.a.pos.x, (float)r.a.pos.y, city.ter.get((int)r.a.pos.x, (int)r.a.pos.y));
