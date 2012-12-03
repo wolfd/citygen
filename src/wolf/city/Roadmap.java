@@ -568,7 +568,7 @@ public class Roadmap implements OBJOutput{
 		}
 		double distance = r.a.pos.distance(r.b.pos);
 
-		if(distance>minimumRoadLength){ //minimum road length
+		if(distance>r.width){ //minimum road length
 			return r;
 		}
 
@@ -655,13 +655,36 @@ public class Roadmap implements OBJOutput{
 	@Override
 	public void asOBJ(OBJ obj) {
 		obj.startObject("roads");
-		
+//		
 //		for(int i=0; i<Intersection.intersections.size(); i++){
 //			Intersection is = Intersection.intersections.get(i);
+//			ArrayList<LineSegment> segments = new ArrayList<LineSegment>();
 //			for(int j=0; j<is.connecting.size(); j++){
 //				Road r = is.connecting.get(j);
-//				LineSegment ls = r.getLineSegment();
-//				double angle = ls.angle();
+//				Turtle t;
+//				if(r.a.pos.equals(is.pos)){
+//					t = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.b.pos)));
+//				}else{
+//					t = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.a.pos)));
+//				}
+//				Turtle t2 = new Turtle(t.pos, t.angle);
+//				t.move(r.width);
+//				t2.move(r.width);
+//				t.turn(90);
+//				t2.turn(-90);
+//				t.move(r.width/2);
+//				t2.move(r.width/2);
+//				
+//				LineSegment ls = new LineSegment(t.pos, t2.pos);
+//				segments.add(ls);
+//			}
+//			
+//			for(int j=0; j<is.connecting.size(); j++){
+//				for(int k=0; k<is.connecting.size(); k++){
+//					if(j != k){
+//						segments.get(j).intersection(segments.get(k));
+//					}
+//				}
 //			}
 //		}
 		
