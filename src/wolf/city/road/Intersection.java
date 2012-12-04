@@ -15,12 +15,15 @@ public class Intersection implements OBJOutput{
 	public Coordinate pos;
 	public Road parent;
 	public int id;
-	public List<Road> connecting = new LinkedList<Road>();
+	public List<Road> connecting;
+	public double roadExtrusion;
 
 	public Intersection(Coordinate pos){
 		this.pos = new Coordinate(pos);
 		id = curId++;
+		connecting = new LinkedList<Road>();
 		intersections.add(this);
+		roadExtrusion = -1;
 	}
 	
 	public void addConnecting(Road road){

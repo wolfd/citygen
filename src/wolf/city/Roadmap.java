@@ -19,6 +19,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
+import com.vividsolutions.jts.geom.Point;
 
 import wolf.city.road.GridSpace;
 import wolf.city.road.Intersection;
@@ -80,6 +81,7 @@ public class Roadmap implements OBJOutput{
 	private RoadQueue rqH; //highways
 	private RoadQueue rqM; //main roads
 	private RoadQueue rq; //streets
+	private GeometryFactory gf = new GeometryFactory();
 
 
 	public Roadmap(City city){
@@ -655,38 +657,100 @@ public class Roadmap implements OBJOutput{
 	@Override
 	public void asOBJ(OBJ obj) {
 		obj.startObject("roads");
-//		
-//		for(int i=0; i<Intersection.intersections.size(); i++){
-//			Intersection is = Intersection.intersections.get(i);
-//			ArrayList<LineSegment> segments = new ArrayList<LineSegment>();
-//			for(int j=0; j<is.connecting.size(); j++){
-//				Road r = is.connecting.get(j);
-//				Turtle t;
-//				if(r.a.pos.equals(is.pos)){
-//					t = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.b.pos)));
-//				}else{
-//					t = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.a.pos)));
-//				}
-//				Turtle t2 = new Turtle(t.pos, t.angle);
-//				t.move(r.width);
-//				t2.move(r.width);
-//				t.turn(90);
-//				t2.turn(-90);
-//				t.move(r.width/2);
-//				t2.move(r.width/2);
-//				
-//				LineSegment ls = new LineSegment(t.pos, t2.pos);
-//				segments.add(ls);
-//			}
-//			
-//			for(int j=0; j<is.connecting.size(); j++){
-//				for(int k=0; k<is.connecting.size(); k++){
-//					if(j != k){
-//						segments.get(j).intersection(segments.get(k));
-//					}
-//				}
-//			}
-//		}
+		
+		for(int i=0; i<Intersection.intersections.size(); i++){
+			Intersection is = Intersection.intersections.get(i);
+			if(is.connecting.size() > 1){ //if there is more than one road to make an intersection out of
+				ArrayList<LineSegment> segments = new ArrayList<LineSegment>();
+				for(int j=0; j<is.connecting.size(); j++){
+					Road r = is.connecting.get(j);
+					Turtle t;
+					if(r.a.pos.equals(is.pos)){
+						t = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.b.pos)));
+					}else{
+						t = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.a.pos)));
+					}
+					Turtle t2 = new Turtle(t.pos, t.angle);
+					t.move(-r.width/2);
+					t2.move(-r.width/2);
+					t.turn(90);
+					t2.turn(-90);
+					t.move(r.width/2);
+					t2.move(r.width/2);
+					
+					LineSegment ls = new LineSegment(t.pos, t2.pos);
+					segments.add(ls);
+				}
+				//compute intersections of roads extruded from center of intersection.
+				double maxDistance = -1;
+				for(int j=0; j<is.connecting.size(); j++){
+					for(int k=0; k<is.connecting.size(); k++){
+						if(j != k){
+							Coordinate c = segments.get(j).intersection(segments.get(k));
+							if(c != null){
+								double dist = c.distance(is.pos);
+								if(dist>maxDistance){
+									maxDistance = dist;
+								}
+							}
+						}
+					}
+				}
+				is.roadExtrusion = maxDistance; //should maybe store this info in the road instead
+				//create final road extrusions
+				ArrayList<Point> points = new ArrayList<Point>();
+				for(int j=0; j<is.connecting.size(); j++){
+					Road r = is.connecting.get(j);
+					Turtle t;
+					if(r.a.pos.equals(is.pos)){
+						t = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.b.pos)));
+					}else{
+						t = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.a.pos)));
+					}
+					Turtle t2 = new Turtle(t.pos, t.angle);
+					t.move(maxDistance);
+					t2.move(maxDistance);
+					t.turn(90);
+					t2.turn(-90);
+					t.move(r.width/2);
+					t2.move(r.width/2);
+					
+					
+					//LineSegment ls = new LineSegment(t.pos, t2.pos);
+					
+					points.add(gf.createPoint(t.pos));
+					points.add(gf.createPoint(t2.pos));
+				}
+				//Geometry isHull = gf.createMultiLineString(GeometryFactory.toLineStringArray(segments)).convexHull();
+				Geometry isHull = gf.buildGeometry(points).convexHull();
+				obj.startObject("intersection_"+this.hashCode());
+	
+				//convert Coordinate to Vector3f
+				Coordinate[] cs = isHull.getCoordinates();
+				Vector3f[] verts = new Vector3f[cs.length];
+				Vector3f[] vertsz = new Vector3f[cs.length];
+	
+				
+				
+				
+				float elevation = city.ter.get((int)is.pos.x, (int)is.pos.y);
+	
+				for(int j=0; j<cs.length; j++){
+					verts[cs.length-j-1] = new Vector3f((float)cs[j].x,(float)cs[j].y, elevation+10);
+					vertsz[j] = new Vector3f((float)cs[j].x,(float)cs[j].y, 0);
+				}
+	
+				for(int j=0; j<cs.length; j++){
+					obj.face(new Vector3f[]{new Vector3f(verts[j].x, verts[j].y, 0), new Vector3f(verts[(j+1)%cs.length].x, verts[(j+1)%cs.length].y, 0), verts[j]});
+					obj.face(new Vector3f[]{new Vector3f(verts[(j+1)%cs.length].x, verts[(j+1)%cs.length].y, 0), verts[(j+1)%cs.length], verts[j]});
+	
+				}
+	
+				obj.face(verts);
+				obj.face(vertsz);
+				obj.endObject();
+			}
+		}
 		
 		for(int i=0; i<roads.size(); i++){
 			Road r = roads.get(i);
@@ -695,7 +759,18 @@ public class Roadmap implements OBJOutput{
 			Vector3f b = new Vector3f((float)r.b.pos.x, (float)r.b.pos.y, city.ter.get((int)r.b.pos.x, (int)r.b.pos.y));
 
 			double ang = Angle.angle(r.a.pos, r.b.pos);
-
+			
+			//for avoiding intersection center ... doesn't work flawlessly
+			float xBackA = (float)(Math.cos(ang)*(r.a.roadExtrusion*3)); 
+			float xBackB = (float)(Math.cos(ang)*(r.b.roadExtrusion*3));
+			float yBackA = (float)(Math.sin(ang)*(r.a.roadExtrusion*3));
+			float yBackB = (float)(Math.sin(ang)*(r.b.roadExtrusion*3));
+			
+			a.x += xBackA;
+			a.y += yBackA;
+			b.x -= xBackB;
+			b.y -= yBackB;
+			
 			float x = (float)Math.cos(ang+Math.toRadians(90))*(r.width/2);
 			float y = (float)Math.sin(ang+Math.toRadians(90))*(r.width/2);
 
