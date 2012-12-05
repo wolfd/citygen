@@ -664,22 +664,30 @@ public class Roadmap implements OBJOutput{
 				ArrayList<LineSegment> segments = new ArrayList<LineSegment>();
 				for(int j=0; j<is.connecting.size(); j++){
 					Road r = is.connecting.get(j);
-					Turtle t;
+					Turtle t0;
 					if(r.a.pos.equals(is.pos)){
-						t = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.b.pos)));
+						t0 = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.b.pos)));
 					}else{
-						t = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.a.pos)));
+						t0 = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.a.pos)));
 					}
-					Turtle t2 = new Turtle(t.pos, t.angle);
-					t.move(-r.width/2);
-					t2.move(-r.width/2);
-					t.turn(90);
-					t2.turn(-90);
-					t.move(r.width/2);
-					t2.move(r.width/2);
+					Turtle t1 = new Turtle(t0.pos, t0.angle);
+					//move out to sides of roads
+					t0.turn(90);
+					t1.turn(-90);
+					t0.move(r.width/2);
+					t1.move(r.width/2);
+					Coordinate t0Start = new Coordinate(t0.pos);
+					Coordinate t1Start = new Coordinate(t1.pos);
+					//return to first orientation
+					t0.turn(-90);
+					t1.turn(90);
+					t0.move(-r.width*3);
+					t1.move(-r.width*3);
 					
-					LineSegment ls = new LineSegment(t.pos, t2.pos);
-					segments.add(ls);
+					LineSegment ls0 = new LineSegment(t0Start, t0.pos);
+					LineSegment ls1 = new LineSegment(t1Start, t1.pos);
+					segments.add(ls0);
+					segments.add(ls1);
 				}
 				//compute intersections of roads extruded from center of intersection.
 				double maxDistance = -1;
@@ -689,6 +697,8 @@ public class Roadmap implements OBJOutput{
 							Coordinate c = segments.get(j).intersection(segments.get(k));
 							if(c != null){
 								double dist = c.distance(is.pos);
+								//distance is to edge of road, not to center, use pythag
+								dist = Math.sqrt((dist*dist)-(Math.pow(segments.get(j).getLength(),2)));
 								if(dist>maxDistance){
 									maxDistance = dist;
 								}
@@ -701,25 +711,25 @@ public class Roadmap implements OBJOutput{
 				ArrayList<Point> points = new ArrayList<Point>();
 				for(int j=0; j<is.connecting.size(); j++){
 					Road r = is.connecting.get(j);
-					Turtle t;
+					Turtle t0;
 					if(r.a.pos.equals(is.pos)){
-						t = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.b.pos)));
+						t0 = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.b.pos)));
 					}else{
-						t = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.a.pos)));
+						t0 = new Turtle(is.pos, Math.toDegrees(Angle.angle(is.pos, r.a.pos)));
 					}
-					Turtle t2 = new Turtle(t.pos, t.angle);
-					t.move(maxDistance);
-					t2.move(maxDistance);
-					t.turn(90);
-					t2.turn(-90);
-					t.move(r.width/2);
-					t2.move(r.width/2);
+					Turtle t1 = new Turtle(t0.pos, t0.angle);
+					t0.move(r.width+is.roadExtrusion);
+					t1.move(r.width+is.roadExtrusion);
+					t0.turn(90);
+					t1.turn(-90);
+					t0.move(r.width/2);
+					t1.move(r.width/2);
 					
 					
 					//LineSegment ls = new LineSegment(t.pos, t2.pos);
 					
-					points.add(gf.createPoint(t.pos));
-					points.add(gf.createPoint(t2.pos));
+					points.add(gf.createPoint(t0.pos));
+					points.add(gf.createPoint(t1.pos));
 				}
 				//Geometry isHull = gf.createMultiLineString(GeometryFactory.toLineStringArray(segments)).convexHull();
 				Geometry isHull = gf.buildGeometry(points).convexHull();
@@ -736,7 +746,7 @@ public class Roadmap implements OBJOutput{
 				float elevation = city.ter.get((int)is.pos.x, (int)is.pos.y);
 	
 				for(int j=0; j<cs.length; j++){
-					verts[cs.length-j-1] = new Vector3f((float)cs[j].x,(float)cs[j].y, elevation+10);
+					verts[cs.length-j-1] = new Vector3f((float)cs[j].x,(float)cs[j].y, elevation);
 					vertsz[j] = new Vector3f((float)cs[j].x,(float)cs[j].y, 0);
 				}
 	
@@ -761,10 +771,10 @@ public class Roadmap implements OBJOutput{
 			double ang = Angle.angle(r.a.pos, r.b.pos);
 			
 			//for avoiding intersection center ... doesn't work flawlessly
-			float xBackA = (float)(Math.cos(ang)*(r.a.roadExtrusion*3)); 
-			float xBackB = (float)(Math.cos(ang)*(r.b.roadExtrusion*3));
-			float yBackA = (float)(Math.sin(ang)*(r.a.roadExtrusion*3));
-			float yBackB = (float)(Math.sin(ang)*(r.b.roadExtrusion*3));
+			float xBackA = (float)(Math.cos(ang)*(r.a.roadExtrusion+r.width)); 
+			float xBackB = (float)(Math.cos(ang)*(r.b.roadExtrusion+r.width));
+			float yBackA = (float)(Math.sin(ang)*(r.a.roadExtrusion+r.width));
+			float yBackB = (float)(Math.sin(ang)*(r.b.roadExtrusion+r.width));
 			
 			a.x += xBackA;
 			a.y += yBackA;
