@@ -661,7 +661,8 @@ public class Roadmap implements OBJOutput{
 		for(int i=0; i<Intersection.intersections.size(); i++){
 			Intersection is = Intersection.intersections.get(i);
 			if(is.connecting.size() > 1){ //if there is more than one road to make an intersection out of
-				ArrayList<LineSegment> segments = new ArrayList<LineSegment>();
+				ArrayList<LineSegment> segments0 = new ArrayList<LineSegment>();
+				ArrayList<LineSegment> segments1 = new ArrayList<LineSegment>();
 				//compute intersection points and max radius of roads (minimum value for roadExtrusion value)
 				double maxRadius = 0;
 				for(int j=0; j<is.connecting.size(); j++){
@@ -693,17 +694,32 @@ public class Roadmap implements OBJOutput{
 					
 					LineSegment ls0 = new LineSegment(t0Start, t0.pos);
 					LineSegment ls1 = new LineSegment(t1Start, t1.pos);
-					segments.add(ls0);
-					segments.add(ls1);
+					segments0.add(ls0);
+					segments1.add(ls1);
 				}
 				//compute intersections of roads extruded from center of intersection.
 				double maxDistance = -1;
 				for(int j=0; j<is.connecting.size(); j++){
 					for(int k=0; k<is.connecting.size(); k++){
 						if(j != k){
-							Coordinate c = segments.get(j).intersection(segments.get(k));
-							if(c != null){
-								double dist = c.distance(is.pos);
+							Coordinate c0 = segments0.get(j).intersection(segments1.get(k));
+							Coordinate c1 = segments1.get(j).intersection(segments0.get(k));
+							if(c0 != null){
+								double dist = c0.distance(is.pos);
+//								//distance is to edge of road, not to center, use pythag
+//								double l = Math.pow(segments.get(j).p0.distance(c),2);
+//								dist = Math.sqrt((dist*dist)-l);
+								
+								//double dist = segments.get(j).p0.distance(c);
+								
+								if(dist>maxDistance){
+									maxDistance = dist;
+									log.log("dist: "+dist+" other");
+								}
+							}
+							
+							if(c1 != null){
+								double dist = c1.distance(is.pos);
 //								//distance is to edge of road, not to center, use pythag
 //								double l = Math.pow(segments.get(j).p0.distance(c),2);
 //								dist = Math.sqrt((dist*dist)-l);
@@ -743,6 +759,7 @@ public class Roadmap implements OBJOutput{
 					points.add(gf.createPoint(t0.pos));
 					points.add(gf.createPoint(t1.pos));
 				}
+				//need to sort segments by angle order, then use that to generate shape. Convex hull will not work.
 				Geometry isHull = gf.buildGeometry(points).convexHull();
 				obj.startObject("intersection_"+this.hashCode());
 	
