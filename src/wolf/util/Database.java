@@ -63,7 +63,7 @@ public class Database {
 				p.setInt(2, r.a.id);
 				p.setInt(3, r.b.id);
 				p.setString(4, r.getType().toString());
-				p.setInt(5, r.width);
+				p.setDouble(5, r.width);
 				p.addBatch();
 			}
 

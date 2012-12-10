@@ -2,8 +2,6 @@ package wolf.city.map;
 
 import org.lwjgl.util.vector.Vector3f;
 
-import com.vividsolutions.jts.geom.Coordinate;
-
 import wolf.city.City;
 import wolf.util.OBJ;
 import wolf.util.OBJOutput;
@@ -14,7 +12,7 @@ public class Terrain extends InputMap implements OBJOutput{
 	private static final int MESH_GRID_SIZE = 4;
 
 	public Terrain(City city) {
-		super(city, false, 3);
+		super(city, false, 3, .25);
 	}
 	
 	public float get(int x, int y) {

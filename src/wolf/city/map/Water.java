@@ -6,7 +6,7 @@ public class Water extends InputMap {
 
 	
 	public Water(City city) {
-		super(city, false, 1);
+		super(city, false, 1, 1);
 	}
 
 	

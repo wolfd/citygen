@@ -22,7 +22,7 @@ public class Road {
 	private RoadType type;
 	public boolean finished;
 	public RoadRule rule;
-	public int width;
+	public float width;
 	public int numberParents;
 	private static GeometryFactory gf = new GeometryFactory();
 
@@ -69,8 +69,8 @@ public class Road {
 	public Geometry getGeometry(){
 		return getGeometry(0);
 	}
-	public Geometry getGeometry(int extraWidth){
-		int modWidth = width + extraWidth;
+	public Geometry getGeometry(double extraWidth){
+		double modWidth = width + extraWidth;
 		Coordinate a0 = a.pos;
 		Coordinate b0 = b.pos;
 
@@ -97,7 +97,7 @@ public class Road {
 	}
 	
 	public Geometry getCollisionGeometry(){
-		int collisionGeometryWidth = width*3;
+		double collisionGeometryWidth = width*3;
 		double collisionGeometryAngle = 30;
 		double minimumRoadLength = 4;
 		double length = Math.sin(Math.toRadians(collisionGeometryAngle))/collisionGeometryWidth;

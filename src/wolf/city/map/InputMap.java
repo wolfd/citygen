@@ -13,26 +13,27 @@ public abstract class InputMap{
 	protected FBM noise;
 	protected double delta;
 	protected boolean faded;
+	private double zoom;
 
 	public InputMap(City city){
 		this(city, false);
 	}
 	
-	public InputMap(City city, boolean faded, int octaves) {
+	public InputMap(City city, boolean faded, int octaves, double zoom) {
 		this.faded = faded;
 		this.sizeX = city.sizeX;
 		this.sizeY = city.sizeY;
 		this.delta = 25;
+		this.zoom = zoom;
 		//set up noise generator
 		noise = new FBM(octaves, city.random.nextLong());
 	}
 	
 	public InputMap(City city, boolean faded){ //for dimensions
-		this(city, faded, 6);
+		this(city, faded, 6, 1);
 	}
 	
-	
-	public float get(int x, int y) {
+	public float get(double x, double y) {
 		x = x+(sizeX/2);
 		y = y+(sizeY/2);
 		if(x>=sizeX || x<0){
@@ -40,6 +41,8 @@ public abstract class InputMap{
 		}else if(y>=sizeY || y<0){
 			return 0;
 		}else{
+			x *= zoom;
+			y *= zoom;
 			float result = (float)(noise.noise(x/delta,y/delta));
 			if(faded==true){
 				double dist = Math.sqrt(Math.pow((sizeX/2)-x, 2)+Math.pow((sizeY/2)-y,2));
@@ -49,11 +52,7 @@ public abstract class InputMap{
 				
 				result = (float)(result*fade);
 			}
-//			if(m[x][y] < 0){
-//				
-//			}
-			//System.out.println("Test:"+(result+m[x][y]));
-			return result; //+m[x][y];
+			return result;
 		}
 	}
 	
