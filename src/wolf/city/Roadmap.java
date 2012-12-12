@@ -12,6 +12,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.lwjgl.util.vector.Vector3f;
 
 import com.vividsolutions.jts.algorithm.Angle;
+import com.vividsolutions.jts.algorithm.CGAlgorithms;
 import com.vividsolutions.jts.algorithm.LineIntersector;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -738,7 +739,7 @@ public class Roadmap implements OBJOutput{
 				is.roadExtrusion = maxDistance; //should maybe store this info in the road instead
 				log.log("maxD"+maxDistance);
 				//create final road extrusions
-				ArrayList<Point> points = new ArrayList<Point>();
+				Coordinate[] points = new Coordinate[is.connecting.size()*2+1];
 				for(int j=0; j<is.connecting.size(); j++){
 					Road r = is.connecting.get(j);
 					double radius = r.width/2; //maybe a tad faster to load into variable?
@@ -756,15 +757,44 @@ public class Roadmap implements OBJOutput{
 					t0.move(radius);
 					t1.move(radius);
 					
-					points.add(gf.createPoint(t0.pos));
-					points.add(gf.createPoint(t1.pos));
+					points[j*2] = t0.pos;
+					points[(j*2)+1] = t1.pos;
 				}
 				//need to sort segments by angle order, then use that to generate shape. Convex hull will not work.
-				Geometry isHull = gf.buildGeometry(points).convexHull();
+				
+				double[] angles = new double[points.length-1]; //no ring, so no last element
+				//calculate all point angles
+				for(int j=0; j<angles.length; j++) angles[j] = Math.PI*2-Angle.angle(is.pos, points[j]);
+				//selection sort
+				for(int j=0; j<angles.length; j++){
+					int min = j;
+					for(int k=j+1; k<angles.length; k++){
+						if(angles[k]<angles[min]){
+							min = k; //remember new min
+						}
+					}
+					
+					//swap min element with current element
+					if(min != j){
+						//swap angle array
+						double ang = angles[j];
+						angles[j] = angles[min];
+						angles[min] = ang;
+						
+						//swap point array
+						Coordinate tempP = points[j];
+						points[j] = points[min];
+						points[min] = tempP;
+					}
+				}
+				//close ring
+				points[points.length-1] = points[0];
+				//create ring
+				Geometry intersectionShape = gf.createLinearRing(points);
 				obj.startObject("intersection_"+this.hashCode());
 	
 				//convert Coordinate to Vector3f
-				Coordinate[] cs = isHull.getCoordinates();
+				Coordinate[] cs = intersectionShape.getCoordinates(); 
 				Vector3f[] verts = new Vector3f[cs.length];
 				Vector3f[] vertsz = new Vector3f[cs.length];
 	
@@ -781,12 +811,14 @@ public class Roadmap implements OBJOutput{
 				for(int j=0; j<cs.length; j++){
 					obj.face(new Vector3f[]{new Vector3f(verts[j].x, verts[j].y, 0), new Vector3f(verts[(j+1)%cs.length].x, verts[(j+1)%cs.length].y, 0), verts[j]});
 					obj.face(new Vector3f[]{new Vector3f(verts[(j+1)%cs.length].x, verts[(j+1)%cs.length].y, 0), verts[(j+1)%cs.length], verts[j]});
-	
 				}
 	
 				obj.face(verts);
 				obj.face(vertsz);
 				obj.endObject();
+			}else{
+				//roads that have only 1 intersection
+				
 			}
 		}
 		
@@ -832,13 +864,23 @@ public class Roadmap implements OBJOutput{
 				p4z = new Vector3f(a.x-x, a.y-y, a.z-roadThickness);
 			}
 			
+			//top
 			obj.face(new Vector3f[]{p4,p3,p2,p1});
 			
+			//sides
+			//side
 			obj.face(new Vector3f[]{p4z,p3z,p3,p4});
-			obj.face(new Vector3f[]{p3z,p2z,p2,p3});
+			//side
 			obj.face(new Vector3f[]{p2z,p1z,p1,p2});
+			
+			//intersection (b)
+			if(r.b.connecting.size()==1)
+			obj.face(new Vector3f[]{p3z,p2z,p2,p3});
+			//intersection (a)
+			if(r.a.connecting.size()==1)
 			obj.face(new Vector3f[]{p1z,p4z,p4,p1});
 			
+			//bottom
 			obj.face(new Vector3f[]{p1z,p2z,p3z,p4z});
 			
 		}
