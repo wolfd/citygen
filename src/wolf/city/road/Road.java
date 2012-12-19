@@ -19,11 +19,16 @@ public class Road {
 
 	public Intersection a;
 	public Intersection b;
+	public double extrusionA;
+	public double extrusionB;
 	private RoadType type;
 	public boolean finished;
 	public RoadRule rule;
 	public float width;
 	public int numberParents;
+	public double roadExtrusionA;
+	public double roadExtrusionB;
+	public Road intersectedRoad;
 	private static GeometryFactory gf = new GeometryFactory();
 
 	public Road(Intersection a, Intersection b, RoadType type, RoadRule rr, Road parent){
@@ -129,10 +134,7 @@ public class Road {
 		
 		Polygon p = gf.createPolygon(gf.createLinearRing(coords), null);
 		
-		
-		
 		return p;
-		
 	}
 	
 	public Geometry getIntersectionGeometry(){

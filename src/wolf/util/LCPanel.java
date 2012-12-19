@@ -39,6 +39,7 @@ public class LCPanel extends JPanel implements MouseListener{
 		roads = new LinkedList<Road>();
 		testRoad = new Road(new Intersection(new Coordinate(10,100)),new Intersection(new Coordinate(400,400)), RoadType.HIGHWAY, null);
 		roads.add(new Road(new Intersection(new Coordinate(100,10)),new Intersection(new Coordinate(400,300)), RoadType.HIGHWAY, null));
+		roads.add(new Road(new Intersection(new Coordinate(50,25)),new Intersection(new Coordinate(400,200)), RoadType.HIGHWAY, null));
 		c = new City(windowHeight*4, windowHeight*4, 0);
 		rm = new Roadmap(c);
 		for(Road r: roads){

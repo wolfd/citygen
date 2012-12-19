@@ -32,6 +32,7 @@ import wolf.city.road.rules.Basic;
 import wolf.city.road.rules.Direction;
 import wolf.city.road.rules.Grid;
 import wolf.city.road.rules.OffRamp;
+import wolf.city.road.rules.RoadRule;
 import wolf.gui.CityView;
 import wolf.util.Log;
 import wolf.util.OBJ;
@@ -341,6 +342,11 @@ public class Roadmap implements OBJOutput{
 
 
 	private Road connect(Road road) {
+		if(road.intersectedRoad != null){
+			Road split = new Road(road.intersectedRoad.a, road.intersectedRoad.b, road.intersectedRoad.getType(), road.intersectedRoad.rule);
+			split.a = road.b;
+			road.intersectedRoad.b = road.b;
+		}
 		road.a.addConnecting(road); //connect intersections
 		road.b.addConnecting(road);
 		return road;
@@ -444,41 +450,51 @@ public class Roadmap implements OBJOutput{
 		}
 
 		Coordinate point =  r.b.pos;
-
-		for(int j=0; j<roads.size(); j++){
-			Road i = roads.get(j);
-			if(i.getType() == RoadType.HIGHWAY && r.getType() == RoadType.STREET){
-
-			}else{
-				//doesn't find closest, just finds one and goes with it.
-				double distA = r.b.pos.distance(i.a.pos);
-				double distB = r.b.pos.distance(i.b.pos);
-				if(distA<maximumRoadSnapDistance && distB<maximumRoadSnapDistance){
-					if(distA<distB){
-						r.b = i.a;
-						return r;
+		ArrayList<GridSpace> spaces = grid.getSpaces(r);
+		ArrayList<Road> tested = new ArrayList<Road>();
+		
+		for(int j=0; j<spaces.size(); j++){
+			GridSpace g = spaces.get(j);
+			LinkedList<Road> roadsLoc = grid.get(g);
+			for(int ir=0; ir<roadsLoc.size(); ir++){
+				Road i = roadsLoc.get(ir);
+				if(!tested.contains(i)){ //don't test roads twice
+					if(i.getType() == RoadType.HIGHWAY && r.getType() == RoadType.STREET){
+		
 					}else{
-						r.b = i.b;
-						return r;
-					}
-				}else{
-					if(distA<maximumRoadSnapDistance){
-						r.b = i.a;
-						return r;
-					}
-					if(distB<maximumRoadSnapDistance){
-						r.b = i.b;
-						return r;
+						//doesn't find closest, just finds one and goes with it.
+						double distA = r.b.pos.distance(i.a.pos);
+						double distB = r.b.pos.distance(i.b.pos);
+						if(distA<maximumRoadSnapDistance && distB<maximumRoadSnapDistance){
+							if(distA<distB){
+								r.b = i.a;
+								return r;
+							}else{
+								r.b = i.b;
+								return r;
+							}
+						}else{
+							if(distA<maximumRoadSnapDistance){
+								r.b = i.a;
+								return r;
+							}
+							if(distB<maximumRoadSnapDistance){
+								r.b = i.b;
+								return r;
+							}
+						}
+		
+						//snap to road
+						Coordinate closest = i.getLineSegment().closestPoint(point);
+						double dist = point.distance(closest);
+						if(dist < maximumRoadSnapDistance ){//&& dist > minimumRoadSnapDistance){
+							r.b.pos = closest;
+							r.intersectedRoad = i;
+							return r;
+						}
 					}
 				}
-
-				//snap to road
-				Coordinate closest = i.getLineSegment().closestPoint(point);
-				double dist = point.distance(closest);
-				if(dist < maximumRoadSnapDistance ){//&& dist > minimumRoadSnapDistance){
-					r.b.pos = closest;
-					return r;
-				}
+				tested.add(i);
 			}
 		}
 
@@ -540,13 +556,15 @@ public class Roadmap implements OBJOutput{
 		//check related spaces in grid
 		ArrayList<GridSpace> spaces = grid.getSpaces(r);
 		ArrayList<Road> tested = new ArrayList<Road>();
-		for(GridSpace g: spaces){
-			LinkedList<Road> roads = grid.get(g);
-			for(Road i: roads){
-				if(i.getType() != RoadType.HIGHWAY && i.getType() != RoadType.MAIN){
+		for(int j=0; j<spaces.size(); j++){
+			GridSpace g = spaces.get(j);
+			LinkedList<Road> roadsLoc = grid.get(g);
+			for(int i=0; i<roadsLoc.size(); i++){
+				Road ir = roadsLoc.get(i);
+				if(ir.getType() != RoadType.HIGHWAY && ir.getType() != RoadType.MAIN){
 					//if(!tested.contains(i) && !((i.getType() == RoadType.HIGHWAY || i.getType() == RoadType.MAIN) && (r.getType() == RoadType.STREET || r.getType() == RoadType.HIGHWAY)) /*streets ignore main and highway types*/){
-					if(tested.contains(i)){
-						Geometry b = i.getGeometry(expand);
+					if(!tested.contains(ir)){
+						Geometry b = ir.getGeometry(expand);
 						if(a.intersects(b)){
 							Geometry c = a.intersection(b);
 							if(c.getArea()>maximumRatioIntersectionArea*a.getArea()){
@@ -558,7 +576,7 @@ public class Roadmap implements OBJOutput{
 						}
 					}
 				}
-				tested.add(i);
+				tested.add(ir);
 			}
 		}
 		return r;
@@ -571,7 +589,7 @@ public class Roadmap implements OBJOutput{
 		}
 		double distance = r.a.pos.distance(r.b.pos);
 
-		if(distance>r.width){ //minimum road length
+		if(distance>r.width*1.5){ //minimum road length
 			return r;
 		}
 
@@ -599,17 +617,34 @@ public class Roadmap implements OBJOutput{
 		if(r==null){
 			return null;
 		}
+		
 		if(r.getType() == RoadType.MAIN || r.getType() == RoadType.HIGHWAY){
-			for(int i=0; i<roads.size(); i++){
-				Road road = roads.get(i);
-				li.computeIntersection(r.a.pos, r.b.pos, road.a.pos, road.b.pos);
-				if(li.hasIntersection()){
-					Coordinate intersection = li.getIntersection(0);
-
-					r.b.pos = intersection;
-					return r;
+			ArrayList<GridSpace> spaces = grid.getSpaces(r);
+			ArrayList<Road> tested = new ArrayList<Road>();
+			for(int j=0; j<spaces.size(); j++){
+				GridSpace g = spaces.get(j);
+				LinkedList<Road> roadsLoc = grid.get(g);
+				for(int i=0; i<roadsLoc.size(); i++){
+					Road road = roadsLoc.get(i);
+					if(!tested.contains(road)){
+						li.computeIntersection(r.a.pos, r.b.pos, road.a.pos, road.b.pos);
+						if(li.hasIntersection()){
+							Coordinate intersection = li.getIntersection(0);
+							//splitRoad = road;
+							r.b.pos = intersection;
+						}
+					}
+					tested.add(road);
 				}
 			}
+//			if(splitRoad != null){
+//				Intersection b = splitRoad.b;
+//				splitRoad.b = new Intersection(r.b.pos);
+//				//splitRoad.b.addConnecting(r); //may not be best idea
+//				Road split = new Road(splitRoad.b, b, splitRoad.getType(), splitRoad.rule);
+//				roads.add(connect(split));
+//				grid.add(split); //for collision detection
+//			}
 		}
 		return r;
 	}
@@ -699,7 +734,8 @@ public class Roadmap implements OBJOutput{
 					segments1.add(ls1);
 				}
 				//compute intersections of roads extruded from center of intersection.
-				double maxDistance = -1;
+				double[] extrusion = new double[is.connecting.size()];
+				//double maxDistance = -1;
 				for(int j=0; j<is.connecting.size(); j++){
 					for(int k=0; k<is.connecting.size(); k++){
 						if(j != k){
@@ -707,39 +743,35 @@ public class Roadmap implements OBJOutput{
 							Coordinate c1 = segments1.get(j).intersection(segments0.get(k));
 							if(c0 != null){
 								double dist = c0.distance(is.pos);
-//								//distance is to edge of road, not to center, use pythag
-//								double l = Math.pow(segments.get(j).p0.distance(c),2);
-//								dist = Math.sqrt((dist*dist)-l);
 								
-								//double dist = segments.get(j).p0.distance(c);
-								
-								if(dist>maxDistance){
-									maxDistance = dist;
+								if(dist>extrusion[j]){
+									extrusion[j] = dist;
 									log.log("dist: "+dist+" other");
 								}
 							}
 							
 							if(c1 != null){
 								double dist = c1.distance(is.pos);
-//								//distance is to edge of road, not to center, use pythag
-//								double l = Math.pow(segments.get(j).p0.distance(c),2);
-//								dist = Math.sqrt((dist*dist)-l);
 								
-								//double dist = segments.get(j).p0.distance(c);
-								
-								if(dist>maxDistance){
-									maxDistance = dist;
+								if(dist>extrusion[j]){
+									extrusion[j] = dist;
 								}
 							}
 							
 						}
 					}
+					if(extrusion[j] < maxRadius) extrusion[j] = maxRadius;
+					for(int k=0; k<is.connecting.size(); k++){
+						if(is.connecting.get(k).a == is){
+							is.connecting.get(k).roadExtrusionA = extrusion[k];
+						}else{
+							is.connecting.get(k).roadExtrusionB = extrusion[k];
+						}
+					}
 				}
-				if(maxDistance == -1 || maxDistance < maxRadius) maxDistance = maxRadius;
-				is.roadExtrusion = maxDistance; //should maybe store this info in the road instead
-				log.log("maxD"+maxDistance);
-				//create final road extrusions
-				Coordinate[] points = new Coordinate[is.connecting.size()*2+1];
+				//create final road extrusion
+				
+				LineSegment[] segments = new LineSegment[is.connecting.size()];
 				for(int j=0; j<is.connecting.size(); j++){
 					Road r = is.connecting.get(j);
 					double radius = r.width/2; //maybe a tad faster to load into variable?
@@ -751,20 +783,19 @@ public class Roadmap implements OBJOutput{
 					}
 					
 					//move out from intersection and split into road width
-					t0.move(is.roadExtrusion);
+					t0.move(extrusion[j]);
 					t0.turn(90);
 					Turtle t1 = new Turtle(t0.pos, t0.angle-180);
 					t0.move(radius);
 					t1.move(radius);
 					
-					points[j*2] = t0.pos;
-					points[(j*2)+1] = t1.pos;
+					segments[j] = new LineSegment(t0.pos, t1.pos);
 				}
 				//need to sort segments by angle order, then use that to generate shape. Convex hull will not work.
 				
-				double[] angles = new double[points.length-1]; //no ring, so no last element
+				double[] angles = new double[segments.length]; //no ring, so no last element
 				//calculate all point angles
-				for(int j=0; j<angles.length; j++) angles[j] = Math.PI*2-Angle.angle(is.pos, points[j]);
+				for(int j=0; j<angles.length; j++) angles[j] = Math.min(Math.PI*2-Angle.angle(is.pos, segments[j].p0),Math.PI*2-Angle.angle(is.pos, segments[j].p1));
 				//selection sort
 				for(int j=0; j<angles.length; j++){
 					int min = j;
@@ -781,13 +812,18 @@ public class Roadmap implements OBJOutput{
 						angles[j] = angles[min];
 						angles[min] = ang;
 						
-						//swap point array
-						Coordinate tempP = points[j];
-						points[j] = points[min];
-						points[min] = tempP;
+						//swap segment array
+						LineSegment tempS = segments[j];
+						segments[j] = segments[min];
+						segments[min] = tempS;
 					}
 				}
 				//close ring
+				Coordinate[] points = new Coordinate[is.connecting.size()*2+1];
+				for(int j=0; j<segments.length; j++){
+					points[j*2] = segments[j].p0;
+					points[j*2+1] = segments[j].p1;
+				}
 				points[points.length-1] = points[0];
 				//create ring
 				Geometry intersectionShape = gf.createLinearRing(points);
@@ -831,10 +867,10 @@ public class Roadmap implements OBJOutput{
 			double ang = Angle.angle(r.a.pos, r.b.pos);
 			
 			//for avoiding intersection center ... doesn't work flawlessly
-			float xBackA = (float)(Math.cos(ang)*(r.a.roadExtrusion)); 
-			float xBackB = (float)(Math.cos(ang)*(r.b.roadExtrusion));
-			float yBackA = (float)(Math.sin(ang)*(r.a.roadExtrusion));
-			float yBackB = (float)(Math.sin(ang)*(r.b.roadExtrusion));
+			float xBackA = (float)(Math.cos(ang)*(r.roadExtrusionA)); 
+			float xBackB = (float)(Math.cos(ang)*(r.roadExtrusionB));
+			float yBackA = (float)(Math.sin(ang)*(r.roadExtrusionA));
+			float yBackB = (float)(Math.sin(ang)*(r.roadExtrusionB));
 			
 			a.x += xBackA;
 			a.y += yBackA;

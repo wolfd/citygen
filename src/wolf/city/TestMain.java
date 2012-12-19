@@ -10,8 +10,8 @@ public class TestMain {
 	public static void main(String[] args) {
 		double delta = 2;
 
-		final City city = new City((int)(1024*delta),(int)(1024*delta),1354815046011l);//System.currentTimeMillis());
-		
+		final City city = new City((int)(1024*delta),(int)(1024*delta),1355838902284l);//System.currentTimeMillis());
+		//1354815046011l
 		city.generateRoadmap(true);
 		final Camera cam = new Camera(city);
 		while(true){
