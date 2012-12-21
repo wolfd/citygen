@@ -64,6 +64,15 @@ public class Road {
 //			};
 		case HIGHWAY:
 			rule = new Basic(rule.getCity());
+		case BRIDGE:
+			rule = new Basic(rule.getCity());
+			break;
+		case DEFAULT:
+			rule = new Basic(rule.getCity());
+			break;
+		default:
+			rule = new Basic(rule.getCity());
+			break;
 		}
 	}
 

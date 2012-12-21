@@ -17,7 +17,7 @@ public class Intersection{
 	public Intersection(Coordinate pos){
 		this.pos = new Coordinate(pos);
 		id = curId++;
-		connecting = new LinkedList<Road>();
+		connecting = new ArrayList<Road>();
 		intersections.add(this);
 	}
 	

@@ -343,9 +343,10 @@ public class Roadmap implements OBJOutput{
 
 	private Road connect(Road road) {
 		if(road.intersectedRoad != null){
-			Road split = new Road(road.intersectedRoad.a, road.intersectedRoad.b, road.intersectedRoad.getType(), road.intersectedRoad.rule);
-			split.a = road.b;
+			Road split = new Road(road.b, road.intersectedRoad.b, road.intersectedRoad.getType(), road.intersectedRoad.rule);
 			road.intersectedRoad.b = road.b;
+			split.a.addConnecting(road);
+			roads.add(split);
 		}
 		road.a.addConnecting(road); //connect intersections
 		road.b.addConnecting(road);
@@ -630,7 +631,7 @@ public class Roadmap implements OBJOutput{
 						li.computeIntersection(r.a.pos, r.b.pos, road.a.pos, road.b.pos);
 						if(li.hasIntersection()){
 							Coordinate intersection = li.getIntersection(0);
-							//splitRoad = road;
+							r.intersectedRoad = road;
 							r.b.pos = intersection;
 						}
 					}
