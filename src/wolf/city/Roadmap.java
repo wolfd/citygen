@@ -21,6 +21,7 @@ import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.index.quadtree.Quadtree;
 
 import wolf.city.road.GridSpace;
 import wolf.city.road.Intersection;
@@ -42,11 +43,10 @@ import wolf.util.Turtle;
 
 public class Roadmap implements OBJOutput{
 	
-	public volatile List<Road> roads;
+	public Quadtree roads;
 	private City city;
 	private Configuration config;
-	LineIntersector li;
-	public RoadGrid grid;
+	private LineIntersector li;
 	private Log log;
 
 	private static final float roadThickness = 5;
@@ -80,6 +80,8 @@ public class Roadmap implements OBJOutput{
 	public Geometry shape; //generate when final
 	private int minimumNumberParents;
 	
+	public CityView cv;
+	
 	private RoadQueue rqH; //highways
 	private RoadQueue rqM; //main roads
 	private RoadQueue rq; //streets
@@ -89,7 +91,7 @@ public class Roadmap implements OBJOutput{
 	public Roadmap(City city){
 		log = city.log;
 		this.city = city;
-		roads = new LinkedList<Road>();
+		roads = new Quadtree();
 		//Load configuration file
 		try {
 			File configFile = new File("config/roadmapConfig.properties");
@@ -139,13 +141,8 @@ public class Roadmap implements OBJOutput{
 		}
 
 		li = new RobustLineIntersector();
-		grid = new RoadGrid(city.sizeX, city.sizeY);
 	}
 
-	//code to generate roads
-	public void generate(){
-		generate(null);
-	}
 	
 	public void setupGeneration(){
 		log.log("Starting roadmap generation");
@@ -195,9 +192,9 @@ public class Roadmap implements OBJOutput{
 					rqM.add(road);
 				}
 			}
-			roads.add(connect(road));
-			grid.add(road); //for collision detection
-
+			road = connect(road);
+			roads.insert(road.getEnvelope(), road);
+			cv.roads.add(road);
 			if(cv != null){
 				cv.draw();
 			}
@@ -228,8 +225,9 @@ public class Roadmap implements OBJOutput{
 				rq.add(inters2);
 				rqM.add(localConstraints(r));
 			}
-			roads.add(connect(road));
-			grid.add(road); //for collision detection
+			road = connect(road);
+			roads.insert(road.getEnvelope(), road);
+			cv.roads.add(road);
 
 			if(cv != null){
 				cv.draw();
@@ -267,8 +265,9 @@ public class Roadmap implements OBJOutput{
 					}
 					//city.pop.removeDensityLine(road);
 				}
-				roads.add(connect(road));
-				grid.add(road); //for collision detection
+				road = connect(road);
+				roads.insert(road.getEnvelope(), road);
+				cv.roads.add(road);
 
 			}
 			if(cv != null){
@@ -280,7 +279,7 @@ public class Roadmap implements OBJOutput{
 		}else return true;
 	}
 	
-	public void generate(CityView cv){
+	public void generate(){
 		setupGeneration();
 
 		while(generateIteration(cv));
@@ -329,8 +328,9 @@ public class Roadmap implements OBJOutput{
 		log.log("Roads: "+roads.size());
 		{//union all of the road geometries
 			Geometry[] geoms = new Geometry[roads.size()];
-			for(int i=0; i<roads.size(); i++){
-				geoms[i] = (roads.get(i).getFinalGeometry());
+			ArrayList<Road> roadList = (ArrayList<Road>) roads.queryAll();
+			for(int i=0; i<roadList.size(); i++){
+				geoms[i] = (roadList.get(i).getFinalGeometry());
 			}
 			GeometryFactory gf = new GeometryFactory();
 			GeometryCollection polygonCollection = gf.createGeometryCollection(geoms);
@@ -346,7 +346,8 @@ public class Roadmap implements OBJOutput{
 			Road split = new Road(road.b, road.intersectedRoad.b, road.intersectedRoad.getType(), road.intersectedRoad.rule);
 			road.intersectedRoad.b = road.b;
 			split.a.addConnecting(road);
-			roads.add(split);
+			roads.insert(road.getEnvelope(), road);
+			cv.roads.add(road);
 		}
 		road.a.addConnecting(road); //connect intersections
 		road.b.addConnecting(road);
@@ -451,51 +452,43 @@ public class Roadmap implements OBJOutput{
 		}
 
 		Coordinate point =  r.b.pos;
-		ArrayList<GridSpace> spaces = grid.getSpaces(r);
-		ArrayList<Road> tested = new ArrayList<Road>();
-		
-		for(int j=0; j<spaces.size(); j++){
-			GridSpace g = spaces.get(j);
-			LinkedList<Road> roadsLoc = grid.get(g);
-			for(int ir=0; ir<roadsLoc.size(); ir++){
-				Road i = roadsLoc.get(ir);
-				if(!tested.contains(i)){ //don't test roads twice
-					if(i.getType() == RoadType.HIGHWAY && r.getType() == RoadType.STREET){
-		
+		ArrayList<Road> roadsLoc = (ArrayList<Road>) roads.query(r.getEnvelope());
+		for(int ir=0; ir<roadsLoc.size(); ir++){
+			Road i = roadsLoc.get(ir);
+
+			if(i.getType() == RoadType.HIGHWAY && r.getType() == RoadType.STREET){
+
+			}else{
+				//doesn't find closest, just finds one and goes with it.
+				double distA = r.b.pos.distance(i.a.pos);
+				double distB = r.b.pos.distance(i.b.pos);
+				if(distA<maximumRoadSnapDistance && distB<maximumRoadSnapDistance){
+					if(distA<distB){
+						r.b = i.a;
+						return r;
 					}else{
-						//doesn't find closest, just finds one and goes with it.
-						double distA = r.b.pos.distance(i.a.pos);
-						double distB = r.b.pos.distance(i.b.pos);
-						if(distA<maximumRoadSnapDistance && distB<maximumRoadSnapDistance){
-							if(distA<distB){
-								r.b = i.a;
-								return r;
-							}else{
-								r.b = i.b;
-								return r;
-							}
-						}else{
-							if(distA<maximumRoadSnapDistance){
-								r.b = i.a;
-								return r;
-							}
-							if(distB<maximumRoadSnapDistance){
-								r.b = i.b;
-								return r;
-							}
-						}
-		
-						//snap to road
-						Coordinate closest = i.getLineSegment().closestPoint(point);
-						double dist = point.distance(closest);
-						if(dist < maximumRoadSnapDistance ){//&& dist > minimumRoadSnapDistance){
-							r.b.pos = closest;
-							r.intersectedRoad = i;
-							return r;
-						}
+						r.b = i.b;
+						return r;
+					}
+				}else{
+					if(distA<maximumRoadSnapDistance){
+						r.b = i.a;
+						return r;
+					}
+					if(distB<maximumRoadSnapDistance){
+						r.b = i.b;
+						return r;
 					}
 				}
-				tested.add(i);
+
+				//snap to road
+				Coordinate closest = i.getLineSegment().closestPoint(point);
+				double dist = point.distance(closest);
+				if(dist < maximumRoadSnapDistance ){//&& dist > minimumRoadSnapDistance){
+					r.b.pos = closest;
+					r.intersectedRoad = i;
+					return r;
+				}
 			}
 		}
 
@@ -519,31 +512,26 @@ public class Roadmap implements OBJOutput{
 			angle = Math.PI + angle; //half circle
 		}
 
-		ArrayList<GridSpace> spaces = grid.getSpaces(r);
-		ArrayList<Road> tested = new ArrayList<Road>();
-		for(GridSpace g: spaces){
-			LinkedList<Road> roads = grid.get(g);
-			for(Road i: roads){
-				if(!tested.contains(i)){
-					Geometry g1 = i.getGeometry(2).difference(i.getIntersectionGeometry());
-					if(g0.intersects(g1) || g0.distance(g1)<4){
-						double thisAngle = Angle.angle(i.a.pos, i.b.pos);
-						if(thisAngle<0){
-							thisAngle = Math.PI + thisAngle; //half circle
-						}
-						double bigAngle = Math.max(thisAngle, angle);
-						double smallAngle = Math.min(thisAngle, angle);
-
-						double difference = Math.toDegrees(bigAngle - smallAngle);
-
-						if(difference<minimumIntersectionAngle || difference>(360-minimumIntersectionAngle)){
-							return null;
-						}
-					}
+		ArrayList<Road> roadList = (ArrayList<Road>) roads.query(r.getEnvelope());
+		for(int i=0; i<roadList.size(); i++){
+			Road road = roadList.get(i);
+			Geometry g1 = road.getGeometry(2).difference(road.getIntersectionGeometry());
+			if(g0.intersects(g1) || g0.distance(g1)<4){
+				double thisAngle = Angle.angle(road.a.pos, road.b.pos);
+				if(thisAngle<0){
+					thisAngle = Math.PI + thisAngle; //half circle
 				}
-				tested.add(i);
+				double bigAngle = Math.max(thisAngle, angle);
+				double smallAngle = Math.min(thisAngle, angle);
+
+				double difference = Math.toDegrees(bigAngle - smallAngle);
+
+				if(difference<minimumIntersectionAngle || difference>(360-minimumIntersectionAngle)){
+					return null;
+				}
 			}
 		}
+
 
 		return r;
 	}
@@ -555,29 +543,21 @@ public class Roadmap implements OBJOutput{
 		double expand = r.width*1f;
 		Geometry a = r.getGeometry(expand);
 		//check related spaces in grid
-		ArrayList<GridSpace> spaces = grid.getSpaces(r);
-		ArrayList<Road> tested = new ArrayList<Road>();
-		for(int j=0; j<spaces.size(); j++){
-			GridSpace g = spaces.get(j);
-			LinkedList<Road> roadsLoc = grid.get(g);
-			for(int i=0; i<roadsLoc.size(); i++){
-				Road ir = roadsLoc.get(i);
-				if(ir.getType() != RoadType.HIGHWAY && ir.getType() != RoadType.MAIN){
-					//if(!tested.contains(i) && !((i.getType() == RoadType.HIGHWAY || i.getType() == RoadType.MAIN) && (r.getType() == RoadType.STREET || r.getType() == RoadType.HIGHWAY)) /*streets ignore main and highway types*/){
-					if(!tested.contains(ir)){
-						Geometry b = ir.getGeometry(expand);
-						if(a.intersects(b)){
-							Geometry c = a.intersection(b);
-							if(c.getArea()>maximumRatioIntersectionArea*a.getArea()){
-								return null;
-							}
-							if(c.getArea()>maximumRatioIntersectionArea*b.getArea()){
-								return null;
-							}
-						}
+		ArrayList<Road> roadList = (ArrayList<Road>) roads.query(r.getEnvelope());
+		for(int i=0; i<roadList.size(); i++){
+			Road ir = roadList.get(i);
+			if(ir.getType() != RoadType.HIGHWAY && ir.getType() != RoadType.MAIN){
+				//if(!tested.contains(i) && !((i.getType() == RoadType.HIGHWAY || i.getType() == RoadType.MAIN) && (r.getType() == RoadType.STREET || r.getType() == RoadType.HIGHWAY)) /*streets ignore main and highway types*/){
+				Geometry b = ir.getGeometry(expand);
+				if(a.intersects(b)){
+					Geometry c = a.intersection(b);
+					if(c.getArea()>maximumRatioIntersectionArea*a.getArea()){
+						return null;
+					}
+					if(c.getArea()>maximumRatioIntersectionArea*b.getArea()){
+						return null;
 					}
 				}
-				tested.add(ir);
 			}
 		}
 		return r;
@@ -618,35 +598,28 @@ public class Roadmap implements OBJOutput{
 		if(r==null){
 			return null;
 		}
-		
+
 		if(r.getType() == RoadType.MAIN || r.getType() == RoadType.HIGHWAY){
-			ArrayList<GridSpace> spaces = grid.getSpaces(r);
-			ArrayList<Road> tested = new ArrayList<Road>();
-			for(int j=0; j<spaces.size(); j++){
-				GridSpace g = spaces.get(j);
-				LinkedList<Road> roadsLoc = grid.get(g);
-				for(int i=0; i<roadsLoc.size(); i++){
-					Road road = roadsLoc.get(i);
-					if(!tested.contains(road)){
-						li.computeIntersection(r.a.pos, r.b.pos, road.a.pos, road.b.pos);
-						if(li.hasIntersection()){
-							Coordinate intersection = li.getIntersection(0);
-							r.intersectedRoad = road;
-							r.b.pos = intersection;
-						}
-					}
-					tested.add(road);
+			ArrayList<Road> roadList = (ArrayList<Road>) roads.query(r.getEnvelope());
+			for(int i=0; i<roadList.size(); i++){
+				Road road = roadList.get(i);
+
+				li.computeIntersection(r.a.pos, r.b.pos, road.a.pos, road.b.pos);
+				if(li.hasIntersection()){
+					Coordinate intersection = li.getIntersection(0);
+					r.intersectedRoad = road;
+					r.b.pos = intersection;
 				}
 			}
-//			if(splitRoad != null){
-//				Intersection b = splitRoad.b;
-//				splitRoad.b = new Intersection(r.b.pos);
-//				//splitRoad.b.addConnecting(r); //may not be best idea
-//				Road split = new Road(splitRoad.b, b, splitRoad.getType(), splitRoad.rule);
-//				roads.add(connect(split));
-//				grid.add(split); //for collision detection
-//			}
 		}
+		//			if(splitRoad != null){
+		//				Intersection b = splitRoad.b;
+		//				splitRoad.b = new Intersection(r.b.pos);
+		//				//splitRoad.b.addConnecting(r); //may not be best idea
+		//				Road split = new Road(splitRoad.b, b, splitRoad.getType(), splitRoad.rule);
+		//				roads.add(connect(split));
+		//				grid.add(split); //for collision detection
+		//			}
 		return r;
 	}
 
@@ -858,9 +831,9 @@ public class Roadmap implements OBJOutput{
 				
 			}
 		}
-		
-		for(int i=0; i<roads.size(); i++){
-			Road r = roads.get(i);
+		ArrayList<Road> roadList = (ArrayList<Road>) roads.queryAll();
+		for(int i=0; i<roadList.size(); i++){
+			Road r = roadList.get(i);
 			//make rectangle geometry with road ends as terrain height.
 			Vector3f a = new Vector3f((float)r.a.pos.x, (float)r.a.pos.y, city.ter.get((int)r.a.pos.x, (int)r.a.pos.y));
 			Vector3f b = new Vector3f((float)r.b.pos.x, (float)r.b.pos.y, city.ter.get((int)r.b.pos.x, (int)r.b.pos.y));

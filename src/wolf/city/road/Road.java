@@ -7,6 +7,7 @@ import wolf.util.Turtle;
 
 import com.vividsolutions.jts.algorithm.Angle;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
@@ -160,5 +161,11 @@ public class Road {
 	
 	public LineString getLineString(){
 		return gf.createLineString(new Coordinate[]{a.pos, b.pos});
+	}
+	
+	public Envelope getEnvelope(){
+		Envelope e = new Envelope(a.pos, b.pos);
+		e.expandBy(width); //for intersection points
+		return e;
 	}
 }

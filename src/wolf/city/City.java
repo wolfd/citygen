@@ -58,7 +58,8 @@ public class City {
 	public void generateRoadmap(boolean viewCity){
 		if(viewCity){
 			final CityView cv = new CityView(this);
-			rm.generate(cv);
+			rm.cv = cv;
+			rm.generate();
 			cv.close();
 		}else{
 			rm.generate();

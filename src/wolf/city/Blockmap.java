@@ -18,7 +18,7 @@ public class Blockmap {
 	}
 
 	public void getBlocks(Roadmap rm){
-		blocks = BlockFactory.makeBlocks(c, rm.roads);
+		blocks = BlockFactory.makeBlocks(c, rm.roads.queryAll());
 		LotFactory.makeLots(c, blocks);
 	}
 

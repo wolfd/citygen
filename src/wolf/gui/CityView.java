@@ -1,5 +1,7 @@
 package wolf.gui;
 
+import java.util.ArrayList;
+
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
@@ -17,10 +19,12 @@ public class CityView{
 	private double vSize;
 	private boolean densityDisplay = false;
 	private City c;
+	public volatile ArrayList<Road> roads;
 	
 	public CityView(City c){
 		this.c = c;
 		vSize = Math.max(c.sizeX, c.sizeY);
+		roads = new ArrayList<Road>();
 		try{
 			
 			Display.setDisplayMode(new DisplayMode(windowSize, windowSize ));
@@ -84,23 +88,8 @@ public class CityView{
 			//GL11.glEnable(GL11.GL_BLEND);
 			//GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
 
-			//render endpoints of last road generated.
-			if(false){
-				GL11.glPointSize(20);
-				GL11.glBegin(GL11.GL_POINTS);
-				GL11.glColor3f(1, 1, 1);
-				Road road = c.rm.roads.get(c.rm.roads.size()-1);
-				Coordinate p1 = road.a.pos;
-				Coordinate p2 = road.b.pos;
-				GL11.glVertex2d(p1.x+c.sizeX/2,vSize-(p1.y+c.sizeY/2));
-				GL11.glVertex2d(p2.x+c.sizeX/2,vSize-(p2.y+c.sizeY/2));
-//				GL11.glVertex2d(p1.x,p1.y);
-//				GL11.glVertex2d(p2.x,p2.y);
-				GL11.glEnd();
-			}
-			
-			for(int i=0; i<c.rm.roads.size(); i++){
-				Road road = c.rm.roads.get(i);
+			for(int i=0; i<roads.size(); i++){
+				Road road = roads.get(i);
 				Geometry g = road.getGeometry();
 
 				switch(road.getType()){
@@ -154,8 +143,8 @@ public class CityView{
 			GL11.glPointSize(5);
 			GL11.glBegin(GL11.GL_POINTS);
 			GL11.glColor3f(1, 1, 0);
-			for(int i=0; i<c.rm.roads.size(); i++){
-				Intersection a = c.rm.roads.get(i).a;
+			for(int i=0; i<roads.size(); i++){
+				Intersection a = roads.get(i).a;
 				Coordinate p = a.pos;
 				GL11.glVertex2d(p.x+c.sizeX/2,vSize-(p.y+c.sizeY/2));
 			}

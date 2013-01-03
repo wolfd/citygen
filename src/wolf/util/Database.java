@@ -1,6 +1,7 @@
 package wolf.util;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 import wolf.city.City;
 import wolf.city.block.CityBlock;
@@ -57,8 +58,9 @@ public class Database {
 		s.executeUpdate("CREATE TABLE ROADS (id, a, b, type, width);");
 		{
 			PreparedStatement p = con.prepareStatement("INSERT INTO ROADS VALUES (?, ?, ?, ?, ?);");
-			for(int i=0; i<c.rm.roads.size(); i++){
-				Road r = c.rm.roads.get(i);
+			ArrayList<Road> roadList = (ArrayList<Road>) c.rm.roads.queryAll();
+			for(int i=0; i<roadList.size(); i++){
+				Road r = roadList.get(i);
 				p.setInt(1, i);
 				p.setInt(2, r.a.id);
 				p.setInt(3, r.b.id);

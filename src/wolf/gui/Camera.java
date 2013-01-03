@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 import java.util.Random;
 
 import org.lwjgl.BufferUtils;
@@ -179,9 +180,9 @@ public class Camera {
 			int blue = 0;
 			int alpha = 0;
 			int green = 0;
-
-			for(int i=0; i<c.rm.roads.size(); i++){
-				Road road = c.rm.roads.get(i);
+			ArrayList<Road> roadList = (ArrayList<Road>) c.rm.roads.queryAll();
+			for(int i=0; i<roadList.size(); i++){
+				Road road =roadList.get(i);
 				Geometry g = road.getGeometry();
 				switch(road.getType()){
 				case BRIDGE:{ //grey
