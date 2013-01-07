@@ -159,6 +159,7 @@ public class Roadmap implements OBJOutput{
 	}
 	
 	public boolean generateIteration(CityView cv){
+		
 		if(!rqH.isEmpty()){
 			//generate highways, save street seeds to rq
 			Road road = rqH.remove();
@@ -191,6 +192,7 @@ public class Roadmap implements OBJOutput{
 				}else{
 					rqM.add(road);
 				}
+				
 			}
 			road = connect(road);
 			roads.insert(road.getEnvelope(), road);
@@ -225,10 +227,11 @@ public class Roadmap implements OBJOutput{
 				rq.add(inters2);
 				rqM.add(localConstraints(r));
 			}
+			
 			road = connect(road);
 			roads.insert(road.getEnvelope(), road);
 			cv.roads.add(road);
-
+			
 			if(cv != null){
 				cv.draw();
 			}
@@ -346,8 +349,8 @@ public class Roadmap implements OBJOutput{
 			Road split = new Road(road.b, road.intersectedRoad.b, road.intersectedRoad.getType(), road.intersectedRoad.rule);
 			road.intersectedRoad.b = road.b;
 			split.a.addConnecting(road);
-			roads.insert(road.getEnvelope(), road);
-			cv.roads.add(road);
+			roads.insert(split.getEnvelope(), split);
+			cv.roads.add(split);
 		}
 		road.a.addConnecting(road); //connect intersections
 		road.b.addConnecting(road);

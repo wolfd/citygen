@@ -1,5 +1,7 @@
 package wolf.util;
 
+import java.util.List;
+
 import wolf.city.City;
 import wolf.city.Roadmap;
 import wolf.city.road.Road;
@@ -27,9 +29,9 @@ public class MapRender {
 			}
 		}
 		*/
-
-		for(int i=rm.roads.size()-1; i>=0; i--){
-			Road r = rm.roads.get(i);
+		List<Road> roads = rm.roads.queryAll();
+		for(int i=roads.size()-1; i>=0; i--){
+			Road r = roads.get(i);
 			int width;
 			int red;
 			int green;

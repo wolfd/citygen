@@ -6,6 +6,7 @@ import java.awt.MouseInfo;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.JPanel;
 
@@ -43,8 +44,7 @@ public class LCPanel extends JPanel implements MouseListener{
 		c = new City(windowHeight*4, windowHeight*4, 0);
 		rm = new Roadmap(c);
 		for(Road r: roads){
-			rm.grid.add(r);
-			rm.roads.add(r);
+			rm.roads.insert(r.getEnvelope(), r);
 		}
 		
 		mouseLoc = new Coordinate(0,0);
@@ -124,10 +124,12 @@ public class LCPanel extends JPanel implements MouseListener{
 		if(movingIntersection != null){
 			movingIntersection.pos.x = mouseLoc.x;
 			movingIntersection.pos.y = mouseLoc.y;
-			for(Road i: c.rm.roads){
+			List<Road> roadList = c.rm.roads.queryAll();
+			for(Road i: roadList){
 				if(i.a == movingIntersection || i.b == movingIntersection){
 					System.out.println("moving");
-					c.rm.grid.move(i);
+					c.rm.roads.remove(i.getEnvelope(), i);
+					rm.roads.insert(i.getEnvelope(), i);
 				}
 			}
 			
