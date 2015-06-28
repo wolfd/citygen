@@ -3,10 +3,6 @@ package com.wolfd.citygen.city;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-<<<<<<< Updated upstream:src/wolf/city/Roadmap.java
-import java.util.LinkedList;
-import java.util.List;
-=======
 
 import com.wolfd.citygen.city.road.Intersection;
 import com.wolfd.citygen.city.road.Road;
@@ -21,7 +17,7 @@ import com.wolfd.citygen.util.Log;
 import com.wolfd.citygen.util.OBJ;
 import com.wolfd.citygen.util.OBJOutput;
 import com.wolfd.citygen.util.Turtle;
->>>>>>> Stashed changes:citygen/src/main/java/com/wolfd/citygen/city/Roadmap.java
+
 import org.apache.commons.configuration.AbstractFileConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -40,30 +36,7 @@ import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.index.quadtree.Quadtree;
 
-<<<<<<< Updated upstream:src/wolf/city/Roadmap.java
-import wolf.city.road.GridSpace;
-import wolf.city.road.Intersection;
-import wolf.city.road.Road;
-import wolf.city.road.RoadGrid;
-import wolf.city.road.RoadQueue;
-import wolf.city.road.RoadType;
-import wolf.city.road.rules.Basic;
-import wolf.city.road.rules.Direction;
-import wolf.city.road.rules.Grid;
-import wolf.city.road.rules.OffRamp;
-import wolf.city.road.rules.RoadRule;
-import wolf.gui.CityView;
-import wolf.util.Log;
-import wolf.util.OBJ;
-import wolf.util.OBJOutput;
-import wolf.util.RandomHelper;
-import wolf.util.Turtle;
-
-public class Roadmap implements OBJOutput{
-=======
 public class Roadmap implements OBJOutput {
->>>>>>> Stashed changes:citygen/src/main/java/com/wolfd/citygen/city/Roadmap.java
-	
 	public Quadtree roads;
 	private City city;
 	private Configuration config;
